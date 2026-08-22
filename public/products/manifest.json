@@ -1,0 +1,1106 @@
+{
+  "mini-scalloped-bookshelf": {
+    "title": "Mini Scalloped Bookshelf",
+    "handle": "mini-scalloped-bookshelf",
+    "images": [
+      {
+        "src": "/products/mini-scalloped-bookshelf/01.webp",
+        "alt": null,
+        "width": 3840,
+        "height": 4800
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/02.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/03.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/04.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/05.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/06.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/07.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-scalloped-bookshelf/08.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      }
+    ]
+  },
+  "mini-basic-bookshelf": {
+    "title": "Mini Basic Bookshelf",
+    "handle": "mini-basic-bookshelf",
+    "images": [
+      {
+        "src": "/products/mini-basic-bookshelf/01.webp",
+        "alt": null,
+        "width": 3840,
+        "height": 4800
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/02.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/03.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/04.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/05.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/06.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/07.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-basic-bookshelf/08.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      }
+    ]
+  },
+  "mini-fancy-bookshelf": {
+    "title": "Mini Fancy Bookshelf",
+    "handle": "mini-fancy-bookshelf",
+    "images": [
+      {
+        "src": "/products/mini-fancy-bookshelf/01.webp",
+        "alt": null,
+        "width": 3840,
+        "height": 4800
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/02.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/03.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/04.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/05.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/06.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/07.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-fancy-bookshelf/08.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      }
+    ]
+  },
+  "mini-cube-bookshelf": {
+    "title": "Mini Cube Bookshelf",
+    "handle": "mini-cube-bookshelf",
+    "images": [
+      {
+        "src": "/products/mini-cube-bookshelf/01.webp",
+        "alt": null,
+        "width": 3840,
+        "height": 4800
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/02.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/03.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/04.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/05.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/06.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/07.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-cube-bookshelf/08.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      }
+    ]
+  },
+  "mini-arched-bookshelf": {
+    "title": "Mini Arched Bookshelf",
+    "handle": "mini-bookshelf-bookends-books-library-book-swag-miniature-bookish-gift-library-tiny-booktok-reading-arched-bookcase-bookend-decor-romance",
+    "images": [
+      {
+        "src": "/products/mini-arched-bookshelf/01.webp",
+        "alt": null,
+        "width": 872,
+        "height": 1088
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-arched-bookshelf/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      }
+    ]
+  },
+  "mini-medieval-bookshelf": {
+    "title": "Mini Medieval Bookshelf",
+    "handle": "mini-medieval-bookshelf",
+    "images": [
+      {
+        "src": "/products/mini-medieval-bookshelf/01.webp",
+        "alt": null,
+        "width": 3840,
+        "height": 4800
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/02.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/03.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/04.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/05.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/06.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/07.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      },
+      {
+        "src": "/products/mini-medieval-bookshelf/08.webp",
+        "alt": null,
+        "width": 5760,
+        "height": 3840
+      }
+    ]
+  },
+  "custom-mini-book-set": {
+    "title": "CUSTOM Handmade Mini Books",
+    "handle": "handmade-custom-mini-foam-books",
+    "images": [
+      {
+        "src": "/products/custom-mini-book-set/01.webp",
+        "alt": null,
+        "width": 3248,
+        "height": 3248
+      },
+      {
+        "src": "/products/custom-mini-book-set/02.webp",
+        "alt": null,
+        "width": 1456,
+        "height": 966
+      },
+      {
+        "src": "/products/custom-mini-book-set/03.webp",
+        "alt": null,
+        "width": 3338,
+        "height": 3338
+      },
+      {
+        "src": "/products/custom-mini-book-set/04.webp",
+        "alt": null,
+        "width": 3647,
+        "height": 3647
+      },
+      {
+        "src": "/products/custom-mini-book-set/05.webp",
+        "alt": null,
+        "width": 3737,
+        "height": 3737
+      },
+      {
+        "src": "/products/custom-mini-book-set/06.webp",
+        "alt": null,
+        "width": 1454,
+        "height": 970
+      },
+      {
+        "src": "/products/custom-mini-book-set/07.webp",
+        "alt": null,
+        "width": 1456,
+        "height": 968
+      },
+      {
+        "src": "/products/custom-mini-book-set/08.webp",
+        "alt": null,
+        "width": 1456,
+        "height": 970
+      }
+    ]
+  },
+  "mini-twilight-saga-set": {
+    "title": "Handmade MINI Twilight Series Books (set of 5 mini books)",
+    "handle": "handmade-mini-twilight-series-books-set-of-5-mini-books",
+    "images": [
+      {
+        "src": "/products/mini-twilight-saga-set/01.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-twilight-saga-set/02.webp",
+        "alt": null,
+        "width": 3395,
+        "height": 3395
+      },
+      {
+        "src": "/products/mini-twilight-saga-set/03.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-twilight-saga-set/04.webp",
+        "alt": null,
+        "width": 4800,
+        "height": 4800
+      }
+    ]
+  },
+  "mini-sarah-j-maas-set": {
+    "title": "Handmade MINI Sarah J Maas Books (set of 8 mini books)",
+    "handle": "handmade-mini-sarah-j-maas-books-set-of-8-mini-books",
+    "images": [
+      {
+        "src": "/products/mini-sarah-j-maas-set/01.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/02.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/03.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/04.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/05.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/06.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/07.webp",
+        "alt": null,
+        "width": 3193,
+        "height": 3193
+      },
+      {
+        "src": "/products/mini-sarah-j-maas-set/08.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      }
+    ]
+  },
+  "mini-fourth-wing-set": {
+    "title": "Handmade MINI Fourth Wing Series Books (set of 3 mini books)",
+    "handle": "handmade-mini-fourth-wing-series-books-set-of-3-mini-books",
+    "images": [
+      {
+        "src": "/products/mini-fourth-wing-set/01.webp",
+        "alt": null,
+        "width": 3838,
+        "height": 3838
+      },
+      {
+        "src": "/products/mini-fourth-wing-set/02.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-fourth-wing-set/03.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-fourth-wing-set/04.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-fourth-wing-set/05.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-fourth-wing-set/06.webp",
+        "alt": null,
+        "width": 4800,
+        "height": 4800
+      }
+    ]
+  },
+  "mini-jenny-han-set": {
+    "title": "Handmade MINI Summer Series Books (set of 3 mini books)",
+    "handle": "handmade-mini-summer-series-books-set-of-3-mini-books-reader-romance-miniature-tiny-books-booktok-the-summer-i-turned-pretty-jenny-han",
+    "images": [
+      {
+        "src": "/products/mini-jenny-han-set/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-jenny-han-set/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-jenny-han-set/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-jenny-han-set/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-jenny-han-set/05.webp",
+        "alt": null,
+        "width": 4800,
+        "height": 4800
+      }
+    ]
+  },
+  "mini-freida-mcfadden-set": {
+    "title": "Handmade MINI Freida McFadden Books (set of 9 mini books)",
+    "handle": "handmade-mini-freida-mcfadden-books-set-of-9-mini-books",
+    "images": [
+      {
+        "src": "/products/mini-freida-mcfadden-set/01.webp",
+        "alt": null,
+        "width": 3500,
+        "height": 3500
+      },
+      {
+        "src": "/products/mini-freida-mcfadden-set/02.webp",
+        "alt": null,
+        "width": 3804,
+        "height": 3804
+      },
+      {
+        "src": "/products/mini-freida-mcfadden-set/03.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-freida-mcfadden-set/04.webp",
+        "alt": null,
+        "width": 3829,
+        "height": 3829
+      },
+      {
+        "src": "/products/mini-freida-mcfadden-set/05.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-freida-mcfadden-set/06.webp",
+        "alt": null,
+        "width": 3775,
+        "height": 3775
+      }
+    ]
+  },
+  "mini-book-keychain": {
+    "title": "CUSTOM Mini Book Keychains | reading tracker, tiny book stickers, customizable books, book lover gift, small novels, choose your own",
+    "handle": "custom-mini-book-keychains-reading-tracker-tiny-book-stickers-customizable-books-book-lover-gift-small-novels-choose-your-own",
+    "images": [
+      {
+        "src": "/products/mini-book-keychain/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-book-keychain/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "book-stack-acrylic-keychain": {
+    "title": "Book Stack Acrylic Keychain",
+    "handle": "copy-of-coloured-pencils-acrylic-keychain",
+    "images": [
+      {
+        "src": "/products/book-stack-acrylic-keychain/01.webp",
+        "alt": null,
+        "width": 3235,
+        "height": 3235
+      },
+      {
+        "src": "/products/book-stack-acrylic-keychain/02.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      }
+    ]
+  },
+  "bookstore-acrylic-keychain": {
+    "title": "Bookstore Acrylic Keychain",
+    "handle": "copy-of-corgi-acrylic-keychain",
+    "images": [
+      {
+        "src": "/products/bookstore-acrylic-keychain/01.webp",
+        "alt": null,
+        "width": 3391,
+        "height": 3391
+      },
+      {
+        "src": "/products/bookstore-acrylic-keychain/02.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      }
+    ]
+  },
+  "bookish-castle-acrylic-keychain": {
+    "title": "Castle Acrylic Keychain",
+    "handle": "castle-acrylic-keychain",
+    "images": [
+      {
+        "src": "/products/bookish-castle-acrylic-keychain/01.webp",
+        "alt": null,
+        "width": 800,
+        "height": 803
+      },
+      {
+        "src": "/products/bookish-castle-acrylic-keychain/02.webp",
+        "alt": null,
+        "width": 800,
+        "height": 797
+      }
+    ]
+  },
+  "mini-book-lover-sticker-sheet": {
+    "title": "Mini Book Lover Stickers",
+    "handle": "copy-of-mini-teacher-collection",
+    "images": [
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/01.webp",
+        "alt": null,
+        "width": 3728,
+        "height": 3728
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/02.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/03.webp",
+        "alt": null,
+        "width": 3696,
+        "height": 3696
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/04.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/05.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/06.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/07.webp",
+        "alt": null,
+        "width": 4000,
+        "height": 4000
+      },
+      {
+        "src": "/products/mini-book-lover-sticker-sheet/08.webp",
+        "alt": null,
+        "width": 3476,
+        "height": 3476
+      }
+    ]
+  },
+  "mini-plants": {
+    "title": "Mini Plants",
+    "handle": "mini-plants-library-book-swag-miniature-bookish-gift-library-tiny-booktok-reading-dollhouse-decor-romance-bookshelf-accessory",
+    "images": [
+      {
+        "src": "/products/mini-plants/01.webp",
+        "alt": null,
+        "width": 2400,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-plants/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-plants/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      }
+    ]
+  },
+  "mini-fish-tank": {
+    "title": "Mini Fish Tank",
+    "handle": "mini-fish-tank-library-book-swag-miniature-bookish-gift-library-tiny-booktok-reading-dollhouse-decor-romance-bookshelf-accessory",
+    "images": [
+      {
+        "src": "/products/mini-fish-tank/01.webp",
+        "alt": null,
+        "width": 2400,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-fish-tank/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-fish-tank/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      }
+    ]
+  },
+  "mini-bean-bag-chair": {
+    "title": "Mini Bean Bag Chair",
+    "handle": "mini-bean-bag-chair-library-book-swag-miniature-bookish-gift-library-tiny-booktok-reading-dollhouse-decor-romance-bookshelf-accessory",
+    "images": [
+      {
+        "src": "/products/mini-bean-bag-chair/01.webp",
+        "alt": null,
+        "width": 2400,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-bean-bag-chair/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      }
+    ]
+  },
+  "mini-rug": {
+    "title": "Mini Rug",
+    "handle": "mini-rug-library-book-swag-miniature-bookish-gift-library-tiny-booktok-reading-dollhouse-decor-romance-bookshelf-accessory",
+    "images": [
+      {
+        "src": "/products/mini-rug/01.webp",
+        "alt": null,
+        "width": 2400,
+        "height": 3000
+      },
+      {
+        "src": "/products/mini-rug/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/03.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/04.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/05.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/06.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/07.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      },
+      {
+        "src": "/products/mini-rug/08.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 2000
+      }
+    ]
+  },
+  "emily-henry-book-stack-sticker": {
+    "title": "Emily Henry Inspired Book Stack Sticker",
+    "handle": "emily-henry-inspired-book-stack-sticker-gift-laptop-waterproof-stickers-bookish-romance-book-lover-beach-read-happy-place-funny-story-1",
+    "images": [
+      {
+        "src": "/products/emily-henry-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/emily-henry-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "abby-jimenez-book-stack-sticker": {
+    "title": "Abby Jimenez Inspired Book Stack Sticker",
+    "handle": "abby-jimenez-inspired-book-stack-sticker-gift-laptop-waterproof-stickers-bookish-romance-just-for-the-summer-part-of-your-world-fiction",
+    "images": [
+      {
+        "src": "/products/abby-jimenez-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/abby-jimenez-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "special-edition-fourth-wing-sticker": {
+    "title": "Special Edition Fourth Wing Book Stack Sticker",
+    "handle": "special-edition-fourth-wing-book-stack-sticker-gift-laptop-decal-waterproof-books-romance-the-empyrean-rebecca-yarros-fantasy-romantasy",
+    "images": [
+      {
+        "src": "/products/special-edition-fourth-wing-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/special-edition-fourth-wing-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "magnolia-parks-book-stack-sticker": {
+    "title": "Magnolia Parks Book Stack Sticker",
+    "handle": "magnolia-parks-book-stack-sticker-gift-laptop-waterbottle-waterproof-stickers-bookish-romance-fiction-romance-contemporary-jessa-hastings",
+    "images": [
+      {
+        "src": "/products/magnolia-parks-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/magnolia-parks-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "twilight-book-stack-sticker": {
+    "title": "Twilight Book Stack Sticker",
+    "handle": "twilight-book-stack-sticker-gift-laptop-decal-water-bottle-waterproof-stickers-books-romance-romantasy-stephenie-meyer-fantasy-ya-vampire-1",
+    "images": [
+      {
+        "src": "/products/twilight-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/twilight-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "freida-mcfadden-book-stack-sticker": {
+    "title": "Freida McFadden Book Stack Sticker",
+    "handle": "freida-mcfadden-book-stack-sticker-gift-laptop-decal-waterproof-stickers-books-bookish-thriller-mystery-suspense-read-the-housemaid",
+    "images": [
+      {
+        "src": "/products/freida-mcfadden-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/freida-mcfadden-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "mary-kubica-book-stack-sticker": {
+    "title": "Mary Kubica Book Stack Sticker",
+    "handle": "mary-kubica-book-stack-sticker-gift-laptop-decal-waterproof-stickers-books-bookish-thriller-mystery-suspense-local-woman-missing",
+    "images": [
+      {
+        "src": "/products/mary-kubica-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/mary-kubica-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  },
+  "acotar-book-stack-sticker": {
+    "title": "ACOTAR Book Stack Sticker",
+    "handle": "acotar-book-stack-sticker-decal-planner-water-bottle-waterproof-stickers-fantasy-romance-romantasy-sarah-j-maas-court-of-thorns-and-roses-1",
+    "images": [
+      {
+        "src": "/products/acotar-book-stack-sticker/01.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      },
+      {
+        "src": "/products/acotar-book-stack-sticker/02.webp",
+        "alt": null,
+        "width": 3000,
+        "height": 3000
+      }
+    ]
+  }
+}
