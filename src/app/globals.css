@@ -109,8 +109,24 @@
   stroke-dasharray: 300;
   animation: sketch 6.5s ease-in-out infinite backwards;
 }
+/* draw once and hold: the loading scene sketches itself like a pencil test */
+@keyframes sketch-once {
+  from { stroke-dashoffset: 300; }
+  to { stroke-dashoffset: 0; }
+}
+.sketch-once {
+  stroke-dasharray: 300;
+  animation: sketch-once 1.4s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+@keyframes soft-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.soft-in { animation: soft-in 0.9s ease-out both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .sketch-path { animation: none; stroke-dashoffset: 0; }
+  .sketch-path, .sketch-once { animation: none; stroke-dashoffset: 0; }
+  .soft-in { animation: none; }
   .animate-drift, .animate-drift-slow { animation: none; }
 }
 

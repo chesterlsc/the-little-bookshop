@@ -32,8 +32,8 @@ export function SiteFooter() {
         backgroundRepeat: "repeat-x",
       }} />
       <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.2fr_1fr_1fr_1fr] md:gap-10">
+          <div className="col-span-2 md:col-span-1">
             <LogoFull className="w-40" />
             <p className="story-line mt-4 max-w-[30ch] text-[0.95rem] text-ink-600">
               Tiny shelves for the stories that made you, made slowly and by hand.
@@ -63,7 +63,7 @@ export function SiteFooter() {
               ))}
             </ul>
           </nav>
-          <nav aria-label="About">
+          <nav aria-label="About" className="col-span-2 sm:col-span-1">
             <p className="eyebrow mb-3">The shop</p>
             <ul className="space-y-2">
               {ABOUT_LINKS.map((l) => (

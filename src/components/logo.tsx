@@ -39,9 +39,14 @@ export function LogoHorizontal({ className = "" }: { className?: string }) {
         height={214}
         className="h-7 w-auto transition-transform duration-300 group-hover:-rotate-3"
       />
-      <span className="whitespace-nowrap font-display text-[1.35rem] font-bold leading-none text-ink-800 max-[400px]:text-[1.08rem]">
-        The Little Bookshop
-      </span>
+      <Image
+        src="/brand/logo_wordmark_h.png"
+        alt=""
+        aria-hidden
+        width={1127}
+        height={120}
+        className="h-[1.2rem] w-auto max-[400px]:h-4"
+      />
     </Link>
   );
 }
