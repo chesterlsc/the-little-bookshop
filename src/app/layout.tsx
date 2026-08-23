@@ -7,6 +7,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart-context";
 import { CartDrawer } from "@/components/cart-ui";
 import { AnnouncementBar } from "@/components/announcement-bar";
+import { SplashScreen } from "@/components/splash-screen";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             Skip to content
           </a>
+          <SplashScreen />
           <AnnouncementBar />
           <SiteHeader />
           <main id="main" className="flex-1">

@@ -124,10 +124,19 @@
 }
 .soft-in { animation: soft-in 0.9s ease-out both; }
 
+/* entry splash: hold while the scene draws, then fade the overlay away */
+@keyframes splash-out {
+  to { opacity: 0; visibility: hidden; }
+}
+.splash {
+  animation: splash-out 0.7s ease 2.3s forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sketch-path, .sketch-once { animation: none; stroke-dashoffset: 0; }
   .soft-in { animation: none; }
   .animate-drift, .animate-drift-slow { animation: none; }
+  .splash { display: none; }
 }
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */
