@@ -1,12 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ButtonLink, Eyebrow, ScallopBand, Section, Badge } from "@/components/ui";
-import { FolkDivider, SketchDoodle } from "@/components/illustrations";
+import {
+  AmbientMeadow,
+  BlueprintShelf,
+  FolkFlower,
+  Leaf,
+  ShelfRuleDivider,
+  SketchDoodle,
+  Sparkle,
+  SprigDivider,
+} from "@/components/illustrations";
 import { ThemeShelfDemo } from "@/components/theme-shelf-demo";
 import { ProductCard } from "@/components/product-card";
 import { CATEGORIES, getProduct, type Category } from "@/lib/catalog";
 import { FAQ } from "@/content/site";
-import { IconArrowRight, IconCheck } from "@/components/icons";
+import { IconArrowRight } from "@/components/icons";
 
 const FEATURED = [
   "mini-scalloped-bookshelf",
@@ -19,88 +29,240 @@ const FEATURED = [
   "emily-henry-book-stack-sticker",
 ];
 
+/** The one ambient touch: a soft folk landscape the little shelf sits in front of.
+ *  Closed, tapering shapes only — nothing here ever shows a hard cut edge. */
+function HeroWindow() {
+  return (
+    <svg
+      viewBox="0 0 400 170"
+      preserveAspectRatio="none"
+      aria-hidden
+      role="presentation"
+      className="pointer-events-none absolute bottom-[-13%] left-[-23%] -z-10 h-[44%] w-[146%]"
+    >
+      <circle cx="366" cy="74" r="40" fill="var(--color-sun-200)" opacity="0.6" />
+      <path
+        d="M20 122 C 74 66 152 82 216 94 C 272 104 334 98 386 122 C 320 133 84 133 20 122 Z"
+        fill="var(--color-sky-200)"
+        opacity="0.9"
+      />
+      <g fill="var(--color-sage-400)" stroke="var(--color-sage-600)" strokeWidth="1.6" strokeLinejoin="round">
+        <path d="M348 110 c0-14 7.5-22 7.5-22 s7.5 8 7.5 22 Z" />
+        <path d="M368 114 c0-10 5.5-16 5.5-16 s5.5 6 5.5 16 Z" />
+        <path d="M36 112 c0-12 6.5-19 6.5-19 s6.5 7 6.5 19 Z" />
+      </g>
+      <path
+        d="M4 148 C 64 100 132 124 202 116 C 276 108 338 126 396 148 C 318 160 80 160 4 148 Z"
+        fill="var(--color-sage-200)"
+      />
+      <path
+        d="M4 148 C 64 100 132 124 202 116 C 276 108 338 126 396 148"
+        pathLength={300}
+        className="sketch-once"
+        style={{ animationDelay: "900ms" }}
+        fill="none"
+        stroke="var(--color-sage-600)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+      <circle cx="372" cy="34" r="4" fill="var(--color-gold-400)" opacity="0.6" className="animate-drift" style={{ transformBox: "fill-box", transformOrigin: "center" }} />
+      <circle cx="348" cy="56" r="2.6" fill="var(--color-blush-300)" opacity="0.75" className="animate-drift-slow" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: "1.6s" }} />
+      <circle cx="26" cy="46" r="3" fill="var(--color-gold-400)" opacity="0.45" className="animate-drift-slow" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: "0.8s" }} />
+    </svg>
+  );
+}
+
+/* one pen-stroke per promise; each `d` is a single path so it draws as one gesture */
+const HERO_MARKS = {
+  hand: {
+    ink: "M10 31.5 V25.6 C6.4 24 4.8 20.8 4.8 17.8 V14.4 a1.9 1.9 0 0 1 3.8 0 V18 M8.6 17.6 V8.4 a1.9 1.9 0 0 1 3.8 0 V17 M12.4 17 V6.8 a1.9 1.9 0 0 1 3.8 0 V17 M16.2 17.4 V8.6 a1.9 1.9 0 0 1 3.8 0 v10 C20 25.8 16.6 31.5 10 31.5",
+    accent: "M26.5 6.5 V13 M23.2 9.8 H29.8",
+    accentColor: "var(--color-gold-400)",
+  },
+  six: {
+    ink: "M5 28.4 V14.6 h3 V28.4 M9 28.4 V11 h3 V28.4 M13 28.4 V16.2 h3 V28.4 M17 28.4 V12.4 h3 V28.4 M21 28.4 V15 h3 V28.4 M25 28.4 V13 h3 V28.4",
+    accent: "M3 29.6 H30.4",
+    accentColor: "var(--color-sage-600)",
+  },
+  box: {
+    ink: "M6.5 15.5 h21 v13.5 h-21 Z M4 10 h26 v5.5 H4 Z M17 10 V29",
+    accent: "M17 10 C16.5 6.6 14.4 3.9 11.3 2.8 M14.4 5.8 C12.4 6.4 10.5 5.8 9.3 4.2 M16.4 8.2 C18.4 6 21 5.2 23.3 5.6",
+    accentColor: "var(--color-sage-600)",
+  },
+} as const;
+
+function HeroMark({ kind, delay = 0 }: { kind: keyof typeof HERO_MARKS; delay?: number }) {
+  const m = HERO_MARKS[kind];
+  return (
+    <svg viewBox="0 0 34 34" className="h-8 w-8 shrink-0" aria-hidden role="presentation">
+      <path
+        d={m.ink}
+        pathLength={300}
+        className="sketch-once"
+        style={{ animationDelay: `${delay}ms` }}
+        fill="none"
+        stroke="var(--color-ink-800)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d={m.accent}
+        pathLength={300}
+        className="sketch-once"
+        style={{ animationDelay: `${delay + 260}ms` }}
+        fill="none"
+        stroke={m.accentColor}
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function HomePage() {
   return (
     <div className="pb-nav">
       {/* ─── Hero ─── */}
-      <Section tint="paper" className="scallop-bottom relative overflow-hidden" >
-        <div className="grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:py-20">
+      <Section tint="paper" className="relative overflow-hidden">
+        <div className="grid items-center gap-9 py-8 sm:py-12 lg:grid-cols-[1.04fr_0.96fr] lg:gap-14 lg:py-16">
+          {/* ── copy ── */}
           <div className="animate-fade-up text-center lg:text-left">
-            <Eyebrow className="mb-3">Miniatures for book lovers</Eyebrow>
-            <h1 className="font-display text-[2.35rem] font-bold leading-[1.08] sm:text-5xl lg:text-[3.4rem]">
-              A tiny shelf for the stories that{" "}
-              <span className="relative inline-block text-rose-600">
-                made you
-                <svg viewBox="0 0 120 12" className="absolute -bottom-1 left-0 w-full" aria-hidden>
-                  <path d="M4 8 Q 30 2 60 7 T 116 6" fill="none" stroke="var(--color-sage-500)" strokeWidth="4" strokeLinecap="round" />
+            <p className="eyebrow inline-flex items-center gap-2 rounded-full border-[1.5px] border-dashed border-taupe-300 bg-cream-50/70 py-1.5 pl-2.5 pr-3.5">
+              <svg viewBox="0 0 14 14" className="h-3.5 w-3.5 shrink-0" aria-hidden role="presentation">
+                <FolkFlower x={7} y={7} r={4.2} />
+              </svg>
+              Miniatures for book lovers
+            </p>
+
+            <h1 className="hero-h1 mt-4 text-balance font-display font-bold text-ink-900">
+              Build a little shelf for the{" "}
+              <span className="hero-accent">
+                stories you love.
+                <svg viewBox="0 0 200 16" preserveAspectRatio="none" className="hero-accent-line" aria-hidden role="presentation">
+                  <path
+                    d="M4 8.5 C 34 3.5 66 12.5 100 7.5 S 168 3.5 196 9"
+                    pathLength={300}
+                    className="sketch-once"
+                    style={{ animationDelay: "520ms" }}
+                    fill="none"
+                    stroke="var(--color-sage-600)"
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M9 12.8 C 42 8.2 72 16.4 108 11.4 S 170 8.6 192 13.2"
+                    pathLength={300}
+                    className="sketch-once"
+                    style={{ animationDelay: "740ms" }}
+                    fill="none"
+                    stroke="var(--color-rose-400)"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <svg viewBox="0 0 34 26" className="hero-accent-sprig soft-in" style={{ animationDelay: "1050ms" }} aria-hidden role="presentation">
+                  <Leaf x={2} y={16} s={6} angle={-28} />
+                  <FolkFlower x={24} y={9} r={5} />
+                  <Sparkle x={31} y={22} s={3} />
                 </svg>
               </span>
-              .
             </h1>
-            <p className="mx-auto mt-4 max-w-[46ch] font-sans text-[1.05rem] leading-relaxed text-ink-600 lg:mx-0">
-              Handmade mini bookshelves in ten colors, and miniature books in sets
-              of six. Ready-made series, or your own titles, covers and all.
+
+            <p className="story-line mx-auto mt-4 max-w-[34ch] text-pretty text-[1.15rem] leading-relaxed text-ink-600 sm:text-[1.22rem] lg:mx-0">
+              Your books. Your shelf. Your little library.
             </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
-              <ButtonLink href="/build" className="!px-7 !py-3.5 text-lg">
+
+            <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+              <ButtonLink href="/build" className="btn-lg group">
                 Build your little shelf
+                <IconArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
               </ButtonLink>
-              <ButtonLink href="/shop" variant="quiet" className="!px-6 !py-3.5 text-lg">
+              <ButtonLink href="/shop" variant="quiet" className="btn-sketch btn-lg">
                 Shop the collection
               </ButtonLink>
             </div>
-            <ul className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-2 font-sans text-[0.82rem] font-bold text-ink-600 lg:justify-start">
-              {["Handmade to order", "Books come in sets of six", "Arrives in an illustrated box"].map((t) => (
-                <li key={t} className="inline-flex items-center gap-1.5">
-                  <IconCheck className="h-4 w-4 text-sage-600" /> {t}
+
+            {/* the three promises, as one hand-cut note strip */}
+            <ul className="clay-sm mx-auto mt-7 grid max-w-md grid-cols-3 divide-x-[1.5px] divide-dashed divide-taupe-300 lg:mx-0">
+              {([
+                ["hand", "Handmade to order"],
+                ["six", "Books come in sets of six"],
+                ["box", "Arrives in an illustrated box"],
+              ] as const).map(([kind, label], i) => (
+                <li key={kind} className="flex flex-col items-center gap-1.5 px-2 py-3.5 text-center sm:px-3">
+                  <HeroMark kind={kind} delay={280 + i * 190} />
+                  <span className="font-sans text-[0.7rem] font-bold leading-tight text-ink-800 sm:text-[0.78rem]">
+                    {label}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="animate-fade-up relative mx-auto w-full max-w-md lg:max-w-none" style={{ animationDelay: "120ms" }}>
-            <div className="stitch rotate-[-1.5deg] overflow-hidden bg-cream-50 p-2 shadow-[0_24px_30px_rgba(94,73,52,0.18)]">
+
+          {/* ── the little window ── */}
+          <div
+            className="animate-fade-up relative isolate mx-auto w-full max-w-[20rem] sm:max-w-[24rem] lg:max-w-none"
+            style={{ animationDelay: "120ms" }}
+          >
+            <HeroWindow />
+            {/* the pencil under-drawing, still showing under the finished thing */}
+            <div aria-hidden className="arch absolute inset-0 rotate-[3.5deg] border-2 border-dashed border-taupe-300" />
+            <div className="arch relative rotate-[-1.5deg] border-[1.5px] border-taupe-300 bg-cream-50 p-2.5 shadow-[0_26px_36px_-18px_rgba(94,73,52,0.42)]">
               <Image
                 src="/products/custom-mini-book-set/08.webp"
                 alt="A blush arched mini bookshelf filled with handmade miniature books and a tiny plant"
                 width={1200}
-                height={1200}
+                height={799}
                 priority
-                sizes="(min-width:1024px) 46vw, 92vw"
-                className="aspect-square w-full rounded-2xl object-cover"
+                sizes="(min-width:1024px) 44vw, 90vw"
+                className="arch aspect-[5/6] w-full object-cover object-[56%_50%]"
               />
             </div>
-            <div className="stitch absolute -bottom-6 -left-4 w-32 rotate-[5deg] overflow-hidden bg-cream-50 p-1.5 shadow-[0_14px_20px_rgba(94,73,52,0.2)] sm:w-40 lg:-left-8">
-              <Image
-                src="/products/custom-mini-book-set/01.webp"
-                alt="Three custom miniature books held in a hand"
-                width={480}
-                height={480}
-                sizes="160px"
-                className="aspect-square w-full rounded-xl object-cover"
-              />
-            </div>
+            <figure className="absolute -bottom-9 -left-3 m-0 w-[7.4rem] -rotate-6 sm:w-[8.6rem] lg:-left-11 lg:w-[9.4rem]">
+              <div className="clay-sm relative bg-cream-50 p-1.5 pb-0 shadow-[0_16px_22px_-10px_rgba(94,73,52,0.45)]">
+                <span
+                  aria-hidden
+                  className="absolute -top-2.5 left-1/2 h-5 w-14 -translate-x-1/2 -rotate-6 rounded-[2px] bg-blush-200/85 shadow-[inset_0_0_0_1px_rgba(214,138,120,0.35)]"
+                />
+                <Image
+                  src="/products/custom-mini-book-set/01.webp"
+                  alt="Three custom miniature books held in a hand"
+                  width={480}
+                  height={480}
+                  sizes="160px"
+                  className="aspect-square w-full rounded-[0.7rem] object-cover"
+                />
+                <figcaption className="story-line py-1.5 text-center text-[0.68rem] leading-tight text-ink-600">
+                  actual size
+                </figcaption>
+              </div>
+            </figure>
           </div>
         </div>
       </Section>
+      <ScallopBand from="paper" to="cream" />
 
       {/* ─── Categories ─── */}
-      <Section className="pt-12">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      <Section className="pb-14 pt-12 lg:pb-20 lg:pt-16">
+        <div className="enter mb-6 flex items-end justify-between gap-4">
           <div>
             <Eyebrow className="mb-2">Around the shop</Eyebrow>
             <h2 className="text-2xl font-bold sm:text-3xl">Little things, by aisle</h2>
           </div>
-          <Link href="/shop" className="hidden items-center gap-1 font-display font-semibold text-sage-700 hover:underline sm:inline-flex">
+          <Link href="/shop" className="btn-link hidden items-center gap-1 sm:inline-flex">
             Shop all <IconArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5">
+        <div className="enter-stagger no-scrollbar -mx-4 -mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 pt-5 sm:mx-0 sm:mt-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-2 sm:pt-0 lg:grid-cols-5">
           {(Object.entries(CATEGORIES) as [Category, (typeof CATEGORIES)[Category]][]).map(([slug, cat], i) => (
             <Link
               key={slug}
               href={`/shop/${slug}`}
-              className="clay clay-hover group animate-fade-up relative flex min-w-[46%] snap-start flex-col text-center sm:min-w-0"
-              style={{ animationDelay: `${i * 90}ms` }}
+              className="clay clay-hover group relative flex min-w-[46%] snap-start flex-col text-center sm:min-w-0"
+              style={{ "--i": i } as CSSProperties}
             >
               {/* a little drawing that sketches itself, like a shop sign being painted */}
               <span className="absolute -right-2 -top-2 z-10 flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-taupe-200/80 bg-cream-50 shadow-clay-sm transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
@@ -125,10 +287,11 @@ export default function HomePage() {
       </Section>
 
       {/* ─── Build your little shelf ─── */}
-      <div className="mt-14">
-        <ScallopBand from="sage" />
-        <Section tint="sage" className="pb-12 pt-8">
-          <div className="mx-auto mb-8 max-w-2xl text-center">
+      <ScallopBand from="sage" to="cream" rise />
+      <Section tint="sage" className="relative overflow-hidden pb-12 pt-10 lg:pb-16 lg:pt-14">
+        <AmbientMeadow />
+        <div className="relative">
+          <div className="enter mx-auto mb-8 max-w-2xl text-center">
             <Eyebrow className="mb-2">The signature</Eyebrow>
             <h2 className="text-3xl font-bold sm:text-4xl">Build your little shelf</h2>
             <p className="story-line mt-3 text-lg text-ink-600">
@@ -136,13 +299,13 @@ export default function HomePage() {
             </p>
           </div>
           <ThemeShelfDemo />
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+          <div className="enter-stagger mt-10 grid gap-3 sm:grid-cols-3">
             {[
               ["1", "Choose a shelf", "Six styles, ten studio colors, two sizes."],
               ["2", "Pick six stories", "A ready-made set, or your own six titles."],
               ["3", "Make it yours", "Add tiny extras, a theme, and a note."],
-            ].map(([n, title, body]) => (
-              <div key={n} className="clay flex items-start gap-3 p-4">
+            ].map(([n, title, body], i) => (
+              <div key={n} className="clay flex items-start gap-3 p-4" style={{ "--i": i } as CSSProperties}>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush-200 font-display text-lg font-bold text-rose-700 shadow-[inset_0_1.5px_0_rgba(255,255,255,0.7)]">
                   {n}
                 </span>
@@ -153,67 +316,65 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <div className="mt-8 text-center">
-            <ButtonLink href="/build" className="!px-8 !py-3.5 text-lg">
+          <div className="enter mt-8 text-center">
+            <ButtonLink href="/build" className="btn-lg">
               Start building <IconArrowRight className="h-5 w-5" />
             </ButtonLink>
           </div>
-        </Section>
-        <div className="rotate-180">
-          <ScallopBand from="sage" />
         </div>
-      </div>
+      </Section>
+      <ScallopBand from="sage" to="cream100" />
 
-      {/* ─── Set of six ─── */}
-      <Section className="pt-14">
-        <div className="clay overflow-hidden">
-          <div className="grid items-center gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr_auto]">
-            <Image
-              src="/products/custom-mini-book-set/03.webp"
-              alt="A miniature book held up in front of the full-size edition it was made from"
-              width={640}
-              height={640}
-              sizes="200px"
-              className="mx-auto aspect-square w-40 rounded-2xl object-cover"
-            />
-            <div className="text-center lg:text-left">
-              <h2 className="text-2xl font-bold sm:text-3xl">Miniature books come in sets of six</h2>
-              <p className="mx-auto mt-2 max-w-[58ch] font-sans text-[0.98rem] leading-relaxed text-ink-600 lg:mx-0">
-                Six is what fits the backing card, and about as many favorites as
-                anyone can name without hedging. Pick a ready-made series, or send us
-                your own six titles. We source each cover, scale it down, print it on
-                matte cardstock and mount it by hand.
-              </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2 lg:justify-start">
-                <Badge tone="rose">Always six</Badge>
-                <Badge tone="sage">About 1 × 1.4 in each</Badge>
-                <Badge tone="taupe">Made to order</Badge>
-              </div>
+      {/* ─── Set of six ─── the section IS the panel now, no .clay card */}
+      <Section tint="cream100" className="pb-12 pt-10 lg:pb-16 lg:pt-14">
+        <div className="enter grid items-center gap-6 lg:grid-cols-[auto_1fr_auto]">
+          <Image
+            src="/products/custom-mini-book-set/03.webp"
+            alt="A miniature book held up in front of the full-size edition it was made from"
+            width={640}
+            height={640}
+            sizes="200px"
+            className="mx-auto aspect-square w-40 rounded-2xl object-cover"
+          />
+          <div className="text-center lg:text-left">
+            <h2 className="text-2xl font-bold sm:text-3xl">Miniature books come in sets of six</h2>
+            <p className="mx-auto mt-2 max-w-[58ch] font-sans text-[0.98rem] leading-relaxed text-ink-600 lg:mx-0">
+              Six is what fits the backing card, and about as many favorites as
+              anyone can name without hedging. Pick a ready-made series, or send us
+              your own six titles. We source each cover, scale it down, print it on
+              matte cardstock and mount it by hand.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2 lg:justify-start">
+              <Badge tone="rose">Always six</Badge>
+              <Badge tone="sage">About 1 × 1.4 in each</Badge>
+              <Badge tone="taupe">Made to order</Badge>
             </div>
-            <div className="flex flex-row justify-center gap-2 lg:flex-col">
-              <ButtonLink href="/products/custom-mini-book-set" variant="blush">
-                Customize a set
-              </ButtonLink>
-              <ButtonLink href="/shop/mini-books" variant="quiet">
-                Ready-made sets
-              </ButtonLink>
-            </div>
+          </div>
+          <div className="flex flex-row justify-center gap-2 lg:flex-col">
+            <ButtonLink href="/products/custom-mini-book-set" variant="blush">
+              Customize a set
+            </ButtonLink>
+            <ButtonLink href="/shop/mini-books" variant="quiet">
+              Ready-made sets
+            </ButtonLink>
           </div>
         </div>
       </Section>
+      <ScallopBand from="cream100" to="cream" />
 
       {/* ─── Featured ─── */}
-      <Section className="pt-14">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      <Section className="pb-14 pt-12 lg:pb-20 lg:pt-16">
+        <ShelfRuleDivider className="mx-auto mb-10 h-11 w-full max-w-2xl px-4 opacity-80" />
+        <div className="enter mb-6 flex items-end justify-between gap-4">
           <div>
             <Eyebrow className="mb-2">Fresh from the studio</Eyebrow>
             <h2 className="text-2xl font-bold sm:text-3xl">Little things to start with</h2>
           </div>
-          <Link href="/shop" className="hidden items-center gap-1 font-display font-semibold text-sage-700 hover:underline sm:inline-flex">
+          <Link href="/shop" className="btn-link hidden items-center gap-1 sm:inline-flex">
             See everything <IconArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="enter grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {FEATURED.map((slug, i) => {
             const p = getProduct(slug);
             return p ? <ProductCard key={slug} product={p} eager={i < 2} /> : null;
@@ -227,70 +388,66 @@ export default function HomePage() {
       </Section>
 
       {/* ─── Packaging & story ─── */}
-      <div className="mt-14">
-        <ScallopBand from="blush" />
-        <Section tint="blush" className="pb-14 pt-8">
-          <div className="grid items-center gap-8 lg:grid-cols-2">
-            <div className="order-2 grid grid-cols-2 gap-3 lg:order-1">
-              <div className="stitch rotate-[-1.5deg] overflow-hidden bg-cream-50 p-2">
-                <Image
-                  src="/brand/pack_box_angle.png"
-                  alt="Illustrated Little Bookshop gift box, seen from an angle"
-                  width={444}
-                  height={505}
-                  className="h-full w-full rounded-2xl object-cover"
-                />
-              </div>
-              <div className="stitch mt-6 rotate-[1.5deg] overflow-hidden bg-cream-50 p-2">
-                <Image
-                  src="/brand/photo_box.jpg"
-                  alt="The real Little Bookshop box, photographed in the studio"
-                  width={1430}
-                  height={1120}
-                  className="h-full w-full rounded-2xl object-cover"
-                />
-              </div>
-              <p className="col-span-2 text-center font-sans text-xs text-ink-600">
-                Left: the illustrated box design. Right: the real thing, fresh from the studio.
-              </p>
+      <ScallopBand from="blush" to="cream" rise />
+      <Section tint="blush" className="pb-12 pt-10 lg:pb-16 lg:pt-14">
+        <div className="enter grid items-center gap-8 lg:grid-cols-2">
+          <div className="order-2 grid grid-cols-2 gap-3 lg:order-1">
+            <div className="stitch rotate-[-1.5deg] overflow-hidden bg-cream-50 p-2">
+              <Image
+                src="/brand/pack_box_angle.png"
+                alt="Illustrated Little Bookshop gift box, seen from an angle"
+                width={444}
+                height={505}
+                className="h-full w-full rounded-2xl object-cover"
+              />
             </div>
-            <div className="order-1 text-center lg:order-2 lg:text-left">
-              <Eyebrow className="mb-2">Unboxing, but tiny</Eyebrow>
-              <h2 className="text-3xl font-bold">Wrapped like it matters</h2>
-              <p className="mt-3 font-sans text-[0.98rem] leading-relaxed text-ink-600">
-                Shelf-and-book bundles arrive in our illustrated bookshelf box. Book
-                sets come tucked into a six-slot backing card, one window per story.
-                Keychains hang from their own illustrated card.
-              </p>
-              <p className="story-line mt-4 text-lg text-ink-600">
-                Which makes it a dangerously easy gift.
-              </p>
-              <div className="mt-5 flex justify-center gap-2 lg:justify-start">
-                <ButtonLink href="/about" variant="quiet">
-                  Our story
-                </ButtonLink>
-                <ButtonLink href="/shop/mini-books" variant="blush">
-                  Gift a set of six
-                </ButtonLink>
-              </div>
+            <div className="stitch mt-6 rotate-[1.5deg] overflow-hidden bg-cream-50 p-2">
+              <Image
+                src="/brand/photo_box.jpg"
+                alt="The real Little Bookshop box, photographed in the studio"
+                width={1430}
+                height={1120}
+                className="h-full w-full rounded-2xl object-cover"
+              />
+            </div>
+            <p className="col-span-2 text-center font-sans text-xs text-ink-600">
+              Left: the illustrated box design. Right: the real thing, fresh from the studio.
+            </p>
+          </div>
+          <div className="order-1 text-center lg:order-2 lg:text-left">
+            <Eyebrow className="mb-2">Unboxing, but tiny</Eyebrow>
+            <h2 className="text-3xl font-bold">Wrapped like it matters</h2>
+            <p className="mt-3 font-sans text-[0.98rem] leading-relaxed text-ink-600">
+              Shelf-and-book bundles arrive in our illustrated bookshelf box. Book
+              sets come tucked into a six-slot backing card, one window per story.
+              Keychains hang from their own illustrated card.
+            </p>
+            <p className="story-line mt-4 text-lg text-ink-600">
+              Which makes it a dangerously easy gift.
+            </p>
+            <div className="mt-5 flex justify-center gap-2 lg:justify-start">
+              <ButtonLink href="/about" variant="quiet">
+                Our story
+              </ButtonLink>
+              <ButtonLink href="/shop/mini-books" variant="blush">
+                Gift a set of six
+              </ButtonLink>
             </div>
           </div>
-        </Section>
-        <div className="rotate-180">
-          <ScallopBand from="blush" />
         </div>
-      </div>
+      </Section>
+      <ScallopBand from="blush" to="cream" />
 
-      {/* ─── FAQ teaser ─── */}
-      <Section className="pt-14">
+      {/* ─── FAQ teaser ─── last section: extra bottom air before the footer seam */}
+      <Section className="pb-16 pt-12 lg:pb-24 lg:pt-16">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-6 text-center">
+          <div className="enter mb-6 text-center">
             <Eyebrow className="mb-2">Small questions</Eyebrow>
             <h2 className="text-2xl font-bold sm:text-3xl">Asked often, answered gladly</h2>
           </div>
-          <div className="space-y-3">
-            {FAQ.slice(0, 3).map((item) => (
-              <details key={item.q} className="clay group px-5 py-4 open:pb-5">
+          <div className="enter-stagger space-y-3">
+            {FAQ.slice(0, 3).map((item, i) => (
+              <details key={item.q} className="clay group px-5 py-4 open:pb-5" style={{ "--i": i } as CSSProperties}>
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-[1.02rem] font-semibold [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span className="text-xl text-taupe-500 transition-transform duration-300 group-open:rotate-45" aria-hidden>
@@ -302,11 +459,12 @@ export default function HomePage() {
             ))}
           </div>
           <div className="mt-5 text-center">
-            <Link href="/faq" className="inline-flex items-center gap-1 font-display font-semibold text-sage-700 hover:underline">
+            <Link href="/faq" className="btn-link inline-flex items-center gap-1">
               All questions <IconArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <FolkDivider className="mx-auto mt-10 h-6 w-56 opacity-80" />
+          <BlueprintShelf className="mx-auto mt-12 w-full max-w-sm" />
+          <SprigDivider className="mx-auto mt-10 h-9 w-72 opacity-90" />
         </div>
       </Section>
     </div>

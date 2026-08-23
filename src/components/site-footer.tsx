@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoFull } from "./logo";
+import { ScallopBand } from "./ui";
 import { FolkDivider } from "./illustrations";
 import { CATEGORIES } from "@/lib/catalog";
 import { SITE } from "@/content/site";
@@ -25,12 +26,8 @@ const ABOUT_LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 bg-cream-100 pb-nav">
-      <div aria-hidden className="h-[22px] w-full" style={{
-        backgroundImage: "radial-gradient(circle at 50% 100%, var(--color-cream-50) 21px, transparent 22px)",
-        backgroundSize: "44px 44px",
-        backgroundRepeat: "repeat-x",
-      }} />
+    <footer className="bg-cream-100 pb-nav">
+      <ScallopBand from="cream" to="cream100" />
       <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.2fr_1fr_1fr_1fr] md:gap-10">
           <div className="col-span-2 md:col-span-1">

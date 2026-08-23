@@ -15,7 +15,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   return (
-    <header className="glass sticky top-0 z-50 border-b-0">
+    <header className="glass site-header sticky top-0 z-50">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <LogoHorizontal />
         <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">

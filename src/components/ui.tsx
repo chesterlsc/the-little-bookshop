@@ -1,13 +1,15 @@
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { formatMoney, formatRange, type Cents } from "@/lib/money";
+import { IconCheck, IconMinus, IconPlus } from "./icons";
 
-type ButtonVariant = "primary" | "blush" | "quiet";
+type ButtonVariant = "primary" | "blush" | "quiet" | "link";
 
 const variantClass: Record<ButtonVariant, string> = {
   primary: "btn btn-primary",
   blush: "btn btn-blush",
   quiet: "btn btn-quiet",
+  link: "btn-link", // inline text, deliberately not a .btn box
 };
 
 export function ButtonLink({
@@ -36,19 +38,7 @@ export function Badge({
   tone?: "sage" | "blush" | "taupe" | "rose";
   className?: string;
 }) {
-  const tones = {
-    sage: "bg-sage-200 text-sage-800 border-sage-400",
-    blush: "bg-blush-100 text-rose-700 border-blush-300",
-    taupe: "bg-taupe-100 text-brown-700 border-taupe-300",
-    rose: "bg-rose-300/40 text-rose-700 border-rose-300",
-  } as const;
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-sans text-[0.72rem] font-bold tracking-wide ${tones[tone]} ${className}`}
-    >
-      {children}
-    </span>
-  );
+  return <span className={`tag tag-${tone} ${className}`}>{children}</span>;
 }
 
 export function Price({
@@ -77,10 +67,11 @@ export function Section({
   children: ReactNode;
   className?: string;
   id?: string;
-  tint?: "cream" | "sage" | "blush" | "paper";
+  tint?: "cream" | "cream100" | "sage" | "blush" | "paper";
 }) {
   const tints = {
     cream: "bg-cream-50",
+    cream100: "bg-cream-100",
     sage: "bg-sage-100",
     blush: "bg-blush-100/60",
     paper: "bg-paper",
@@ -92,28 +83,39 @@ export function Section({
   );
 }
 
-/** A scalloped color band that closes a tinted section (echoes the shelf edge). */
+type BandTone = "cream" | "cream100" | "paper" | "sage" | "blush";
+
+const BAND: Record<BandTone, string> = {
+  cream: "var(--color-cream-50)",
+  cream100: "var(--color-cream-100)",
+  paper: "var(--color-paper)",
+  sage: "var(--color-sage-100)",
+  blush: "color-mix(in srgb, var(--color-blush-100) 60%, var(--color-cream-50))",
+};
+
+/**
+ * A hand-drawn scalloped seam between two bands, with an ink line along the
+ * curve that draws itself as it scrolls into view.
+ *
+ * `from` is the toothed colour, `to` is the flat colour behind the teeth.
+ * `rise` flips the teeth upward — use it when `from` is the band BELOW.
+ */
 export function ScallopBand({
   from = "sage",
+  to = "cream",
+  rise = false,
+  className = "",
 }: {
-  from?: "sage" | "blush" | "paper" | "cream100";
+  from?: BandTone;
+  to?: BandTone;
+  rise?: boolean;
+  className?: string;
 }) {
-  const colors = {
-    sage: "var(--color-sage-100)",
-    blush: "color-mix(in srgb, var(--color-blush-100) 60%, var(--color-cream-50))",
-    paper: "var(--color-paper)",
-    cream100: "var(--color-cream-100)",
-  } as const;
   return (
     <div
       aria-hidden
-      className="h-[22px] w-full"
-      style={{
-        backgroundImage: `radial-gradient(circle at 50% 0%, ${colors[from]} 21px, transparent 22px)`,
-        backgroundSize: "44px 44px",
-        backgroundPosition: "0 0",
-        backgroundRepeat: "repeat-x",
-      }}
+      className={`drawn-edge ${rise ? "drawn-edge--rise" : ""} ${className}`}
+      style={{ "--edge-fill": BAND[from], "--edge-under": BAND[to] } as CSSProperties}
     />
   );
 }
@@ -127,35 +129,67 @@ export function QuantityStepper({
   onChange,
   label = "Quantity",
   small = false,
+  min = 1,
+  max = 50, // cart-context clamps here too
 }: {
   value: number;
   onChange: (next: number) => void;
   label?: string;
   small?: boolean;
+  min?: number;
+  max?: number;
 }) {
-  const size = small ? "h-8 w-8 text-base" : "h-10 w-10 text-lg";
+  const glyph = small ? "h-4 w-4" : "h-5 w-5";
   return (
-    <div className="clay-press inline-flex items-center gap-1 rounded-full px-1.5 py-1" role="group" aria-label={label}>
+    <div className={`stepper ${small ? "stepper-sm" : ""}`} role="group" aria-label={label}>
       <button
         type="button"
-        className={`${size} rounded-full font-display font-bold text-ink-600 transition hover:bg-cream-50 hover:text-ink-800`}
+        className="stepper-key"
         onClick={() => onChange(value - 1)}
+        disabled={value <= min}
         aria-label={`Decrease ${label.toLowerCase()}`}
       >
-        −
+        <IconMinus className={glyph} />
       </button>
-      <span className={`min-w-7 text-center font-display font-semibold ${small ? "text-sm" : ""}`} aria-live="polite">
+      <span className="stepper-val" aria-live="polite" aria-atomic="true">
         {value}
       </span>
       <button
         type="button"
-        className={`${size} rounded-full font-display font-bold text-ink-600 transition hover:bg-cream-50 hover:text-ink-800`}
+        className="stepper-key"
         onClick={() => onChange(value + 1)}
+        disabled={value >= max}
         aria-label={`Increase ${label.toLowerCase()}`}
       >
-        +
+        <IconPlus className={glyph} />
       </button>
     </div>
+  );
+}
+
+/** The reassurance line. `inline` for the hero, `stack` for product + checkout. */
+export function CheckRow({
+  items,
+  layout = "inline",
+  className = "",
+}: {
+  items: readonly string[];
+  layout?: "inline" | "stack";
+  className?: string;
+}) {
+  return (
+    <ul
+      className={`check-row flex ${
+        layout === "inline" ? "flex-wrap gap-x-5 gap-y-2" : "flex-col gap-2"
+      } font-sans text-[0.86rem] font-bold text-ink-600 ${className}`}
+    >
+      {items.map((t) => (
+        <li key={t} className="flex items-start gap-2">
+          <IconCheck className="mt-[0.05em] h-[1.15em] w-[1.15em] shrink-0 text-sage-700" />
+          <span>{t}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

@@ -20,7 +20,7 @@ for (const width of widths) {
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(base + path, { waitUntil: "networkidle", timeout: 60000 });
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(Number(process.env.SHOT_WAIT ?? 700));
   await page.screenshot({ path: `shots/${name}-${width}.png`, fullPage });
   if (errors.length) console.log(`[${width}] console errors:\n` + errors.slice(0, 10).join("\n"));
   await page.close();

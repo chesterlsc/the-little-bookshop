@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="pb-nav">
-      <Section tint="paper" className="scallop-bottom">
+      <Section tint="paper">
         <div className="mx-auto max-w-2xl py-12 text-center">
           <LogoFull className="mx-auto w-52" priority />
           <Eyebrow className="mt-6">Our story</Eyebrow>
@@ -76,10 +76,10 @@ export default function AboutPage() {
           </div>
         </div>
       </Section>
+      <ScallopBand from="paper" to="cream" />
 
-      <div className="mt-12">
-        <ScallopBand from="sage" />
-        <Section tint="sage" className="py-10">
+      <ScallopBand from="sage" to="cream" rise />
+      <Section tint="sage" className="py-10 lg:py-14">
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { photo: "/products/custom-mini-book-set/04.webp", title: "Made to order", body: "Every set is printed, mounted and packed after you order it. Nothing sits in a warehouse." },
@@ -108,11 +108,8 @@ export default function AboutPage() {
               Or just come browse the aisles. The bell above the door is imaginary, but it rings.
             </p>
           </div>
-        </Section>
-        <div className="rotate-180">
-          <ScallopBand from="sage" />
-        </div>
-      </div>
+      </Section>
+      <ScallopBand from="sage" to="cream" />
     </div>
   );
 }

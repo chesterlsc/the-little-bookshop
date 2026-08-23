@@ -111,8 +111,49 @@ export function IconTrash(props: ComponentProps<"svg">) {
 
 export function IconCheck(props: ComponentProps<"svg">) {
   return (
-    <Base {...props}>
-      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    <Base strokeWidth="2.3" {...props}>
+      <path
+        className="tick-main"
+        pathLength={300}
+        d="M3.9 12.4 C5.6 13.1 7.3 14.7 8.7 17.2 C9.05 17.85 9.75 17.8 10.05 17.1 C12.2 12.1 15.6 7.9 20 5.2"
+      />
+      {/* the pen touching down twice */}
+      <path pathLength={300} strokeWidth="1.6" opacity="0.42" d="M5.5 11.3 C6.8 12.1 8 13.5 9 15.5" />
+    </Base>
+  );
+}
+
+/** For the big "it worked" moments — the circle overshoots its own start. */
+export function IconCheckCircle(props: ComponentProps<"svg">) {
+  return (
+    <Base strokeWidth="1.8" {...props}>
+      <path
+        className="tick-main"
+        pathLength={300}
+        d="M12.2 2.3 C17.5 2.2 21.7 6.5 21.5 11.9 C21.3 17.2 17.1 21.4 11.8 21.3 C6.5 21.2 2.4 16.9 2.6 11.6 C2.8 6.6 6.8 2.7 11.7 2.6"
+      />
+      <path
+        pathLength={300}
+        strokeWidth="2.3"
+        d="M7 12.4 C8.3 12.9 9.4 14 10.2 15.7 C10.45 16.2 10.95 16.15 11.15 15.65 C12.55 12.3 14.7 9.6 17.3 7.8"
+      />
+    </Base>
+  );
+}
+
+export function IconMinus(props: ComponentProps<"svg">) {
+  return (
+    <Base strokeWidth="2.3" {...props}>
+      <path d="M6.2 12.4 C10 11.7 14 11.7 17.8 12.1" />
+    </Base>
+  );
+}
+
+export function IconPlus(props: ComponentProps<"svg">) {
+  return (
+    <Base strokeWidth="2.3" {...props}>
+      <path d="M6.2 12.4 C10 11.7 14 11.7 17.8 12.1" />
+      <path d="M11.9 6.2 C11.3 10 11.3 14 11.8 17.8" />
     </Base>
   );
 }

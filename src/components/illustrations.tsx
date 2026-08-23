@@ -97,6 +97,335 @@ export function FolkDivider({ className = "" }: { className?: string }) {
   );
 }
 
+/* ─── Motif system ─────────────────────────────────────────────────────────
+   Hand-drawn dividers, an ambient backdrop and a self-drawing wireframe.
+   Shares one drawing language with the pieces above. */
+
+/** Stagger index for the .draw-in / .draw-in-soft scroll treatment. */
+const step = (i: number) => ({ "--i": i }) as CSSProperties;
+
+const BUD = "#ddb1ac";
+
+const SPRIG_LEFT: [number, number][] = [
+  [52, 27],
+  [80, 25.6],
+  [106, 22],
+];
+const SPRIG_RIGHT: [number, number][] = [
+  [268, 27],
+  [240, 25.6],
+  [214, 22],
+];
+
+/**
+ * Section divider: two leafy stems running into the shop's own open book.
+ * The stems draw themselves as the divider scrolls into view.
+ */
+export function SprigDivider({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 320 40" className={`draw-scope ${className}`} aria-hidden="true" role="presentation">
+      <path
+        className="draw-in"
+        style={step(0)}
+        pathLength={300}
+        d="M8 27 C 58 27 96 23 130 14"
+        fill="none"
+        stroke={SAGE_D}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        className="draw-in"
+        style={step(0)}
+        pathLength={300}
+        d="M312 27 C 262 27 224 23 190 14"
+        fill="none"
+        stroke={SAGE_D}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <g className="draw-in-soft" style={step(2)}>
+        {SPRIG_LEFT.map(([x, y]) => (
+          <g key={x}>
+            <Leaf x={x} y={y} s={7.5} angle={-40} />
+            <Leaf x={x} y={y} s={7} angle={166} />
+          </g>
+        ))}
+        {SPRIG_RIGHT.map(([x, y]) => (
+          <g key={x}>
+            <Leaf x={x} y={y} s={7.5} angle={-140} />
+            <Leaf x={x} y={y} s={7} angle={14} />
+          </g>
+        ))}
+      </g>
+      {/* the shop's open book, at the crown */}
+      <g className="draw-in-soft" style={step(3)}>
+        <path d="M160 12 C 152 7 141 6 133 8 L133 22 C 141 20 152 21 160 26 Z" fill={CREAM} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M160 12 C 168 7 179 6 187 8 L187 22 C 179 20 168 21 160 26 Z" fill={CREAM} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M133 22 L130 27 C 141 25 152 26 160 30 C 168 26 179 25 190 27 L187 22" fill={ROSE} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M160 12 V26" stroke={INK} strokeWidth="1.6" />
+        <path d="M139 12 h13 M139 16 h13 M168 12 h13 M168 16 h13" stroke={INK} strokeWidth="1.2" opacity="0.5" />
+      </g>
+      <g className="draw-in-soft" style={step(4)}>
+        <FolkFlower x={28} y={25} r={6.5} />
+        <FolkFlower x={292} y={25} r={6.5} />
+        <FolkFlower x={118} y={13} r={4.2} fill={BUD} />
+        <FolkFlower x={202} y={13} r={4.2} fill={BUD} />
+        <Sparkle x={160} y={3} s={4} />
+      </g>
+    </svg>
+  );
+}
+
+const SHELF_SPINES: [number, number, number][] = [
+  [104, 8, 20],
+  [113, 6, 26],
+  [120, 9, 17],
+  [130, 7, 23],
+  [138, 6, 19],
+];
+
+/** Section divider: a shelf plank with a few tiny books standing on it. */
+export function ShelfRuleDivider({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 320 48" className={`draw-scope ${className}`} aria-hidden="true" role="presentation">
+      <path className="draw-in" style={step(0)} pathLength={300} d="M4 34 H316" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" />
+      <path className="draw-in" style={step(1)} pathLength={300} d="M10 34 h300 v6 h-300 z" fill="none" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+      <path className="draw-in" style={step(1)} pathLength={300} d="M26 40 v5 M304 40 v5" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
+      <g className="draw-in-soft" style={step(3)}>
+        {SHELF_SPINES.map(([x, w, h]) => (
+          <path key={x} d={`M${x} 34 v${-h} h${w} v${h}`} fill="none" stroke={INK} strokeWidth="1.9" strokeLinejoin="round" />
+        ))}
+        <path d="M146 34 l4 -20 7 2 -4 18 z" fill="none" stroke={INK} strokeWidth="1.9" strokeLinejoin="round" />
+        <path d="M166 34 h26 v-6 h-26 z M169 28 h20 v-6 h-20 z" fill="none" stroke={INK} strokeWidth="1.9" strokeLinejoin="round" />
+      </g>
+      <g className="draw-in-soft" style={step(4)}>
+        <path d="M200 34 h14 l-2 -9 h-10 z" fill="none" stroke={INK} strokeWidth="1.9" strokeLinejoin="round" />
+        <path d="M207 25 c-4 -5 -9 -6 -11 -3 M207 25 c0 -8 -2 -9 0 -13 M207 25 c4 -5 9 -6 11 -3" fill="none" stroke={SAGE_D} strokeWidth="1.9" strokeLinecap="round" />
+      </g>
+      <g className="draw-in-soft" style={step(5)}>
+        <Sparkle x={90} y={14} s={3.5} />
+        <Sparkle x={228} y={16} s={3} />
+      </g>
+    </svg>
+  );
+}
+
+/** The cat's linework, in a 70 × 58 box, shared by ShelfCat and BlueprintShelf. */
+function CatPaths() {
+  return (
+    <>
+      <path d="M49 52 C 60 53 66 47 64 39 C 63 34 58 32 55 35" fill="none" stroke={INK} strokeWidth="4" strokeLinecap="round" />
+      <path
+        d="M20 52 C 14 52 12 46 13 40 C 14 32 16 26 20 22 C 17 16 17 10 19 5 L25 14 C 30 11 36 11 41 14 L47 5 C 49 10 49 16 46 22 C 51 30 52 42 49 52 Z"
+        fill={TAUPE}
+        stroke={INK}
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+      <path d="M25 22 q3 3 6 0 M35 22 q3 3 6 0" fill="none" stroke={INK} strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  );
+}
+
+/** A little grey cat, asleep sitting up. Perches on any edge. */
+export function ShelfCat({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="8 0 62 58" className={className} aria-hidden="true" role="presentation">
+      <CatPaths />
+    </svg>
+  );
+}
+
+const MEADOW_BUSHES: [number, number, number][] = [
+  [300, 262, 22],
+  [352, 258, 15],
+  [742, 240, 26],
+  [790, 242, 16],
+  [1010, 262, 18],
+];
+/* x, y, scale, strokeWidth — width precomputed so nothing is derived at render */
+const MEADOW_BIRDS: [number, number, number, number][] = [
+  [210, 96, 1, 3],
+  [268, 72, 0.72, 4.2],
+  [330, 110, 0.55, 5.5],
+  [900, 88, 0.9, 3.3],
+  [962, 116, 0.62, 4.8],
+];
+const MEADOW_MOTES: [number, number, number][] = [
+  [120, 150, 3],
+  [420, 120, 4],
+  [640, 180, 5],
+  [860, 140, 3],
+  [1080, 190, 4],
+  [520, 60, 5],
+  [760, 90, 3],
+];
+const MEADOW_LEAVES: [number, number, number, number][] = [
+  [160, 210, 12, -25],
+  [560, 168, 11, 200],
+  [980, 224, 13, -15],
+  [700, 132, 10, 150],
+];
+
+/**
+ * A quiet backdrop: two hills, a few gull marks, drifting leaves, dust in the
+ * light. Contains no ink on purpose — nothing in here is dark enough to eat the
+ * contrast of text sitting on top. Needs a `relative overflow-hidden` parent.
+ */
+export function AmbientMeadow({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 1200 400"
+      preserveAspectRatio="xMidYMax slice"
+      className={`pointer-events-none absolute inset-0 h-full w-full opacity-70 ${className}`}
+      aria-hidden="true"
+      role="presentation"
+    >
+      <path
+        d="M0 300 C 150 250 260 236 380 262 C 520 292 590 246 720 240 C 860 234 980 268 1080 258 C 1140 252 1180 262 1200 268 V400 H0 Z"
+        fill="var(--color-sage-200)"
+        opacity="0.75"
+      />
+      <path
+        d="M0 344 C 120 320 220 334 330 348 C 470 366 560 334 700 336 C 830 338 940 360 1050 352 C 1130 346 1170 354 1200 360 V400 H0 Z"
+        fill="var(--color-sage-300)"
+        opacity="0.7"
+      />
+      {MEADOW_BUSHES.map(([x, y, r]) => (
+        <g key={x}>
+          <path d={`M${x - r} ${y + 6} a ${r} ${r * 0.9} 0 0 1 ${r * 2} 0 Z`} fill="var(--color-sage-400)" opacity="0.8" />
+          <path d={`M${x} ${y + 6} v10`} stroke={SAGE_D} strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+        </g>
+      ))}
+      <g className="animate-drift-slow" style={drift}>
+        {MEADOW_BIRDS.map(([x, y, k, w]) => (
+          <path
+            key={x}
+            transform={`translate(${x} ${y}) scale(${k})`}
+            d="M0 0 c9 -9 17 -9 23 0 c6 -9 14 -9 23 0"
+            fill="none"
+            stroke={SAGE_D}
+            strokeWidth={w}
+            strokeLinecap="round"
+            opacity="0.5"
+          />
+        ))}
+      </g>
+      {MEADOW_MOTES.map(([x, y, r]) => (
+        <circle key={x} cx={x} cy={y} r={r} fill="var(--color-gold-400)" opacity="0.45" />
+      ))}
+      {MEADOW_LEAVES.map(([x, y, s, a], i) => (
+        <g key={x} className="animate-drift" style={{ ...drift, animationDelay: `${i * 1300}ms` }}>
+          <path
+            transform={`translate(${x} ${y}) rotate(${a})`}
+            d={`M0 0 Q ${s * 0.9} ${-s * 0.7} ${s * 1.8} 0 Q ${s * 0.9} ${s * 0.7} 0 0 Z`}
+            fill="var(--color-sage-300)"
+            stroke={SAGE_D}
+            strokeWidth={s * 0.14}
+            strokeLinejoin="round"
+            opacity="0.75"
+          />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* base-y, then [x, width, height] for each spine standing on it */
+const BP_TIERS: [number, [number, number, number][]][] = [
+  [124, [[84, 9, 30], [95, 7, 36], [104, 10, 26], [116, 8, 33], [126, 6, 29], [172, 8, 28], [182, 10, 33], [194, 7, 25], [203, 9, 30], [214, 6, 27], [264, 8, 26], [274, 6, 30]]],
+  [182, [[84, 8, 28], [94, 10, 34], [106, 7, 25], [115, 9, 31], [126, 7, 27], [204, 9, 29], [215, 7, 33], [225, 10, 26], [237, 8, 31], [247, 6, 27], [255, 9, 30], [266, 7, 25], [275, 5, 29]]],
+  [238, [[84, 7, 26], [93, 9, 32], [104, 8, 28], [114, 6, 24], [122, 10, 30], [134, 7, 27], [222, 8, 26], [232, 10, 31], [244, 6, 24], [252, 9, 29], [263, 7, 33], [272, 8, 26]]],
+];
+
+const BP_INK = { fill: "none", stroke: INK, strokeWidth: 2.4, strokeLinejoin: "round", strokeLinecap: "round" } as const;
+const BP_DIM = { fill: "none", stroke: "#9d8668", strokeWidth: 1.8, strokeLinecap: "round" } as const;
+const BP_LEAD = { fill: "none", stroke: "#b7a183", strokeWidth: 1.6, strokeDasharray: "4 5" } as const;
+const BP_LABEL: CSSProperties = { fontFamily: "var(--font-sans)" };
+
+/**
+ * The shop's product as an architect's wireframe: the shelf, its books and its
+ * dimensions, drawing themselves line by line as the block scrolls into view.
+ * The cat is the only filled thing in it.
+ */
+export function BlueprintShelf({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 400 314"
+      className={`draw-scope ${className}`}
+      role="img"
+      aria-label="A line drawing of a little bookshelf: three shelves of tiny books, with a cat asleep on top"
+    >
+      <path className="draw-in" style={step(0)} pathLength={300} d="M60 250 V58 Q60 40 78 40 H282 Q300 40 300 58 V250 Z" {...BP_INK} />
+      <path className="draw-in" style={step(1)} pathLength={300} d="M74 238 V66 H286 V238 Z" {...BP_INK} />
+      <path className="draw-in" style={step(2)} pathLength={300} d="M74 124 H286" {...BP_INK} />
+      <path className="draw-in" style={step(2)} pathLength={300} d="M74 182 H286" {...BP_INK} />
+      <path className="draw-in" style={step(3)} pathLength={300} d="M86 250 V264 H102 V250 M258 250 V264 H274 V250" {...BP_INK} />
+
+      {BP_TIERS.map(([base, spines], t) => (
+        <g key={base} className="draw-in-soft" style={step(4 + t)}>
+          {spines.map(([x, w, h]) => (
+            <path key={x} d={`M${x} ${base} v${-h} h${w} v${h}`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+          ))}
+        </g>
+      ))}
+
+      {/* covers facing out, flat stacks */}
+      <path className="draw-in" style={step(7)} pathLength={300} d="M138 124 V84 H166 V124 Z" {...BP_INK} />
+      <path className="draw-in" style={step(7)} pathLength={300} d="M142 90 H162 M142 118 H162" {...BP_INK} />
+      <path className="draw-in" style={step(7)} pathLength={300} d="M146 238 V198 H174 V238 Z" {...BP_INK} />
+      <path className="draw-in" style={step(7)} pathLength={300} d="M150 204 H170" {...BP_INK} />
+      <path className="draw-in" style={step(7)} pathLength={300} d="M226 124 h34 v-9 h-34 z M230 115 h26 v-9 h-26 z" {...BP_INK} />
+      <path className="draw-in" style={step(7)} pathLength={300} d="M182 238 h34 v-9 h-34 z M186 229 h26 v-9 h-26 z" {...BP_INK} />
+
+      {/* one very small plant */}
+      <path className="draw-in" style={step(8)} pathLength={300} d="M176 182 h20 l-3 -13 h-14 z" {...BP_INK} />
+      <path className="draw-in" style={step(8)} pathLength={300} d="M186 169 c-6 -8 -13 -9 -16 -5 M186 169 c0 -12 -3 -14 0 -19 M186 169 c6 -8 13 -9 16 -5" {...BP_INK} />
+
+      {/* the architect's part */}
+      <path className="draw-in" style={step(9)} pathLength={300} d="M38 44 V246 M32 44 H44 M32 246 H44" {...BP_DIM} />
+      <path className="draw-in" style={step(9)} pathLength={300} d="M38 44 l-4 8 M38 44 l4 8 M38 246 l-4 -8 M38 246 l4 -8" {...BP_DIM} />
+      <path className="draw-in-soft" style={step(9)} d="M44 44 H58 M44 246 H58" {...BP_LEAD} />
+      <path
+        className="draw-in"
+        style={step(10)}
+        pathLength={300}
+        d="M60 282 H300 M60 276 V288 M300 276 V288 M60 282 l8 -4 M60 282 l8 4 M300 282 l-8 -4 M300 282 l-8 4"
+        {...BP_DIM}
+      />
+      <text
+        className="draw-in-soft"
+        style={{ ...step(11), ...BP_LABEL }}
+        transform="translate(24 145) rotate(-90)"
+        textAnchor="middle"
+        fontSize="12.5"
+        fontWeight={700}
+        fill="var(--color-ink-600)"
+      >
+        three shelves
+      </text>
+      <text
+        className="draw-in-soft"
+        style={{ ...step(11), ...BP_LABEL }}
+        x="180"
+        y="306"
+        textAnchor="middle"
+        fontSize="12.5"
+        fontWeight={700}
+        fill="var(--color-ink-600)"
+      >
+        your little shelf
+      </text>
+
+      {/* the only filled thing in the drawing */}
+      <g className="draw-in-soft" style={step(11)} transform="translate(226 8) scale(0.62)">
+        <CatPaths />
+      </g>
+    </svg>
+  );
+}
+
 /* ─── The signature: a little shelf that fills with your titles ───────────── */
 
 /** Which silhouette the sketch draws; mirrors the six shelf products. */
