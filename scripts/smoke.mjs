@@ -27,7 +27,7 @@ await page.goto(BASE + "/", { waitUntil: "networkidle" });
 check("home renders", (await page.textContent("body")).includes("Build your little shelf"));
 
 await page.goto(BASE + "/products/mini-scalloped-bookshelf", { waitUntil: "networkidle" });
-await page.getByRole("radio", { name: "Peachy Pink" }).click();
+await page.getByRole("radio", { name: "Blush Pink" }).click();
 await page.getByRole("button", { name: /Add to basket/ }).click();
 await page.waitForTimeout(500);
 check("add to basket opens drawer", (await page.textContent("body")).includes("Your basket"));
@@ -72,7 +72,7 @@ await page.goto(`${BASE}/order/${orderNumber}`, { waitUntil: "networkidle" });
 check("order page shows paid state", (await page.textContent("body")).includes("Paid & confirmed"));
 
 /* ── API-level edge cases ───────────────────────────────────────────────── */
-const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plants", variantId: "default", qty: 1 }] };
+const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plant", variantId: "blush-pink", qty: 1 }] };
 const customer = { fullName: "A", email: "a@example.com", phone: "1", address1: "x", address2: "", city: "y", region: "", postalCode: "z", country: "PH", deliveryNotes: "", orderNotes: "" };
 const mk = async () => (await (await fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart, customer }) })).json()).orderNumber;
 const outcome = (n, o) => fetch(`${BASE}/api/dev/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderNumber: n, outcome: o }) });

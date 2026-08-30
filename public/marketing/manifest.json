@@ -1,0 +1,517 @@
+{
+  "arched-shelf": [
+    {
+      "src": "/marketing/arched-shelf/01.webp",
+      "from": "Arched Shelf/IMG_9047",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/02.webp",
+      "from": "Arched Shelf/IMG_9049",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/03.webp",
+      "from": "Arched Shelf/IMG_9050",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/04.webp",
+      "from": "Arched Shelf/IMG_9051",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/05.webp",
+      "from": "Arched Shelf/IMG_9060",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/06.webp",
+      "from": "Arched Shelf/IMG_9062",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/07.webp",
+      "from": "Arched Shelf/IMG_9063",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/08.webp",
+      "from": "Arched Shelf/IMG_9064",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/09.webp",
+      "from": "Arched Shelf/IMG_9065",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/10.webp",
+      "from": "Arched Shelf/IMG_9066",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/11.webp",
+      "from": "Arched Shelf/IMG_9127",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/12.webp",
+      "from": "Arched Shelf/IMG_9219",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/13.webp",
+      "from": "Arched Shelf/IMG_9220",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/14.webp",
+      "from": "Arched Shelf/IMG_9221",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/arched-shelf/15.webp",
+      "from": "Arched Shelf/IMG_9223",
+      "w": 1400,
+      "h": 1050,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/arched-shelf/16.webp",
+      "from": "Arched Shelf/IMG_9230",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "classic-shelf": [
+    {
+      "src": "/marketing/classic-shelf/01.webp",
+      "from": "Classic Shelf/IMG_8948",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/02.webp",
+      "from": "Classic Shelf/IMG_8949",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/03.webp",
+      "from": "Classic Shelf/IMG_8951",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/04.webp",
+      "from": "Classic Shelf/IMG_8952",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/05.webp",
+      "from": "Classic Shelf/IMG_8953",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/06.webp",
+      "from": "Classic Shelf/IMG_8954",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/07.webp",
+      "from": "Classic Shelf/IMG_8955",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/08.webp",
+      "from": "Classic Shelf/IMG_9054",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/09.webp",
+      "from": "Classic Shelf/IMG_9055",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/10.webp",
+      "from": "Classic Shelf/IMG_9056",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/11.webp",
+      "from": "Classic Shelf/IMG_9057",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/12.webp",
+      "from": "Classic Shelf/IMG_9117",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/13.webp",
+      "from": "Classic Shelf/IMG_9224",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/14.webp",
+      "from": "Classic Shelf/IMG_9225",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/15.webp",
+      "from": "Classic Shelf/IMG_9226",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/classic-shelf/16.webp",
+      "from": "Classic Shelf/IMG_9227",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "scalloped-shelf": [
+    {
+      "src": "/marketing/scalloped-shelf/01.webp",
+      "from": "Scalloped Shelf/IMG_8974",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/02.webp",
+      "from": "Scalloped Shelf/IMG_9052",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/03.webp",
+      "from": "Scalloped Shelf/IMG_9053",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/04.webp",
+      "from": "Scalloped Shelf/IMG_9068",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/05.webp",
+      "from": "Scalloped Shelf/IMG_9069",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/06.webp",
+      "from": "Scalloped Shelf/IMG_9070",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/07.webp",
+      "from": "Scalloped Shelf/IMG_9119",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/08.webp",
+      "from": "Scalloped Shelf/IMG_9228",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/scalloped-shelf/09.webp",
+      "from": "Scalloped Shelf/IMG_9229",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "mini-books": [
+    {
+      "src": "/marketing/mini-books/01.webp",
+      "from": "Mini Books/IMG_9236",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/mini-books/02.webp",
+      "from": "Mini Books/IMG_9237",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/mini-books/03.webp",
+      "from": "Mini Books/IMG_9355",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/mini-books/04.webp",
+      "from": "Mini Books/IMG_9374",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/mini-books/05.webp",
+      "from": "Mini Books/IMG_9377",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "keychain": [
+    {
+      "src": "/marketing/keychain/01.webp",
+      "from": "Mini Keychain/IMG_9074",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/02.webp",
+      "from": "Mini Keychain/IMG_9075",
+      "w": 1120,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/03.webp",
+      "from": "Mini Keychain/IMG_9084",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/04.webp",
+      "from": "Mini Keychain/IMG_9086",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/05.webp",
+      "from": "Mini Keychain/IMG_9088",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/06.webp",
+      "from": "Mini Keychain/IMG_9090",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/keychain/07.webp",
+      "from": "Mini Keychain/IMG_9116",
+      "w": 1120,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "accessories": [
+    {
+      "src": "/marketing/accessories/01.webp",
+      "from": "Accessories/IMG_9372",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "packaging": [
+    {
+      "src": "/marketing/packaging/01.webp",
+      "from": "Packaging/1aab1faa995535bc67c6ecb778f410bb",
+      "w": 1055,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/02.webp",
+      "from": "Packaging/46d4f4acedfee7ba44c8f7c595a9bd97",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/03.webp",
+      "from": "Packaging/IMG_8798",
+      "w": 1400,
+      "h": 1232,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/packaging/04.webp",
+      "from": "Packaging/IMG_8806",
+      "w": 446,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/05.webp",
+      "from": "Packaging/IMG_8876",
+      "w": 446,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/06.webp",
+      "from": "Packaging/IMG_8881",
+      "w": 1200,
+      "h": 900,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/packaging/07.webp",
+      "from": "Packaging/IMG_8882",
+      "w": 1400,
+      "h": 1050,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/packaging/08.webp",
+      "from": "Packaging/IMG_8960_SnapseedCopy",
+      "w": 788,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/09.webp",
+      "from": "Packaging/IMG_8964",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/10.webp",
+      "from": "Packaging/IMG_8965",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/packaging/11.webp",
+      "from": "Packaging/c5961c1101deb268ee7d784ebc64794b",
+      "w": 1055,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "multiple-shelves": [
+    {
+      "src": "/marketing/multiple-shelves/01.webp",
+      "from": "Multiple Shelves/IMG_8986",
+      "w": 1400,
+      "h": 700,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/multiple-shelves/02.webp",
+      "from": "Multiple Shelves/IMG_9058",
+      "w": 1400,
+      "h": 700,
+      "orient": "landscape"
+    },
+    {
+      "src": "/marketing/multiple-shelves/03.webp",
+      "from": "Multiple Shelves/IMG_9061",
+      "w": 1400,
+      "h": 788,
+      "orient": "landscape"
+    }
+  ],
+  "social": [
+    {
+      "src": "/marketing/social/01.webp",
+      "from": "Social Media Posting/IMG_9237",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/social/02.webp",
+      "from": "Social Media Posting/IMG_9248",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/social/03.webp",
+      "from": "Social Media Posting/IMG_9252",
+      "w": 1400,
+      "h": 1050,
+      "orient": "landscape"
+    }
+  ]
+}

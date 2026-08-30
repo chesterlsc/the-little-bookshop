@@ -35,10 +35,10 @@ export default function AboutPage() {
         <div className="mx-auto mt-10 grid max-w-3xl items-center gap-6 sm:grid-cols-2">
           <div className="stitch rotate-[-1.2deg] bg-cream-50 p-2">
             <Image
-              src="/brand/photo_shelf.jpg"
-              alt="A pink mini scalloped bookshelf, freshly made in the studio"
-              width={730}
-              height={1070}
+              src="/marketing/packaging/08.webp"
+              alt="Miniature paperbacks on a working desk, one propped open, a stack topped with Happy Place"
+              width={1050}
+              height={1400}
               className="w-full rounded-2xl object-cover"
             />
           </div>

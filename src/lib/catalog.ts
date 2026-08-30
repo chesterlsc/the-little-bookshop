@@ -6,10 +6,9 @@ import type { Cents } from "./money";
  * Product data lives here, separate from the interface, so names, prices,
  * options, availability and copy can be edited without touching components.
  *
- * Prices marked priceStatus: "placeholder" are editable estimates derived from
- * the existing shop's per-book pricing and MUST be confirmed by the business
- * before launch (see README → "Business information still needed").
- * Everything else mirrors the live catalog at thestickershop.shop.
+ * Prices, sizes, colors and materials come from the shop's own order form
+ * (docs.google.com/forms/.../1FAIpQLSe_DA-jeyOb0tD5gdAdit8dVEv2AlIdLa89exjCIvpYHVkrsw)
+ * and are authoritative. Update them there first, then here.
  */
 
 export type Category =
@@ -27,25 +26,25 @@ export const CATEGORIES: Record<
     name: "Mini Bookshelves",
     short: "Bookshelves",
     blurb:
-      "Six silhouettes, ten colors, two sizes. Built to hold sixty-odd tiny books and one very small plant.",
+      "Three designs, nine colors, two sizes. Classic, Arched or Scalloped, printed to order.",
     art: "shelf-scalloped",
-    photo: "/products/mini-scalloped-bookshelf/01.webp",
+    photo: "/marketing/arched-shelf/15.webp",
   },
   "mini-books": {
     name: "Miniature Books",
     short: "Mini Books",
     blurb:
-      "Real covers, shrunk to an inch. Ready-made series sets, or six titles you choose yourself.",
+      "Your titles, made tiny. Sets of six, printed in PLA and assembled by hand.",
     art: "books-set",
-    photo: "/products/custom-mini-book-set/01.webp",
+    photo: "/marketing/mini-books/05.webp",
   },
   keychains: {
     name: "Keychains",
     short: "Keychains",
     blurb:
-      "One favorite book, on your keys. Custom mini-book charms and clear acrylic bookish shapes.",
+      "One favorite book, on your keys. Tell us the title and we will make it small.",
     art: "keychain-book",
-    photo: "/products/mini-book-keychain/01.webp",
+    photo: "/marketing/social/03.webp",
   },
   stickers: {
     name: "Stickers",
@@ -59,9 +58,9 @@ export const CATEGORIES: Record<
     name: "Shelf Accessories",
     short: "Accessories",
     blurb:
-      "Plants, rugs, bean bags and a one-inch fish tank. The set dressing that turns a shelf into a scene.",
+      "A plant, a ladder, and little word blocks that label a shelf. Fifty pesos each.",
     art: "plant",
-    photo: "/products/mini-bean-bag-chair/06.webp",
+    photo: "/marketing/accessories/01.webp",
   },
 };
 
@@ -100,6 +99,22 @@ function gallery(slug: string, ...entries: string[]): ProductImage[] {
     const [n, alt, kind] = entry.split("|");
     return {
       src: `/products/${slug}/${n}.webp`,
+      alt,
+      kind: (kind as ProductImage["kind"]) ?? "photo",
+    };
+  });
+}
+
+/**
+ * The shop's own marketing photography, in public/marketing/<folder>/NN.webp.
+ * Entries are `"<folder>/<NN>|<alt>"`, optionally `"|chart"` for the rendered
+ * colour line-ups (which carry burned-in colour labels).
+ */
+function shots(...entries: string[]): ProductImage[] {
+  return entries.map((entry) => {
+    const [file, alt, kind] = entry.split("|");
+    return {
+      src: `/marketing/${file}.webp`,
       alt,
       kind: (kind as ProductImage["kind"]) ?? "photo",
     };
@@ -157,16 +172,15 @@ export interface Product {
 /* ─── Shared option data ───────────────────────────────────────────────────── */
 
 export const SHELF_COLORS: { name: string; hex: string }[] = [
-  { name: "Pistachio Green", hex: "#b5c9a3" },
+  { name: "Blush Pink", hex: "#f2b5a0" },
+  { name: "Bone White", hex: "#f5f2ec" },
+  { name: "Choco Brown", hex: "#5d4636" },
+  { name: "Lilac", hex: "#b9a8d1" },
+  { name: "Sage Green", hex: "#b5c9a3" },
   { name: "Camel Tan", hex: "#c9a876" },
-  { name: "Peachy Pink", hex: "#f2b5a0" },
-  { name: "Hot Pink", hex: "#e56b9f" },
-  { name: "Bright White", hex: "#f5f2ec" },
-  { name: "Midnight Black", hex: "#3a3a3c" },
+  { name: "Banana Yellow", hex: "#efd98a" },
   { name: "Navy Blue", hex: "#33456b" },
-  { name: "Espresso Brown", hex: "#5d4636" },
-  { name: "Lilac Purple", hex: "#b9a8d1" },
-  { name: "Sky Blue", hex: "#a9c6e0" },
+  { name: "Midnight Black", hex: "#3a3a3c" },
 ];
 
 export const COVER_STYLES = ["Front, Back & Spine", "Double-Sided, No Spine"];
@@ -189,18 +203,18 @@ const vid = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 /* ─── Builders ─────────────────────────────────────────────────────────────── */
 
 function shelfVariants(
-  prices: { regular: Cents; miniature: Cents },
+  prices: { regular: Cents; mini: Cents },
   extra?: { axis: OptionAxis; delta: Record<string, Cents> },
 ): { options: OptionAxis[]; variants: Variant[] } {
   const options: OptionAxis[] = [
-    { name: "Size", values: ["Regular", "Miniature"] },
+    { name: "Size", values: ["Regular", "Mini"] },
     { name: "Color", values: SHELF_COLORS.map((c) => c.name) },
   ];
   if (extra) options.push(extra.axis);
   const variants: Variant[] = [];
   for (const size of options[0].values) {
     for (const color of options[1].values) {
-      const base = size === "Regular" ? prices.regular : prices.miniature;
+      const base = size === "Regular" ? prices.regular : prices.mini;
       if (extra) {
         for (const v of extra.axis.values) {
           variants.push({
@@ -271,25 +285,11 @@ const SHELF_CARE =
 const SHELF_SHIPPING =
   "Wrapped carefully and shipped in protective packaging. Made-to-order production and dispatch times are listed at checkout and on the Shipping page.";
 const BOOK_MATERIALS =
-  "Each mini book is printed on matte cardstock and mounted by hand on a foamboard core. The books are decorative and do not open.";
+  "3D printed in PLA plastic, waterproof, and assembled by hand. The books are decorative and do not open.";
 const BOOK_SIZE = "Each book measures about 1 × 1.4 in and 0.25 in thick.";
+const MADE_BY_HAND = "PLA plastic · waterproof · manually assembled";
 const SET_PACKAGING =
   "Arrives on our illustrated six-slot backing card, each tiny story tucked into its own window.";
-
-/**
- * Every shelf is photographed to the same eight-shot script, so one line here
- * gives each of them a consistent gallery: hero, scale, dimensions, colors.
- */
-const shelfGallery = (slug: string, shelf: string, hero: string) =>
-  gallery(
-    slug,
-    `01|${hero}`,
-    `07|Regular and Miniature ${shelf} side by side, both filled with mini books`,
-    `08|Measured diagram of the Regular and Miniature ${shelf}|chart`,
-    `03|The ten shelf colors, from pistachio green to sky blue|chart`,
-    `06|Regular next to Miniature, empty, so you can judge the difference`,
-    `04|The full color range lined up on a wood floor`,
-  );
 
 /* ─── Catalog ──────────────────────────────────────────────────────────────── */
 
@@ -299,23 +299,26 @@ export const PRODUCTS: Product[] = [
     slug: "mini-scalloped-bookshelf",
     name: "Mini Scalloped Bookshelf",
     category: "bookshelves",
-    blurb: "Our best-loved shelf, with a soft scalloped edge on every tier.",
+    blurb: "A scalloped trim along every shelf edge. The sweetest of the three.",
     description: [
       "This is the one people photograph. Each tier ends in a row of gentle scallops, so even an empty shelf looks like it belongs in a storybook.",
       "Regular holds about 68 mini books. Miniature is sized for a bedside table or the gap beside your monitor. Both keep spines out and proud, with room on top for a plant.",
     ],
     art: "shelf-scalloped",
-    images: shelfGallery(
-      "mini-scalloped-bookshelf",
-      "scalloped shelf",
-      "Peachy pink Mini Scalloped Bookshelf, styled with a full collection of mini books",
+    images: shots(
+      "scalloped-shelf/09|A Blush Pink Scalloped bookshelf filled with tiny hardcovers and wooden FAVES letters, standing beside full-size paperbacks",
+      "scalloped-shelf/03|An empty Blush Pink Scalloped bookshelf centred on a dark wood table, showing the scalloped trim on every shelf edge",
+      "scalloped-shelf/08|Close view of the Scalloped shelf packed with tiny romance paperbacks and wooden FAVES letters",
+      "scalloped-shelf/02|The Mini and Regular Scalloped bookshelves side by side and empty, showing the height difference",
+      "scalloped-shelf/04|The Mini and Regular Scalloped bookshelves in Sage Green",
+      "multiple-shelves/03|The Scalloped shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 36900, miniature: 35900 }),
+    ...shelfVariants({ regular: 76500, mini: 64500 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
-        "Regular: 8.5 in H × 5 in W × 1.5 in D, holds about 68 mini books",
-        "Miniature: 6.5 in H × 3.9 in W × 1.5 in D, holds about 39 mini books",
+        "Regular: 9 in H × 5 in W × 1.5 in D",
+        "Mini: 7 in H × 4 in W × 1.5 in D",
       ],
       materials: SHELF_MATERIALS,
       care: SHELF_CARE,
@@ -324,161 +327,72 @@ export const PRODUCTS: Product[] = [
       packaging:
         "Ships in our illustrated Little Bookshop box when bundled with a book set.",
     },
-    related: ["custom-mini-book-set", "mini-plants", "mini-basic-bookshelf"],
+    related: ["custom-mini-book-set", "mini-classic-bookshelf"],
   }),
   make({
-    slug: "mini-basic-bookshelf",
-    name: "Mini Basic Bookshelf",
+    slug: "mini-classic-bookshelf",
+    name: "Mini Classic Bookshelf",
     category: "bookshelves",
-    blurb: "Clean lines and square corners. The shelf that lets your spines do the talking.",
+    blurb: "Fluted columns and an arched back panel. Our tallest, most furniture-like shelf.",
     description: [
-      "Straight edges, four even tiers, nothing competing for attention. That is why it suits any room, from cottage clutter to a minimalist desk.",
-      "Best for loud collections. A rainbow of mini spines needs a plain frame, and this one gives them 66 slots.",
+      "The Classic is the one that looks like real furniture. Fluted columns down each side, a moulded cornice on top, and an arched back panel behind the upper shelf — the kind of bookcase you would find in a study with a good chair in it.",
+      "Three deep shelves, tall enough for a wooden LITERATURE topper or a small brass globe alongside the books. In Choco Brown it reads as an antique; in Bone White it reads as a nursery.",
     ],
     art: "shelf-basic",
-    images: shelfGallery(
-      "mini-basic-bookshelf",
-      "basic shelf",
-      "Bright white Mini Basic Bookshelf, four clean tiers of mini books",
+    images: shots(
+      "classic-shelf/14|A choco brown Mini Classic bookshelf styled with tiny novels, a plant and white LITERATURE letters, standing next to a full-size hardback",
+      "classic-shelf/12|The Classic shelf filled with miniature books, a plant and a brass globe, lit by window light beside a candle and an open book",
+      "classic-shelf/16|The Classic shelf photographed at an angle with its little ladder leaning against the side",
+      "classic-shelf/10|An empty choco brown Classic bookshelf on a wood table, showing its fluted columns and arched back panel",
+      "classic-shelf/13|The Classic shelf standing beside four full-size hardcovers that dwarf it",
+      "multiple-shelves/01|The Classic shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 36500, miniature: 35500 }),
+    ...shelfVariants({ regular: 85000, mini: 73000 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
-        "Regular: 8.5 in H × 5 in W × 1.5 in D, holds about 66 mini books",
-        "Miniature: 6.4 in H × 3.9 in W × 1.5 in D, holds about 39 mini books",
+        "Regular: 9 in H × 5 in W × 1.5 in D",
+        "Mini: 7 in H × 4 in W × 1.5 in D",
       ],
       materials: SHELF_MATERIALS,
       care: SHELF_CARE,
       shipping: SHELF_SHIPPING,
       included: ["One mini bookshelf in your chosen size and color"],
     },
-    related: ["mini-scalloped-bookshelf", "custom-mini-book-set", "mini-rug"],
-  }),
-  make({
-    slug: "mini-fancy-bookshelf",
-    name: "Mini Fancy Bookshelf",
-    category: "bookshelves",
-    blurb: "Crown moulding and trim, for shelves that dress for dinner.",
-    description: [
-      "The classic shape with a cornice on top and detail down the sides. The difference between a bookcase and a bookcase in a period drama.",
-      "Our tallest slim shelf at nine inches, so it fits a windowsill or the narrow strip beside a monitor. 54 mini books in the Regular, 36 in the Miniature.",
-    ],
-    art: "shelf-fancy",
-    images: shelfGallery(
-      "mini-fancy-bookshelf",
-      "fancy shelf",
-      "Cream Mini Fancy Bookshelf with trimmed cornice, filled with mini books",
-    ),
-    ...shelfVariants({ regular: 36900, miniature: 35900 }),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: [
-        "Regular: 9 in H × 4.25 in W × 1.5 in D, holds about 54 mini books",
-        "Miniature: 6.5 in H × 4.25 in W × 1.5 in D, holds about 36 mini books",
-      ],
-      materials: SHELF_MATERIALS,
-      care: SHELF_CARE,
-      shipping: SHELF_SHIPPING,
-      included: ["One mini bookshelf in your chosen size and color"],
-    },
-    related: ["mini-medieval-bookshelf", "mini-fish-tank", "custom-mini-book-set"],
-  }),
-  make({
-    slug: "mini-cube-bookshelf",
-    name: "Mini Cube Bookshelf",
-    category: "bookshelves",
-    blurb: "Square cubbies for the sorters. Everything in its own little room.",
-    description: [
-      "A tiny take on the cube organizer. Four square compartments, which turns out to be the most satisfying way to shelve a collection: one series per cubby, or one mood, or one color.",
-      "Square cubbies waste less space than open tiers, so the Miniature still holds 42 mini books. It is also the only shelf where a mini plant gets a whole room to itself.",
-    ],
-    art: "shelf-cube",
-    images: shelfGallery(
-      "mini-cube-bookshelf",
-      "cube shelf",
-      "White Mini Cube Bookshelf with four square cubbies of sorted mini books",
-    ),
-    ...shelfVariants({ regular: 36500, miniature: 35500 }),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: [
-        "Regular: holds about 56 mini books",
-        "Miniature: holds about 42 mini books",
-      ],
-      materials: SHELF_MATERIALS,
-      care: SHELF_CARE,
-      shipping: SHELF_SHIPPING,
-      included: ["One mini bookshelf in your chosen size and color"],
-    },
-    related: ["mini-basic-bookshelf", "mini-plants", "mini-bean-bag-chair"],
+    related: ["mini-scalloped-bookshelf", "custom-mini-book-set"],
   }),
   make({
     slug: "mini-arched-bookshelf",
     name: "Mini Arched Bookshelf",
     category: "bookshelves",
-    blurb: "A soft arch on top, like a doorway into your collection. Our most-gifted shelf.",
+    blurb: "A soft dome on top, like a little doorway into your collection.",
     description: [
       "The curve is borrowed from old shop windows and garden gates. An arch reads as an entrance, so the books inside stop looking stored and start looking kept.",
       "It is also our most affordable, and the one we point first-timers toward. A Miniature arch plus one set of six is the whole idea of this shop.",
     ],
     art: "shelf-arched",
-    images: shelfGallery(
-      "mini-arched-bookshelf",
-      "arched shelf",
-      "Blush Mini Arched Bookshelf, arch framing a full row of mini books",
+    images: shots(
+      "arched-shelf/13|A Bone White Arched bookshelf packed with miniature books, a TBR topper and a mini plant, next to a full-size novel",
+      "arched-shelf/11|A hand holding a Bone White Arched bookshelf filled with tiny paperbacks, a wooden TBR topper and a miniature plant",
+      "arched-shelf/15|Full-size novels, a styled Arched shelf and an empty one lined up together on a wood table",
+      "arched-shelf/04|A single empty Bone White Arched bookshelf on a dark wood table, showing its three shelves and domed top",
+      "arched-shelf/02|The Regular and Mini Arched bookshelves standing empty side by side, showing the height difference",
+      "arched-shelf/16|A Mini Arched shelf with nine miniature books displayed cover-out beneath a row of wooden stars",
+      "multiple-shelves/02|The Arched shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 35900, miniature: 34900 }),
+    ...shelfVariants({ regular: 76500, mini: 64500 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
-        "Regular: holds about 62 mini books",
-        "Miniature: holds about 35 mini books",
+        "Regular: 9 in H × 5 in W × 1.5 in D",
+        "Mini: 7 in H × 4 in W × 1.5 in D",
       ],
       materials: SHELF_MATERIALS,
       care: SHELF_CARE,
       shipping: SHELF_SHIPPING,
       included: ["One mini bookshelf in your chosen size and color"],
     },
-    related: ["mini-scalloped-bookshelf", "custom-mini-book-set", "mini-rug"],
-  }),
-  make({
-    slug: "mini-medieval-bookshelf",
-    name: "Mini Medieval Bookshelf",
-    category: "bookshelves",
-    blurb: "Gothic arches and an optional leaning ladder. A very small, very serious library.",
-    description: [
-      "For readers whose dream library has stone arches and weather outside. Pointed arch openings, a heavy cornice, and the proportions of somewhere you would need a key to get into.",
-      "Add the ladder and it leans against the frame exactly as it should. Sixty mini books in the Regular, our largest shelf.",
-    ],
-    art: "shelf-medieval",
-    images: shelfGallery(
-      "mini-medieval-bookshelf",
-      "medieval shelf",
-      "Espresso brown Mini Medieval Bookshelf with its matching leaning ladder",
-    ),
-    ...shelfVariants(
-      { regular: 36900, miniature: 35900 },
-      {
-        axis: { name: "Ladder", values: ["Ladder Included", "No Ladder"] },
-        delta: { "Ladder Included": 1000, "No Ladder": 0 },
-      },
-    ),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: [
-        "Regular: 9.3 in H × 5.4 in W × 1.7 in D, holds about 60 mini books",
-        "Miniature: 7.2 in H × 4.2 in W × 1.7 in D, holds about 33 mini books",
-      ],
-      materials: SHELF_MATERIALS,
-      care: SHELF_CARE,
-      shipping: SHELF_SHIPPING,
-      included: [
-        "One mini bookshelf in your chosen size and color",
-        "Matching mini ladder, when selected",
-      ],
-    },
-    related: ["mini-fancy-bookshelf", "custom-mini-book-set", "mini-plants"],
+    related: ["mini-scalloped-bookshelf", "custom-mini-book-set"],
   }),
 
   /* ─── Miniature books (always sets of six) ─── */
@@ -494,16 +408,12 @@ export const PRODUCTS: Product[] = [
       `${BOOK_SIZE} ${BOOK_MATERIALS}`,
     ],
     art: "books-custom",
-    images: gallery(
-      "custom-mini-book-set",
-      "01|Three custom mini books held in a hand, covers facing out",
-      "03|A single mini book held up against the full-size edition behind it",
-      "04|The back and spine of a mini book, showing its foamboard thickness",
-      "05|A mini book balanced between two fingertips for scale",
-      "08|Custom mini books shelved on a blush arched bookshelf beside a mini plant",
-      "07|A pair of mini shelves filled with custom sets, next to their full-size originals",
+    images: shots(
+      "mini-books/05|Six miniature novels arranged face-up on the pages of an open book, covers fully readable",
+      "mini-books/04|A hand holding a stack of six miniature novels, their spines no longer than a thumb",
+      "mini-books/01|Ten miniature novels spread across a pale wood surface in afternoon light",
     ),
-    ...simpleVariants(74900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six", "Made to order"],
     setOfSix: true,
@@ -517,7 +427,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-scalloped-bookshelf", "mini-book-keychain", "mini-plants"],
+    related: ["mini-scalloped-bookshelf", "mini-book-keychain"],
   }),
   make({
     slug: "mini-twilight-saga-set",
@@ -537,7 +447,7 @@ export const PRODUCTS: Product[] = [
       "02|The full set laid flat, all six covers face up",
       "04|Cover and spine options: front, back and spine, or double-sided|chart",
     ),
-    ...simpleVariants(64900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six"],
     setOfSix: true,
@@ -578,7 +488,7 @@ export const PRODUCTS: Product[] = [
       "07|Mini spines lined up along the gutter of an open book",
       "06|The stack held together in one hand for scale",
     ),
-    ...simpleVariants(67900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six"],
     setOfSix: true,
@@ -591,7 +501,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-fourth-wing-set", "custom-mini-book-set", "mini-medieval-bookshelf"],
+    related: ["mini-fourth-wing-set", "custom-mini-book-set"],
   }),
   make({
     slug: "mini-fourth-wing-set",
@@ -612,7 +522,7 @@ export const PRODUCTS: Product[] = [
       "04|Three mini covers standing upright against the spine of a paperback",
       "06|Cover and spine options: front, back and spine, or double-sided|chart",
     ),
-    ...simpleVariants(67900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six"],
     setOfSix: true,
@@ -646,7 +556,7 @@ export const PRODUCTS: Product[] = [
       "04|A single mini cover held between finger and thumb for scale",
       "05|Cover and spine options: front, back and spine, or double-sided|chart",
     ),
-    ...simpleVariants(64900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six"],
     setOfSix: true,
@@ -666,7 +576,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["custom-mini-book-set", "mini-basic-bookshelf", "mini-rug"],
+    related: ["custom-mini-book-set", "mini-classic-bookshelf"],
   }),
   make({
     slug: "mini-freida-mcfadden-set",
@@ -688,7 +598,7 @@ export const PRODUCTS: Product[] = [
       "05|The set arranged next to a notebook and pen",
       "02|The covers viewed at an angle, showing their thickness",
     ),
-    ...simpleVariants(67900, { name: "Cover Style", values: COVER_STYLES }),
+    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
     badges: ["Set of six"],
     setOfSix: true,
@@ -701,7 +611,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["freida-mcfadden-book-stack-sticker", "custom-mini-book-set", "mini-cube-bookshelf"],
+    related: ["freida-mcfadden-book-stack-sticker", "custom-mini-book-set"],
   }),
 
   /* ─── Keychains ─── */
@@ -716,15 +626,14 @@ export const PRODUCTS: Product[] = [
       "Arrives on our illustrated hanging card, which makes it an easy gift.",
     ],
     art: "keychain-book",
-    images: gallery(
-      "mini-book-keychain",
-      "01|Two mini book keychains held in a hand, covers facing out",
-      "04|A mini book keychain laid flat beside its steel ring",
-      "05|A keychain held up against the full-size edition of the same book",
-      "03|The keychain hanging from a finger, showing the acrylic case",
-      "06|The reverse of the keychain, with the back cover blurb printed",
+    images: shots(
+      "keychain/06|A mini book keychain hanging from the gold strap ring of a brown suede bag, a shelf of books blurred behind",
+      "keychain/04|Overhead view of two mini book keychains laid on tan wood between six tiny paperbacks",
+      "keychain/01|A hand cradling a mini book keychain on its gold ring, with miniature paperbacks scattered on the wood beneath",
+      "keychain/02|Two mini book keychains hanging from gold clasps on pale wood",
+      "keychain/05|Two mini book keychains on dark walnut in low warm light, their gold clasps catching the light",
     ),
-    ...simpleVariants(14900),
+    ...simpleVariants(19900),
     priceStatus: "placeholder",
     badges: ["Personalized", "Made to order"],
     customSingle: true,
@@ -810,7 +719,7 @@ export const PRODUCTS: Product[] = [
       care: "Wipe clean with a soft cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["bookstore-acrylic-keychain", "book-stack-acrylic-keychain", "mini-medieval-bookshelf"],
+    related: ["bookstore-acrylic-keychain", "book-stack-acrylic-keychain"],
   }),
 
   /* ─── Stickers ─── */
@@ -883,126 +792,74 @@ export const PRODUCTS: Product[] = [
 
   /* ─── Shelf accessories ─── */
   make({
-    slug: "mini-plants",
-    name: "Mini Plants",
+    slug: "mini-plant",
+    name: "Miniature Plant",
     category: "accessories",
-    blurb: "Every good shelf has a plant. Ours is 1.25 inches tall and never needs water.",
+    blurb: "Every good shelf has a plant. This one never needs water.",
     description: [
-      "The fastest way to make a shelf look lived-in. A tiny potted plant in a little white pot that sits on a top tier or in a spare cubby.",
-      "Styles ship at random, so no two shelves end up alike. Order a few; they look best in odd numbers.",
+      "The fastest way to make a shelf look lived-in. A tiny potted plant that sits on a top tier or beside a row of spines.",
+      "Printed in the shelf colour of your choice, so it either disappears into the shelf or stands out against it.",
     ],
     art: "plant",
-    images: gallery(
-      "mini-plants",
-      "01|A mini plant in its white pot on the top tier of a styled shelf",
-      "04|A hand placing a mini plant onto a white mini bookshelf",
-      "05|A mini plant beside a row of mini books on a white shelf",
-      "03|A mini plant held between finger and thumb, showing its 1.25 inch height",
-      "02|Examples of the plant styles that ship at random|chart",
+    images: shots(
+      "accessories/01|Miniature plants in the accessory tray, alongside the letter blocks and star bars",
+      "arched-shelf/13|A miniature plant on the top shelf of a styled Arched bookshelf",
     ),
-    ...simpleVariants(4900),
+    ...simpleVariants(5000, { name: "Color", values: SHELF_COLORS.map((c) => c.name) }),
     priceStatus: "confirmed",
     details: {
-      dimensions: ["About 1.25 in tall"],
-      materials: "Assorted styles; style is a surprise.",
+      materials: MADE_BY_HAND,
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-rug", "mini-fish-tank", "mini-bean-bag-chair"],
+    related: ["mini-shelf-letters", "mini-ladder", "mini-scalloped-bookshelf"],
   }),
   make({
-    slug: "mini-fish-tank",
-    name: "Mini Fish Tank",
+    slug: "mini-shelf-letters",
+    name: "Mini Shelf Letters",
     category: "accessories",
-    blurb: "A one-inch aquarium. Gravel, plants, one fish.",
+    blurb: "Little word blocks that label a shelf: TBR, READ, FAVES, 5 Stars, Literature.",
     description: [
-      "A genuinely tiny tank with a gravel bed, a strand of green, and a single fish suspended mid-swim. The detail people notice last and comment on first.",
-      "Pick your fish in orange, white, black or yellow. No filter, no holiday sitter.",
+      "Tiny standing letters that tell your shelf what it is. Put TBR on the row that is waiting, READ on the row that is done, FAVES on the row you would rescue from a fire.",
+      "Each one is a single word block, printed in the colour you pick. They lean nicely against a stack of spines.",
     ],
-    art: "fishtank",
-    images: gallery(
-      "mini-fish-tank",
-      "01|Three mini fish tanks lined up on a white shelf",
-      "04|Mini fish tanks styled on a pink and a white mini bookshelf",
-      "08|Two mini fish tanks side by side, gravel and plants visible",
-      "03|The four fish colors: orange, white, black and yellow|chart",
-      "02|Fish color guide for the mini tank|chart",
+    art: "plant",
+    images: shots(
+      "accessories/01|A tray of miniature shelf accessories: TBR, READ, FAVES and LITERATURE letter blocks in choco brown and bone white, with star bars and mini plants",
     ),
-    ...simpleVariants(9900, {
-      name: "Fish Color",
-      values: ["Orange", "White", "Black", "Yellow"],
+    ...simpleVariants(5000, {
+      name: "Word",
+      values: ["TBR", "READ", "FAVES", "5 Stars", "Literature"],
     }),
     priceStatus: "confirmed",
+    badges: ["Pick your word"],
     details: {
-      dimensions: ["About 1 in tall × 1 in wide × 0.5 in deep"],
+      included: ["One word block in your chosen word and colour"],
+      materials: MADE_BY_HAND,
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-plants", "mini-rug", "mini-cube-bookshelf"],
+    related: ["mini-plant", "mini-ladder", "custom-mini-book-set"],
   }),
   make({
-    slug: "mini-bean-bag-chair",
-    name: "Mini Bean Bag Chair",
+    slug: "mini-ladder",
+    name: "Mini Library Ladder",
     category: "accessories",
-    blurb: "A squashy little reading chair with its own one-inch pillow.",
+    blurb: "A little ladder to lean against the shelf, for reaching the top row.",
     description: [
-      "Somewhere for an imaginary reader to flop. Soft polyester, properly squashy, in five colors, with a matching one-inch pillow, because a bean bag without a pillow is just a bag.",
-      "Sat beside a mini shelf with a rug underneath, it stops being a shelf and starts being a room.",
+      "Every proper library has one. This one leans against the side of your shelf and goes precisely nowhere, which is the point.",
+      "Printed to match, in any of the nine shelf colours.",
     ],
-    art: "beanbag",
-    images: gallery(
-      "mini-bean-bag-chair",
-      "01|Five mini bean bag chairs in a row, one in each color",
-      "05|A mini bean bag chair and rug staged beside a white mini bookshelf",
-      "06|Bean bags and a mini rug arranged into a tiny reading corner",
-      "03|The five bean bag colors, labelled|chart",
-      "02|Bean bag chair color guide|chart",
+    art: "plant",
+    images: shots(
+      "classic-shelf/16|The little library ladder leaning against the side of a styled Classic bookshelf",
+      "classic-shelf/12|The ladder in place on a fully styled Classic shelf beside a candle and dried flowers",
     ),
-    ...simpleVariants(14900, {
-      name: "Color",
-      values: [
-        "Pistachio Green",
-        "Sky Blue",
-        "Espresso Brown",
-        "Peachy Pink",
-        "Lilac Purple",
-      ],
-    }),
+    ...simpleVariants(8000, { name: "Color", values: SHELF_COLORS.map((c) => c.name) }),
     priceStatus: "confirmed",
     details: {
-      dimensions: ["About 6 in wide, with a 1 × 1 in pillow"],
-      materials: "100% polyester fabric.",
+      materials: MADE_BY_HAND,
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-rug", "mini-plants", "mini-scalloped-bookshelf"],
-  }),
-  make({
-    slug: "mini-rug",
-    name: "Mini Rug",
-    category: "accessories",
-    blurb: "Five inches of ultra-soft round rug.",
-    description: [
-      "Deep, plush and round, in four colors chosen to flatter a shelf rather than compete with it. Lay it under a mini bookshelf and the arrangement reads as a room instead of a row of objects.",
-      "Ivory Cream and Oat Beige disappear politely. Sky Blue and Dusty Rose do not, which is sometimes the point.",
-    ],
-    art: "rug",
-    images: gallery(
-      "mini-rug",
-      "01|A mini rug laid beneath a white mini bookshelf and bean bag",
-      "05|A mini rug and bean bag chair styled into a tiny reading nook",
-      "03|The four rug colors: ivory cream, sky blue, oat beige and dusty rose|chart",
-      "06|A hand holding a mini rug, showing the plush pile and backing",
-      "04|Close-up of the rug colors side by side|chart",
-    ),
-    ...simpleVariants(9900, {
-      name: "Color",
-      values: ["Ivory Cream", "Sky Blue", "Oat Beige", "Dusty Rose"],
-    }),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: ["About 5 in wide"],
-      materials: "Ultra-soft plush fabric.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["mini-bean-bag-chair", "mini-plants", "mini-basic-bookshelf"],
+    related: ["mini-plant", "mini-shelf-letters", "mini-arched-bookshelf"],
   }),
 ];
 

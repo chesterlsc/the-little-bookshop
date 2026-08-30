@@ -22,8 +22,8 @@ const FEATURED = [
   "mini-scalloped-bookshelf",
   "custom-mini-book-set",
   "mini-book-keychain",
-  "mini-plants",
-  "mini-twilight-saga-set",
+  "mini-plant",
+  "mini-shelf-letters",
   "mini-arched-bookshelf",
   "bookstore-acrylic-keychain",
   "emily-henry-book-stack-sticker",
@@ -212,10 +212,10 @@ export default function HomePage() {
             <div aria-hidden className="arch absolute inset-0 rotate-[3.5deg] border-2 border-dashed border-taupe-300" />
             <div className="arch relative rotate-[-1.5deg] border-[1.5px] border-taupe-300 bg-cream-50 p-2.5 shadow-[0_26px_36px_-18px_rgba(94,73,52,0.42)]">
               <Image
-                src="/products/custom-mini-book-set/08.webp"
-                alt="A blush arched mini bookshelf filled with handmade miniature books and a tiny plant"
-                width={1200}
-                height={799}
+                src="/marketing/classic-shelf/12.webp"
+                alt="A choco brown miniature bookshelf filled with tiny books, a plant and a brass globe, lit by window light beside a candle and an open book"
+                width={1050}
+                height={1400}
                 priority
                 sizes="(min-width:1024px) 44vw, 90vw"
                 className="arch aspect-[5/6] w-full object-cover object-[56%_50%]"
@@ -228,8 +228,8 @@ export default function HomePage() {
                   className="absolute -top-2.5 left-1/2 h-5 w-14 -translate-x-1/2 -rotate-6 rounded-[2px] bg-blush-200/85 shadow-[inset_0_0_0_1px_rgba(214,138,120,0.35)]"
                 />
                 <Image
-                  src="/products/custom-mini-book-set/01.webp"
-                  alt="Three custom miniature books held in a hand"
+                  src="/marketing/mini-books/04.webp"
+                  alt="A hand holding a stack of six miniature novels, no longer than a thumb"
                   width={480}
                   height={480}
                   sizes="160px"
@@ -329,8 +329,8 @@ export default function HomePage() {
       <Section tint="cream100" className="pb-12 pt-10 lg:pb-16 lg:pt-14">
         <div className="enter grid items-center gap-6 lg:grid-cols-[auto_1fr_auto]">
           <Image
-            src="/products/custom-mini-book-set/03.webp"
-            alt="A miniature book held up in front of the full-size edition it was made from"
+            src="/marketing/mini-books/01.webp"
+            alt="Ten miniature novels spread across a pale wood surface in afternoon light"
             width={640}
             height={640}
             sizes="200px"
@@ -394,24 +394,24 @@ export default function HomePage() {
           <div className="order-2 grid grid-cols-2 gap-3 lg:order-1">
             <div className="stitch rotate-[-1.5deg] overflow-hidden bg-cream-50 p-2">
               <Image
-                src="/brand/pack_box_angle.png"
-                alt="Illustrated Little Bookshop gift box, seen from an angle"
-                width={444}
-                height={505}
+                src="/marketing/packaging/09.webp"
+                alt="The Little Bookshop gift box open on a sage green background, its illustrated bookshelf lid propped behind"
+                width={1400}
+                height={1050}
                 className="h-full w-full rounded-2xl object-cover"
               />
             </div>
             <div className="stitch mt-6 rotate-[1.5deg] overflow-hidden bg-cream-50 p-2">
               <Image
-                src="/brand/photo_box.jpg"
-                alt="The real Little Bookshop box, photographed in the studio"
-                width={1430}
-                height={1120}
+                src="/marketing/packaging/10.webp"
+                alt="The closed Little Bookshop gift box at an angle, its pastel bookshelf artwork facing the camera"
+                width={1400}
+                height={1050}
                 className="h-full w-full rounded-2xl object-cover"
               />
             </div>
             <p className="col-span-2 text-center font-sans text-xs text-ink-600">
-              Left: the illustrated box design. Right: the real thing, fresh from the studio.
+              Every order is packed into our illustrated bookshelf box.
             </p>
           </div>
           <div className="order-1 text-center lg:order-2 lg:text-left">
