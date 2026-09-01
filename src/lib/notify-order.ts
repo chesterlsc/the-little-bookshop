@@ -18,9 +18,9 @@ export function baseUrl(): string {
  * Never throws: a mail outage must not lose an order that is already saved.
  */
 export async function notifyNewOrder(orderNumber: string): Promise<OrderRecord | null> {
-  const order = getOrder(orderNumber);
+  const order = await getOrder(orderNumber);
   if (!order) return null;
-  if (!claimEmailSend(order.number)) return order;
+  if (!(await claimEmailSend(order.number))) return order;
 
   try {
     const snapshot = parseSnapshot(order);
@@ -34,7 +34,7 @@ export async function notifyNewOrder(orderNumber: string): Promise<OrderRecord |
   } catch (err) {
     // Hand the claim back so a later visit retries, rather than silently
     // losing the only notification the shop gets about a real order.
-    releaseEmailSend(order.number);
+    await releaseEmailSend(order.number);
     console.error(`[order ${order.number}] email delivery failed, will retry:`, err);
   }
   return order;

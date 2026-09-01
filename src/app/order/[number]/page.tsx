@@ -43,7 +43,7 @@ const STATUS_COPY: Record<
 
 export default async function OrderPage({ params }: PageProps<"/order/[number]">) {
   const { number } = await params;
-  const order = getOrder(decodeURIComponent(number));
+  const order = await getOrder(decodeURIComponent(number));
   if (!order) notFound();
   const snapshot = parseSnapshot(order);
   const status = STATUS_COPY[order.status] ?? {

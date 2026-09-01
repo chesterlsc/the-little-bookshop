@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PayPage({ params }: PageProps<"/order/[number]/pay">) {
   const { number } = await params;
-  const order = getOrder(decodeURIComponent(number));
+  const order = await getOrder(decodeURIComponent(number));
   if (!order) notFound();
   // only an unpaid order may be asked for money; every other status is already
   // told correctly by the status page, so send them there instead of re-soliciting

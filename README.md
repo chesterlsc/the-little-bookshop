@@ -116,6 +116,21 @@ is ever collected.
 A repeated `idempotencyKey` within ten minutes returns the order that already
 exists, so a double-click cannot create two orders.
 
+### Where orders are stored
+
+`DATABASE_URL` set → Postgres (`src/lib/orders-pg.ts`). Anything else → SQLite
+in `var/data` (`src/lib/orders-sqlite.ts`). `src/lib/orders.ts` is the one async
+surface over both.
+
+**Production needs `DATABASE_URL`.** Serverless hosts give every request a fresh,
+read-only filesystem: with SQLite there, orders save and are instantly
+unreachable, and the order numbering restarts on every instance (verified on
+Vercel — five consecutive orders all came back `LB1001`…`LB1005`). Use a pooled
+connection string.
+
+`npx tsx scripts/verify-pg.mjs` runs the production Postgres store against
+Postgres-in-WASM, so the exact SQL is exercised without a database or a network.
+
 ### Order statuses
 
 `awaiting_payment` → `payment_submitted` → `confirmed` → `preparing` →

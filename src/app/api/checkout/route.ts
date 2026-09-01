@@ -78,14 +78,14 @@ export async function POST(request: Request) {
   if (key) {
     const seen = recent.get(key);
     if (seen && Date.now() - seen.at < IDEMPOTENCY_WINDOW_MS) {
-      const existing = getOrder(seen.number);
+      const existing = await getOrder(seen.number);
       if (existing) return NextResponse.json({ orderNumber: existing.number, reused: true });
     }
   }
 
   let order;
   try {
-    order = createOrder(snapshot);
+    order = await createOrder(snapshot);
   } catch (err) {
     console.error("[checkout] could not save the order:", err);
     return NextResponse.json(
