@@ -7,7 +7,22 @@ import path from "node:path";
  * The path is configurable so deployments can point at a persistent volume.
  */
 
-const DB_PATH = process.env.ORDERS_DB_PATH ?? "var/data/orders.sqlite";
+/**
+ * Where the order store lives.
+ *
+ * Serverless hosts (Vercel) give you a read-only filesystem apart from /tmp,
+ * so the repo-relative default cannot be created there and every checkout
+ * would fail. /tmp works, but only survives while that instance stays warm.
+ *
+ * ponytail: /tmp is a stop-gap so the shop can take orders TODAY. Both order
+ * emails go out at placement and now carry the full payment details, so the
+ * shop and the customer each hold everything the order needs even if the row
+ * is lost. Point ORDERS_DB_PATH at a persistent volume, or move `orders.ts`
+ * onto Postgres/Turso, before this handles real volume.
+ */
+const DB_PATH =
+  process.env.ORDERS_DB_PATH ??
+  (process.env.VERCEL ? "/tmp/little-bookshop/orders.sqlite" : "var/data/orders.sqlite");
 
 let db: Database.Database | null = null;
 

@@ -1,5 +1,6 @@
 import type { OrderSnapshot } from "../checkout";
 import { formatMoney } from "../money";
+import { INSTAGRAM_HANDLE, PAYMENT_METHODS } from "@/content/site";
 import type { Mail } from "./types";
 
 /**
@@ -114,12 +115,24 @@ export function customerOrderEmail(
     <h2 style="font-size:14px;margin:14px 0 8px;">Your tiny things</h2>
     ${itemsHtml(snapshot)}
     ${totalsHtml(snapshot)}
+    <h2 style="font-size:14px;margin:16px 0 8px;">How to pay</h2>
+    <p style="font-size:13px;margin:0 0 10px;">Send exactly <strong>${formatMoney(snapshot.total)}</strong> to either account below, then send the screenshot and your order number to <strong>@${INSTAGRAM_HANDLE}</strong> on Instagram.</p>
+    <table style="width:100%;">
+      ${PAYMENT_METHODS.map((m) => row(esc(m.numberLabel), `<strong style="font-size:15px;">${esc(m.number)}</strong>`)).join("")}
+    </table>
+    <p style="font-size:12px;color:#6a5a48;margin-top:10px;">We will never ask for your OTP, PIN, or banking password.</p>
     <p style="font-size:12px;color:#6a5a48;margin-top:12px;">Your order is not confirmed until we've checked your payment screenshot. If anything above isn't right, just reply to this email.</p>`;
   return {
     to: snapshot.customer.email,
     subject: `Your Little Bookshop order ${orderNumber} — how to pay 📚`,
     html: wrap("Your little order is almost ours", body),
-    text: `Thanks for your order ${orderNumber}! Total ${formatMoney(snapshot.total)}. Payment details: ${orderUrl}`,
+    text: [
+      `Thanks for your order ${orderNumber}!`,
+      `Total to send: ${formatMoney(snapshot.total)}`,
+      ...PAYMENT_METHODS.map((m) => `${m.numberLabel}: ${m.number}`),
+      `Send your screenshot and order number to @${INSTAGRAM_HANDLE} on Instagram.`,
+      `Payment page: ${orderUrl}`,
+    ].join("\n"),
   };
 }
 
