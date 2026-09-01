@@ -25,6 +25,62 @@ export const SITE = {
   shipsFrom: "⟨shipping origin⟩",
 };
 
+/**
+ * Manual payment details. There is no payment gateway: the customer transfers
+ * the exact total themselves and sends a screenshot on Instagram, and the shop
+ * confirms the order by hand.
+ *
+ * No account-holder name is listed for either method because none was supplied.
+ * Add `holder` to a method here if the shop wants one shown.
+ */
+export const INSTAGRAM_HANDLE = "thelittlebookshop.ph";
+export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
+
+export interface PaymentMethod {
+  id: "gcash" | "maribank";
+  name: string;
+  tagline: string;
+  /** what the number IS, e.g. "GCash number" — used as the copy button label */
+  numberLabel: string;
+  number: string;
+  steps: string[];
+}
+
+export const PAYMENT_METHODS: PaymentMethod[] = [
+  {
+    id: "gcash",
+    name: "GCash",
+    tagline: "Fast e-wallet transfer",
+    numberLabel: "GCash number",
+    number: "09614863499",
+    steps: [
+      "Open your GCash app.",
+      "Select Send Money or Express Send.",
+      "Send the exact order total to 09614863499.",
+      "Check that the amount is correct before completing the payment.",
+      "Take a screenshot of the successful transaction.",
+      `Send the screenshot together with your order number to @${INSTAGRAM_HANDLE} on Instagram.`,
+    ],
+  },
+  {
+    id: "maribank",
+    name: "MariBank",
+    tagline: "Bank transfer",
+    numberLabel: "MariBank account number",
+    number: "14614054499",
+    steps: [
+      "Open your banking or e-wallet app.",
+      "Select Bank Transfer.",
+      "Choose MariBank.",
+      "Enter account number 14614054499.",
+      "Enter the exact order total.",
+      "Complete the transfer.",
+      "Take a screenshot of the successful transaction.",
+      `Send the screenshot together with your order number to @${INSTAGRAM_HANDLE} on Instagram.`,
+    ],
+  },
+];
+
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Why are miniature books always sold in sets of six?",
@@ -56,7 +112,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How long does an order take?",
-    a: `Everything is made to order in small batches. Current production time is ${SITE.productionTime}, plus shipping. You'll get a confirmation email the moment your order is in, and another when it ships.`,
+    a: `Everything is made to order in small batches. Current production time is ${SITE.productionTime}, plus shipping, and it starts once we've confirmed your payment. You'll get an email the moment your order is in, and another when it ships.`,
   },
   {
     q: "Do you ship internationally?",
@@ -81,7 +137,7 @@ export const POLICIES: Record<
     updated: "⟨date⟩",
     body: [
       `Every piece is made to order in our little studio. Current production time before dispatch is ${SITE.productionTime}.`,
-      "Shipping is free on orders of ₱999 and over. Below that, a flat rate is shown at checkout before you pay. ⟨Carrier names, delivery estimates by region, and international availability to be confirmed by the shop.⟩",
+      "Shipping is free on orders of ₱999 and over. Below that, a flat rate is shown at checkout before you place your order. ⟨Carrier names and delivery estimates by region to be confirmed by the shop.⟩",
       "You'll receive an email confirmation when your order is placed and ⟨tracking details, if offered⟩ when it ships.",
       "Orders ship from ⟨shipping origin⟩. Customs fees or import taxes, where they apply, are the recipient's responsibility.",
     ],
@@ -100,7 +156,7 @@ export const POLICIES: Record<
     updated: "⟨date⟩",
     body: [
       "We collect only what an order needs: your name, email address, phone number, shipping address, and the order details you give us (including custom book titles and notes).",
-      "Payment is processed by a secure hosted payment provider. Your card number never touches our servers, and we never see or store it.",
+      "We never collect card numbers, PINs, OTPs or banking passwords. Payment happens entirely in your own banking or e-wallet app, and you send us a screenshot of the completed transfer.",
       "We use your details to make and deliver your order, to email you about it, and for nothing else. We don't sell or share your information for marketing.",
       `To ask about, correct, or delete your information, email ${SITE.contactEmail}. ⟨Legal entity name, data retention window, and applicable jurisdiction to be confirmed by the shop.⟩`,
     ],
@@ -109,7 +165,7 @@ export const POLICIES: Record<
     title: "Terms of Service",
     updated: "⟨date⟩",
     body: [
-      "By placing an order you agree to these terms. Orders are confirmed when payment is verified by our payment provider; until then, an order number is only a reservation.",
+      "By placing an order you agree to these terms. Payment is by manual GCash or MariBank transfer. An order is confirmed only once we have checked your payment screenshot; until then, an order number is only a reservation.",
       "Custom sets require exactly six book titles. We recreate covers in miniature as decorative, non-opening objects for personal display, and may decline requests we can't reproduce respectfully or lawfully.",
       "Prices are shown in Philippine pesos and can change. The price at checkout is the price you pay. If we can't fulfil an order, we'll refund it in full.",
       "Our miniatures are decorative items, not toys. They contain small parts and are not suitable for young children.",

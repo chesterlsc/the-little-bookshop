@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { SketchScene } from "./sketch-scene";
 
@@ -12,6 +13,7 @@ import { SketchScene } from "./sketch-scene";
  * afterwards and lets a click skip ahead. Reduced-motion users never see it.
  */
 export function SplashScreen() {
+  const pathname = usePathname();
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
@@ -19,7 +21,9 @@ export function SplashScreen() {
     return () => window.clearTimeout(t);
   }, []);
 
-  if (gone) return null;
+  // never over an order or payment screen: that page carries the customer's
+  // number and the amount they owe, and it is meant to be bookmarked
+  if (gone || pathname.startsWith("/order/")) return null;
   return (
     <div
       className="splash fixed inset-0 z-[90] flex items-center justify-center bg-cream-50"

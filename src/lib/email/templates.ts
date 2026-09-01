@@ -57,16 +57,17 @@ function totalsHtml(snapshot: OrderSnapshot): string {
 
 function customerHtml(snapshot: OrderSnapshot): string {
   const c = snapshot.customer;
-  const address = [c.address1, c.address2, `${c.city}${c.region ? ", " + c.region : ""} ${c.postalCode}`, c.country]
+  const address = [c.address1, `Brgy. ${c.barangay}`, `${c.city}, ${c.province} ${c.postalCode}`]
     .filter(Boolean)
     .map(esc)
     .join("<br>");
   return `<table style="width:100%;">
     ${row("Name", esc(c.fullName))}
+    ${row("Mobile", esc(c.phone))}
     ${row("Email", esc(c.email))}
-    ${row("Phone", esc(c.phone))}
+    ${c.instagram ? row("Instagram", `@${esc(c.instagram)}`) : ""}
     ${row("Ship to", address)}
-    ${c.deliveryNotes ? row("Delivery notes", esc(c.deliveryNotes)) : ""}
+    ${c.addressNotes ? row("Address notes", esc(c.addressNotes)) : ""}
     ${c.orderNotes ? row("Order notes", esc(c.orderNotes)) : ""}
   </table>`;
 }
@@ -82,7 +83,7 @@ export function businessOrderEmail(
     <table style="width:100%;margin-bottom:10px;">
       ${row("Order", `<strong>${orderNumber}</strong>`)}
       ${row("Placed", esc(placedAt))}
-      ${row("Payment", `verified paid · ref ${esc(paymentReference)}`)}
+      ${row("Payment", `<strong>${esc(paymentReference)}</strong> — manual transfer, verify the screenshot on Instagram`)}
     </table>
     <h2 style="font-size:14px;margin:14px 0 8px;">Customer</h2>
     ${customerHtml(snapshot)}
@@ -93,7 +94,7 @@ export function businessOrderEmail(
     to,
     subject: `🧺 New order ${orderNumber} · ${formatMoney(snapshot.total)}`,
     html: wrap(`New order ${orderNumber}`, body),
-    text: `New order ${orderNumber}. Total ${formatMoney(snapshot.total)}. Payment verified (${paymentReference}).`,
+    text: `New order ${orderNumber}. Total ${formatMoney(snapshot.total)}. Status: ${paymentReference}. Watch for the transfer + screenshot.`,
   };
 }
 
@@ -104,20 +105,21 @@ export function customerOrderEmail(
 ): Mail {
   const first = snapshot.customer.fullName.trim().split(/\s+/)[0] || "friend";
   const body = `
-    <p style="font-size:13px;margin:0 0 12px;">Hi ${esc(first)}, your payment went through and your order is officially on our workbench. Everything is made to order, so we'll email again when it ships.</p>
+    <p style="font-size:13px;margin:0 0 12px;">Hi ${esc(first)}, we've saved your order. One step left: send the exact total by GCash or MariBank, then send us the screenshot on Instagram so we can confirm it.</p>
     <table style="width:100%;margin-bottom:10px;">
       ${row("Order number", `<strong>${orderNumber}</strong>`)}
-      ${row("Order page", `<a href="${orderUrl}" style="color:#75845c;">${orderUrl}</a>`)}
+      ${row("Status", "Awaiting payment")}
+      ${row("Payment details", `<a href="${orderUrl}" style="color:#75845c;">${orderUrl}</a>`)}
     </table>
     <h2 style="font-size:14px;margin:14px 0 8px;">Your tiny things</h2>
     ${itemsHtml(snapshot)}
     ${totalsHtml(snapshot)}
-    <p style="font-size:12px;color:#6a5a48;margin-top:12px;">If anything above isn't right, just reply to this email and we'll fix it before your order goes to print.</p>`;
+    <p style="font-size:12px;color:#6a5a48;margin-top:12px;">Your order is not confirmed until we've checked your payment screenshot. If anything above isn't right, just reply to this email.</p>`;
   return {
     to: snapshot.customer.email,
-    subject: `Your Little Bookshop order ${orderNumber} 📚`,
-    html: wrap("Thank you, it's tiny and it's yours", body),
-    text: `Thanks for your order ${orderNumber}! Total ${formatMoney(snapshot.total)}. View it at ${orderUrl}`,
+    subject: `Your Little Bookshop order ${orderNumber} — how to pay 📚`,
+    html: wrap("Your little order is almost ours", body),
+    text: `Thanks for your order ${orderNumber}! Total ${formatMoney(snapshot.total)}. Payment details: ${orderUrl}`,
   };
 }
 

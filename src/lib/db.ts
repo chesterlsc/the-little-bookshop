@@ -21,10 +21,11 @@ export function getDb(): Database.Database {
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       number TEXT UNIQUE NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',        -- pending | paid | failed | cancelled
-      provider TEXT NOT NULL,
-      provider_ref TEXT,
-      provider_status TEXT,                          -- raw status from the provider (safe reference only)
+      status TEXT NOT NULL DEFAULT 'awaiting_payment',
+      -- awaiting_payment | payment_submitted | confirmed | preparing | shipped | completed | cancelled
+      provider TEXT NOT NULL,                        -- always 'manual': transfer + screenshot on Instagram
+      provider_ref TEXT,                             -- payment method the customer picked, once known
+      provider_status TEXT,                          -- free-text note the shop can set while verifying
       payload TEXT NOT NULL,                         -- JSON snapshot: items, customer, pricing
       subtotal INTEGER NOT NULL,
       shipping INTEGER NOT NULL,
@@ -35,6 +36,12 @@ export function getDb(): Database.Database {
       paid_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_orders_number ON orders(number);
+  `);
+  // Older rows used the gateway statuses; bring them onto the manual set.
+  db.exec(`
+    UPDATE orders SET status = 'awaiting_payment' WHERE status = 'pending';
+    UPDATE orders SET status = 'confirmed'        WHERE status = 'paid';
+    UPDATE orders SET status = 'cancelled'        WHERE status = 'failed';
   `);
   return db;
 }

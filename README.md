@@ -36,7 +36,7 @@ rows. Desktop: spacious editorial layout, same system.
 
 - **Next.js 16** (App Router, TypeScript) + **Tailwind CSS 4**
 - **better-sqlite3** for the order store (single file, zero infra)
-- **nodemailer** (SMTP option), Resend and PayMongo/Stripe use plain `fetch`
+- **nodemailer** (SMTP option); Resend uses plain `fetch`
 - **Playwright** for the smoke suite and responsive audit
 - No UI kit, no CMS, no unnecessary dependencies
 
@@ -50,13 +50,12 @@ src/
     checkout.ts       ← customer validation + server-side order snapshot/pricing
     db.ts, orders.ts  ← SQLite order store, LB-XXXXX-XXXXX numbers, idempotent transitions
     finalize-order.ts ← the ONLY place an order becomes paid + emails go out (once)
-    payments/         ← provider adapters: dev simulator, PayMongo, Stripe
     email/            ← provider adapters: dev outbox, Resend, SMTP + templates
   content/site.ts     ← business info, FAQ, policies, about copy (⟨placeholders⟩ marked)
   components/         ← design system (ui, illustrations, cart, builder, nav…)
   app/                ← routes: home, shop/[category], products/[slug], build,
                         cart, checkout(+result), order/[number], about, faq,
-                        contact, policies/[policy], dev/pay/[ref], api/*
+                        contact, policies/[policy], order/[number]/pay, api/*
 scripts/              ← smoke.mjs (e2e suite), audit.mjs (responsive audit), shot.mjs
 public/brand/         ← processed logo files, favicons, packaging art, studio photos
 ```
@@ -87,11 +86,7 @@ See `.env.example` (documented inline). The important ones:
 
 | Variable | Purpose |
 | --- | --- |
-| `PUBLIC_BASE_URL` | Public site URL (payment redirects + email links) |
-| `PAYMENT_PROVIDER` | `dev` (simulator) · `paymongo` · `stripe` |
-| `PAYMENT_CURRENCY` | Provider currency (PayMongo settles PHP) |
-| `PAYMONGO_SECRET_KEY` / `PAYMONGO_WEBHOOK_SECRET` | PayMongo keys |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Stripe keys |
+| `PUBLIC_BASE_URL` | Public site URL (used in the order emails) |
 | `EMAIL_PROVIDER` | `dev` (writes `var/outbox/*.eml`) · `resend` · `smtp` |
 | `EMAIL_FROM`, `ORDERS_EMAIL` | Sender + business notification inbox |
 | `NEXT_PUBLIC_FLAT_SHIPPING_CENTS` | Flat shipping display value (recomputed server-side) |
@@ -101,37 +96,39 @@ Secrets are server-only (no `NEXT_PUBLIC_` prefix) and never reach the client.
 
 ## Payments, how the flow works
 
+There is **no payment gateway**. Customers pay by manual GCash or MariBank
+transfer and send a screenshot on Instagram; the shop confirms each order by
+hand. The site never touches money, and no card, PIN, OTP or banking password
+is ever collected.
+
 1. `POST /api/checkout` validates the cart + customer **on the server**,
-   recomputes every price from the catalog, creates a `pending` order with a
-   unique `LB-XXXXX-XXXXX` number, then creates the provider's **hosted**
-   checkout session and returns its URL.
-2. The customer pays on the provider's page. **No card data ever touches this
-   app**, it is never collected, stored, logged, or emailed.
-3. The provider calls `POST /api/payments/webhook` (signature-verified), and/or
-   the return page calls `GET /api/payments/verify` which asks the provider
-   directly. Landing on the success URL is never treated as proof of payment.
-4. Only a server-verified result marks the order `paid` (exactly once), sends
-   the business email (full order: customer, items, options, six titles, theme,
-   notes, totals, safe payment reference) and the customer confirmation -
-   exactly once, even if webhook and verify race. Only then is the basket cleared.
+   recomputes every price from the catalog, and saves an order with status
+   `awaiting_payment` and a short, quotable number (`LB1024`) derived from the
+   row id inside the insert transaction.
+2. The same request emails the shop (full order: customer, items, options, six
+   titles, theme, notes, totals) and the customer (their number + a link to the
+   payment screen). `claimEmailSend` makes that exactly-once.
+3. The customer is redirected to `/order/<number>/pay`: the amount, the two
+   account numbers with one-tap copy, per-method instructions, and a
+   copyable Instagram message. Only then is the basket cleared.
+4. The shop verifies the screenshot and moves the order along by hand.
 
-### Configure PayMongo (recommended for PH / GCash / Maya)
-1. `PAYMENT_PROVIDER=paymongo`, `PAYMENT_CURRENCY=PHP`, set `PAYMONGO_SECRET_KEY`.
-2. In the PayMongo dashboard create a webhook →
-   `https://your-domain/api/payments/webhook` with event
-   `checkout_session.payment.paid`; put its secret in `PAYMONGO_WEBHOOK_SECRET`.
-3. Catalog prices are stored as integer centavos and are already in PHP.
+A repeated `idempotencyKey` within ten minutes returns the order that already
+exists, so a double-click cannot create two orders.
 
-### Configure Stripe
-1. `PAYMENT_PROVIDER=stripe`, set `STRIPE_SECRET_KEY`.
-2. Add a webhook endpoint → `https://your-domain/api/payments/webhook` with
-   `checkout.session.completed` and `checkout.session.expired`; put the signing
-   secret in `STRIPE_WEBHOOK_SECRET`.
+### Order statuses
 
-### Dev simulator
-With `PAYMENT_PROVIDER=dev`, checkout redirects to a clearly-labeled
-`/dev/pay/<order>` page with *simulate success / failure / cancel* buttons.
-The simulated result still goes through the same server-side verification path.
+`awaiting_payment` → `payment_submitted` → `confirmed` → `preparing` →
+`shipped` → `completed`, plus `cancelled`. Only the first two are reachable
+from the storefront; everything past `payment_submitted` is set by the shop.
+There is no admin UI yet — `markStatus(number, status)` in `src/lib/orders.ts`
+is the single place to add one.
+
+### Payment account details
+
+`PAYMENT_METHODS` in `src/content/site.ts`. No account-holder name is shown
+for either method because none was supplied; add a `holder` field there if the
+shop wants one.
 
 ## Email configuration
 

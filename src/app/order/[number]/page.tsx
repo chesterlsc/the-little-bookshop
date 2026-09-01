@@ -8,11 +8,37 @@ import { SITE } from "@/content/site";
 export const metadata = { title: "Your order", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const STATUS_COPY: Record<string, { badge: string; tone: "sage" | "blush" | "taupe" | "rose"; line: string }> = {
-  paid: { badge: "Paid & confirmed", tone: "sage", line: "Payment verified. The studio is on it, and we'll email when it ships." },
-  pending: { badge: "Awaiting payment", tone: "taupe", line: "This order is reserved but not yet paid. Complete payment to confirm it." },
-  failed: { badge: "Payment failed", tone: "rose", line: "The payment didn't go through and nothing was charged. You can try checkout again." },
-  cancelled: { badge: "Cancelled", tone: "blush", line: "This checkout was cancelled before payment. No charge was made." },
+const STATUS_COPY: Record<
+  string,
+  { badge: string; tone: "sage" | "blush" | "taupe" | "rose"; line: string }
+> = {
+  awaiting_payment: {
+    badge: "Awaiting payment",
+    tone: "taupe",
+    line: "We've saved your order. Complete your payment and send us your screenshot on Instagram, and we'll confirm it from there.",
+  },
+  payment_submitted: {
+    badge: "Payment submitted",
+    tone: "blush",
+    line: "Thank you! We've got your screenshot and we're checking the transfer. We'll confirm shortly.",
+  },
+  confirmed: {
+    badge: "Confirmed",
+    tone: "sage",
+    line: "Payment verified and your order is in the queue. We'll let you know when it's being made.",
+  },
+  preparing: {
+    badge: "Preparing",
+    tone: "sage",
+    line: "Your tiny things are being printed, assembled and packed.",
+  },
+  shipped: { badge: "Shipped", tone: "sage", line: "On its way to you." },
+  completed: { badge: "Completed", tone: "sage", line: "Delivered. Thank you for building a little library with us." },
+  cancelled: {
+    badge: "Cancelled",
+    tone: "rose",
+    line: "This order was cancelled. Nothing was charged. You're welcome to order again any time.",
+  },
 };
 
 export default async function OrderPage({ params }: PageProps<"/order/[number]">) {
@@ -20,7 +46,11 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
   const order = getOrder(decodeURIComponent(number));
   if (!order) notFound();
   const snapshot = parseSnapshot(order);
-  const status = STATUS_COPY[order.status] ?? STATUS_COPY.pending;
+  const status = STATUS_COPY[order.status] ?? {
+    badge: order.status.replace(/_/g, " "),
+    tone: "taupe" as const,
+    line: "This order is being handled by hand. Write to us with your order number and we'll tell you where it stands.",
+  };
   const c = snapshot.customer;
 
   return (
@@ -96,33 +126,31 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
               {c.fullName}
               <br />
               {c.address1}
-              {c.address2 && (
-                <>
-                  <br />
-                  {c.address2}
-                </>
-              )}
               <br />
-              {c.city}
-              {c.region ? `, ${c.region}` : ""} {c.postalCode}
+              Brgy. {c.barangay}
               <br />
-              {c.country}
+              {c.city}, {c.province} {c.postalCode}
             </p>
-            {c.deliveryNotes && (
-              <p className="mt-2 font-sans text-sm italic text-ink-400">“{c.deliveryNotes}”</p>
+            {c.addressNotes && (
+              <p className="mt-2 font-sans text-sm italic text-ink-400">“{c.addressNotes}”</p>
+            )}
+            {c.instagram && (
+              <p className="mt-2 font-sans text-sm text-ink-600">
+                Instagram: <span className="font-bold">@{c.instagram}</span>
+              </p>
             )}
           </div>
 
-          {order.status === "pending" && (
+          {order.status === "awaiting_payment" && (
             <div className="mt-5 text-center">
-              <ButtonLink href={`/checkout/result?order=${order.number}&from=refresh`}>
-                Check payment status
+              <ButtonLink href={`/order/${order.number}/pay`} className="btn-lg">
+                View payment instructions
               </ButtonLink>
             </div>
           )}
-          {(order.status === "failed" || order.status === "cancelled") && (
+          {order.status === "cancelled" && (
             <div className="mt-5 text-center">
-              <ButtonLink href="/checkout">Try checkout again</ButtonLink>
+              <ButtonLink href="/shop">Browse the shop</ButtonLink>
             </div>
           )}
 

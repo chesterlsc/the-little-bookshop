@@ -48,57 +48,68 @@ await page.goto(BASE + "/cart", { waitUntil: "networkidle" });
 await page.waitForTimeout(400);
 check("cart persists after reload", (await page.textContent("body")).includes("Custom Mini Book Set"));
 
-/* ── checkout via the dev payment simulator ─────────────────────────────── */
+/* ── checkout: manual payment, no gateway ───────────────────────────────── */
 await page.goto(BASE + "/checkout", { waitUntil: "networkidle" });
 const fill = (id, v) => page.fill(`#field-${id}`, v);
 await fill("fullName", "Smoke Tester");
+await fill("phone", "09171234567");
 await fill("email", "smoke@example.com");
-await fill("phone", "+1 555 0100");
+await fill("instagram", "@smoketester");
 await fill("address1", "1 Test Lane");
-await fill("city", "Testville");
-await fill("postalCode", "0000");
-await fill("country", "Testland");
-await page.getByRole("button", { name: /Continue to secure payment/ }).click();
-await page.waitForURL(/\/dev\/pay\//, { timeout: 20000 });
-check("checkout redirects to hosted payment", true);
-await page.getByRole("button", { name: /Simulate successful payment/ }).click();
-await page.waitForURL(/checkout\/result/, { timeout: 20000 });
-await page.waitForTimeout(2500);
-check("payment verified server-side", (await page.textContent("body")).includes("Paid and on the workbench"));
+await fill("barangay", "San Roque");
+await fill("city", "Quezon City");
+await fill("province", "Metro Manila");
+await fill("postalCode", "1100");
+// the exact total the customer is promised, to compare against the payment screen
+const checkoutTotal = (await page.textContent("body")).match(/₱[\d,]+\.\d\d/g).pop();
+await page.getByRole("button", { name: /Place order/ }).click();
+await page.waitForURL(/\/order\/LB[\w-]+\/pay/, { timeout: 20000 });
+check("place order redirects to payment instructions", true);
+// client-side nav: wait for the screen itself, not just the URL
+await page.getByRole("heading", { name: /almost ours/ }).waitFor({ timeout: 20000 });
+const body = await page.textContent("body");
+check("payment screen shows awaiting payment", body.includes("Awaiting payment"));
+check("payment screen shows GCash + MariBank", body.includes("09614863499") && body.includes("MariBank"));
+const orderNumber = (page.url().match(/\/order\/(LB[\w-]+)\/pay/) ?? [])[1];
+check("order number is short and quotable", /^LB\d+-[A-Z2-9]{6}$/.test(orderNumber ?? ""));
+check("payment total matches checkout total", body.includes(checkoutTotal));
+await page.waitForTimeout(600);
 const cartRaw = await page.evaluate(() => localStorage.getItem("tlb-cart-v1"));
-check("basket cleared only after verified payment", !cartRaw || JSON.parse(cartRaw).lines.length === 0);
-const orderNumber = (page.url().match(/order=([A-Z0-9-]+)/) ?? [])[1];
+check("basket cleared once the order is saved", !cartRaw || JSON.parse(cartRaw).lines.length === 0);
+
+await page.reload({ waitUntil: "networkidle" });
+const afterReload = await page.textContent("body");
+check("refresh keeps the same order", afterReload.includes(orderNumber) && afterReload.includes(checkoutTotal));
+
 await page.goto(`${BASE}/order/${orderNumber}`, { waitUntil: "networkidle" });
-check("order page shows paid state", (await page.textContent("body")).includes("Paid & confirmed"));
+check("order page shows awaiting payment", (await page.textContent("body")).includes("Awaiting payment"));
 
 /* ── API-level edge cases ───────────────────────────────────────────────── */
 const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plant", variantId: "blush-pink", qty: 1 }] };
-const customer = { fullName: "A", email: "a@example.com", phone: "1", address1: "x", address2: "", city: "y", region: "", postalCode: "z", country: "PH", deliveryNotes: "", orderNotes: "" };
-const mk = async () => (await (await fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart, customer }) })).json()).orderNumber;
-const outcome = (n, o) => fetch(`${BASE}/api/dev/pay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderNumber: n, outcome: o }) });
-const verify = async (n) => (await (await fetch(`${BASE}/api/payments/verify?order=${n}`)).json()).status;
+const customer = { fullName: "A", phone: "09171234567", email: "a@example.com", instagram: "@someone", address1: "x", barangay: "b", city: "y", province: "p", postalCode: "1000", addressNotes: "", orderNotes: "" };
+const post = (payload) => fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
 
-const nf = await mk(); await outcome(nf, "failed");
-check("failed payment marks order failed", (await verify(nf)) === "failed");
-const nc = await mk(); await outcome(nc, "cancelled");
-check("cancelled payment marks order cancelled", (await verify(nc)) === "cancelled");
+const r1 = await (await post({ cart, customer })).json();
+check("api creates an order", /^LB\d+-[A-Z2-9]{6}$/.test(r1.orderNumber ?? ""));
 
-const outboxBefore = fs.existsSync("var/outbox") ? fs.readdirSync("var/outbox").length : 0;
-const np = await mk(); await outcome(np, "paid");
-await verify(np); await verify(np);
-const outboxAfter = fs.existsSync("var/outbox") ? fs.readdirSync("var/outbox").length : 0;
-check("paid order sends exactly 2 emails (idempotent)", outboxAfter - outboxBefore === 2);
+const key = `smoke-${Date.now()}`;
+const a = await (await post({ cart, customer, idempotencyKey: key })).json();
+const b = await (await post({ cart, customer, idempotencyKey: key })).json();
+check("double submit reuses one order", a.orderNumber === b.orderNumber && b.reused === true);
 
-const badCart = { lines: [{ type: "product", key: "k9", slug: "mini-plants", variantId: "bogus", qty: 1 }] };
-const bad = await fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: badCart, customer }) });
-check("invalid cart rejected with 422", bad.status === 422);
-const incomplete = { lines: [{ type: "product", key: "k8", slug: "custom-mini-book-set", variantId: "front-back-spine", qty: 1, titles: [{ title: "only one", author: "" }] }] };
-const bad2 = await fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: incomplete, customer }) });
-check("incomplete six-title set rejected server-side", bad2.status === 422);
+const bad = await post({ cart, customer: { ...customer, email: "nope", postalCode: "12" } });
+const badJson = await bad.json();
+check("invalid customer rejected with friendly errors", bad.status === 422 && !!badJson.fieldErrors?.email && !!badJson.fieldErrors?.postalCode);
 
-check("no page errors during run", pageErrors.length === 0);
+const badCart = await post({ cart: { lines: [{ type: "product", key: "z", slug: "nope", variantId: "default", qty: 1 }] }, customer });
+check("invalid cart rejected with 422", badCart.status === 422);
+
+const gone = await fetch(`${BASE}/api/payments/verify?order=LB1001`);
+check("old payment gateway routes are gone", gone.status === 404);
+
+check("no page errors during run", pageErrors.length === 0, pageErrors.join(" | "));
+
 await browser.close();
-
 const failed = results.filter(([, ok]) => !ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
 process.exit(failed.length ? 1 : 0);

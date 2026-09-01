@@ -2,32 +2,36 @@ import { getProduct, getVariant, SHELF_THEMES } from "./catalog";
 import { cartSubtotal, lineUnitPrice, shippingFor, validateCart, type Cart, type CartLine } from "./cart";
 import type { Cents } from "./money";
 
-/** Customer details collected at checkout; only what the order needs. */
+/**
+ * Customer details collected at checkout; only what the order needs to be
+ * made and delivered. Addresses are Philippine-shaped (province / city /
+ * barangay) because that is where the shop ships.
+ */
 export interface CustomerInfo {
   fullName: string;
-  email: string;
   phone: string;
+  email: string;
+  instagram: string;
   address1: string;
-  address2: string;
+  barangay: string;
   city: string;
-  region: string;
+  province: string;
   postalCode: string;
-  country: string;
-  deliveryNotes: string;
+  addressNotes: string;
   orderNotes: string;
 }
 
 export const EMPTY_CUSTOMER: CustomerInfo = {
   fullName: "",
-  email: "",
   phone: "",
+  email: "",
+  instagram: "",
   address1: "",
-  address2: "",
+  barangay: "",
   city: "",
-  region: "",
+  province: "",
   postalCode: "",
-  country: "",
-  deliveryNotes: "",
+  addressNotes: "",
   orderNotes: "",
 };
 
@@ -43,18 +47,34 @@ export function validateCustomer(c: Partial<CustomerInfo>): FieldErrors {
     else if (v.length > max) errors[key] = `That ${label} looks too long.`;
   };
   need("fullName", "your full name");
+  need("phone", "a mobile number", 40);
+  if (!errors.phone && !/^[\d+()\-\s]{7,}$/.test(c.phone!.trim()))
+    errors.phone = "That mobile number doesn't look right.";
   need("email", "your email address");
   if (!errors.email && !EMAIL_RE.test(c.email!.trim()))
     errors.email = "That email address doesn't look right.";
-  need("phone", "a phone number", 40);
-  need("address1", "a street address", 200);
-  need("city", "a city", 100);
+  need("address1", "a house or street address", 200);
+  need("barangay", "a barangay", 120);
+  need("city", "a city or municipality", 120);
+  need("province", "a province", 120);
   need("postalCode", "a postal code", 20);
-  need("country", "a country", 80);
-  for (const key of ["address2", "region", "deliveryNotes", "orderNotes"] as const) {
+  if (!errors.postalCode && !/^\d{4}$/.test(c.postalCode!.trim()))
+    errors.postalCode = "A Philippine postal code is four digits.";
+  if ((c.instagram ?? "").length > 60) errors.instagram = "Please keep this under 60 characters.";
+  for (const key of ["addressNotes", "orderNotes"] as const) {
     if ((c[key] ?? "").length > 500) errors[key] = "Please keep this under 500 characters.";
   }
   return errors;
+}
+
+/** "@handle" and "instagram.com/handle" both come out as "handle". */
+export function normalizeInstagram(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
+    .replace(/^@/, "")
+    .replace(/\/+$/, "")
+    .slice(0, 60);
 }
 
 /* ─── Order snapshot (expanded server-side at order time) ─────────────────── */
@@ -152,7 +172,7 @@ export function buildSnapshot(
       subtotal,
       shipping,
       total: subtotal + shipping,
-      currency: "USD",
+      currency: "PHP",
     },
   };
 }

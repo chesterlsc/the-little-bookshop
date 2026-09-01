@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
+import { CLEAR_CART_KEY } from "@/components/clear-cart-on-mount";
 import { Button, ButtonLink, Eyebrow, Field, inputClass, Section } from "@/components/ui";
 import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, describeLine, shippingFor, validateCart } from "@/lib/cart";
 import { EMPTY_CUSTOMER, validateCustomer, type CustomerInfo, type FieldErrors } from "@/lib/checkout";
@@ -16,25 +18,42 @@ const FIELDS: {
   type?: string;
   half?: boolean;
   optional?: boolean;
+  hint?: string;
+  placeholder?: string;
 }[] = [
   { key: "fullName", label: "Full name", autoComplete: "name" },
-  { key: "email", label: "Email address", autoComplete: "email", type: "email" },
-  { key: "phone", label: "Phone number", autoComplete: "tel", type: "tel" },
-  { key: "address1", label: "Street address", autoComplete: "address-line1" },
-  { key: "address2", label: "Apartment, unit, etc. (optional)", autoComplete: "address-line2", optional: true },
-  { key: "city", label: "City", autoComplete: "address-level2", half: true },
-  { key: "region", label: "State / province (optional)", autoComplete: "address-level1", half: true, optional: true },
-  { key: "postalCode", label: "Postal code", autoComplete: "postal-code", half: true },
-  { key: "country", label: "Country", autoComplete: "country-name", half: true },
+  { key: "phone", label: "Mobile number", autoComplete: "tel", type: "tel", half: true, placeholder: "09XX XXX XXXX" },
+  { key: "email", label: "Email address", autoComplete: "email", type: "email", half: true },
+  {
+    key: "instagram",
+    label: "Instagram username (optional)",
+    autoComplete: "off",
+    optional: true,
+    hint: "Recommended — this is where you'll send your payment screenshot.",
+    placeholder: "@yourhandle",
+  },
+  { key: "address1", label: "House / unit / building and street", autoComplete: "address-line1" },
+  { key: "barangay", label: "Barangay", autoComplete: "address-level3", half: true },
+  { key: "city", label: "City or municipality", autoComplete: "address-level2", half: true },
+  { key: "province", label: "Province", autoComplete: "address-level1", half: true },
+  { key: "postalCode", label: "Postal code", autoComplete: "postal-code", half: true, placeholder: "1000" },
 ];
 
+/** New key per mount, so a double-click reuses one order but a fresh visit does not. */
+function newIdempotencyKey() {
+  return `co-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export default function CheckoutPage() {
+  const router = useRouter();
   const { cart, ready } = useCart();
   const [customer, setCustomer] = useState<CustomerInfo>(EMPTY_CUSTOMER);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [cartIssues, setCartIssues] = useState<{ key: string; message: string }[]>([]);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const idempotencyKey = useRef(newIdempotencyKey());
+  const inFlight = useRef(false);
 
   const subtotal = cartSubtotal(cart);
   const shipping = shippingFor(subtotal);
@@ -45,6 +64,7 @@ export default function CheckoutPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlight.current) return; // a second click must never make a second order
     setServerMessage(null);
     const fieldErrors = validateCustomer(customer);
     setErrors(fieldErrors);
@@ -54,27 +74,35 @@ export default function CheckoutPage() {
     }
     if (localIssues.length) return;
 
+    inFlight.current = true;
     setSubmitting(true);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, customer }),
+        body: JSON.stringify({ cart, customer, idempotencyKey: idempotencyKey.current }),
       });
       const json = await res.json();
-      if (res.ok && json.redirectUrl) {
-        // hold the basket until the payment is verified; the result page clears it
-        window.location.assign(json.redirectUrl);
+      if (res.ok && json.orderNumber) {
+        // replace, not push: Back must not return to a filled form and re-submit.
+        // The basket is cleared on the payment page, once the order really exists;
+        // this marker tells that page the basket it finds is the one just ordered.
+        try {
+          sessionStorage.setItem(CLEAR_CART_KEY, json.orderNumber);
+        } catch {
+          /* storage unavailable; the basket simply stays put */
+        }
+        router.replace(`/order/${encodeURIComponent(json.orderNumber)}/pay`);
         return;
       }
       if (json.fieldErrors) setErrors(json.fieldErrors);
       else if (json.issues) setCartIssues(json.issues);
-      else setServerMessage(json.message ?? "Something went wrong and nothing was charged. Please try again.");
-      setSubmitting(false);
+      else setServerMessage(json.message ?? "Something went wrong and your order was not saved. Please try again.");
     } catch {
-      setServerMessage("We couldn't reach the shop just now. Nothing was charged. Please try again.");
-      setSubmitting(false);
+      setServerMessage("We couldn't reach the shop just now. Your order was not saved. Please try again.");
     }
+    inFlight.current = false;
+    setSubmitting(false);
   };
 
   if (ready && cart.lines.length === 0) {
@@ -103,8 +131,8 @@ export default function CheckoutPage() {
           <Eyebrow className="mb-2">Checkout</Eyebrow>
           <h1 className="text-3xl font-bold sm:text-4xl">Nearly on your shelf</h1>
           <p className="mx-auto mt-2 max-w-[48ch] font-sans text-[0.95rem] text-ink-600">
-            Guest checkout, no account needed. Payment happens on a secure hosted page;
-            your card details never touch our shop.
+            Guest checkout, no account needed. You&apos;ll pay by GCash or MariBank transfer on
+            the next screen, then send us your screenshot on Instagram.
           </p>
         </div>
 
@@ -117,6 +145,7 @@ export default function CheckoutPage() {
                   key={f.key}
                   label={f.label}
                   htmlFor={`field-${f.key}`}
+                  hint={f.hint}
                   error={errors[f.key]}
                   className={f.half ? "" : "sm:col-span-2"}
                 >
@@ -133,16 +162,16 @@ export default function CheckoutPage() {
                 </Field>
               ))}
               <Field
-                label="Delivery notes (optional)"
-                htmlFor="field-deliveryNotes"
-                hint="Gate codes, 'leave with the neighbor', that sort of thing."
-                error={errors.deliveryNotes}
+                label="Address notes or landmarks (optional)"
+                htmlFor="field-addressNotes"
+                hint="Gate instructions, a landmark, the colour of the gate — anything that helps the courier find you."
+                error={errors.addressNotes}
                 className="sm:col-span-2"
               >
                 <textarea
-                  id="field-deliveryNotes"
-                  value={customer.deliveryNotes}
-                  onChange={(e) => set("deliveryNotes", e.target.value)}
+                  id="field-addressNotes"
+                  value={customer.addressNotes}
+                  onChange={(e) => set("addressNotes", e.target.value)}
                   rows={2}
                   maxLength={500}
                   className={`${inputClass} resize-y`}
@@ -227,15 +256,15 @@ export default function CheckoutPage() {
             <Button
               type="submit"
               disabled={submitting || localIssues.length > 0}
-              className="mt-4 w-full !py-3.5 text-lg"
+              className="btn-lg mt-4 w-full"
             >
-              {submitting ? "Opening secure payment…" : "Continue to secure payment"}
+              {submitting ? "Saving your order…" : "Place order"}
             </Button>
             <ul className="mt-3 space-y-1 font-sans text-xs text-ink-600">
               {[
-                "Payment on the provider's secure page",
-                "We never see or store card details",
-                "Order confirmed only after verified payment",
+                "No card details, ever",
+                "Pay by GCash or MariBank on the next screen",
+                "Confirmed once we've checked your screenshot",
               ].map((t) => (
                 <li key={t} className="flex items-center gap-1.5">
                   <IconCheck className="h-3.5 w-3.5 shrink-0 text-sage-600" /> {t}

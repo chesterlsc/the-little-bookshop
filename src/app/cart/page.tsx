@@ -89,7 +89,7 @@ export default function CartPage() {
                 Go to checkout
               </ButtonLink>
               <p className="mt-2 text-center font-sans text-xs text-ink-400">
-                Payment happens on a secure hosted page. We never see your card.
+                No card needed — you&apos;ll pay by GCash or MariBank on the next screen.
               </p>
               <ButtonLink href="/shop" variant="quiet" className="mt-2 w-full">
                 Keep browsing
