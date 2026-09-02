@@ -19,7 +19,7 @@ const providers: Record<string, EmailProvider> = {
 export function getEmailProvider(): EmailProvider {
   const id =
     process.env.EMAIL_PROVIDER ||
-    (process.env.RESEND_API_KEY ? "resend" : process.env.SMTP_HOST ? "smtp" : "dev");
+    (process.env.SMTP_HOST ? "smtp" : process.env.RESEND_API_KEY ? "resend" : "dev");
   const provider = providers[id];
   if (!provider) {
     throw new Error(

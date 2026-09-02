@@ -152,13 +152,19 @@ shop gets the customer, the full shipping address, the items and the totals; the
 customer gets their order number and the transfer details. Neither depends on
 the order store, so the shop still learns about an order the database lost.
 
-The mailer is picked from whichever credential is present, so one variable is
+The mailer is picked from whichever credential is present, so one secret is
 enough to switch mail on:
 
-- `RESEND_API_KEY` set → Resend. Also set `EMAIL_FROM` to an address on a domain
-  verified in Resend, or the mail is rejected.
-- else `SMTP_HOST` set → SMTP via nodemailer (`SMTP_PORT/USER/PASS`).
+- `SMTP_HOST` set → SMTP via nodemailer (`SMTP_PORT/USER/PASS`). For the shop's
+  Gmail mailbox that is `smtp.gmail.com:587` with a Google **App Password** in
+  `SMTP_PASS`; the account password will not authenticate.
+- else `RESEND_API_KEY` set → Resend, which needs `EMAIL_FROM` on a domain
+  verified with them. It cannot send as `@gmail.com`, so this only becomes an
+  option once the shop's own domain is live.
 - else → the dev mailer, which writes `.eml` files to `var/outbox/`.
+
+`EMAIL_FROM` and `ORDERS_EMAIL` both default to the shop mailbox in
+`src/content/site.ts`, so neither has to be set to receive orders.
 
 `EMAIL_PROVIDER` overrides that choice; use it to force `dev` on a staging
 deploy. Leave it unset in production. The dev mailer writes to disk, so on a

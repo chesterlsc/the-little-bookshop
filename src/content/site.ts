@@ -4,19 +4,25 @@
  * business details. See README, "Business information still needed".
  */
 
+export const INSTAGRAM_HANDLE = "thelittlebookshop.ph";
+export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
+
+/** The shop's mailbox: shown to customers, and where order mail is delivered. */
+const SHOP_EMAIL = "thelittlebookshop.ph.store@gmail.com";
+
 export const SITE = {
   name: "The Little Bookshop",
   businessName: "The Little Bookshop",
   tagline: "Miniatures for book lovers",
   description:
     "Handmade mini bookshelves, custom miniature book sets of six, keychains and tiny shelf accessories. Build a little shelf of the stories that made you.",
-  /** ⟨EDITABLE⟩ public contact email shown on the site */
-  contactEmail: "hello@example.com",
-  /** ⟨EDITABLE⟩ where order notification emails are sent */
-  ordersEmail: "orders@example.com",
-  /** ⟨EDITABLE⟩ Instagram / TikTok handles */
+  /** Public contact address shown on the site. */
+  contactEmail: SHOP_EMAIL,
+  /** Where order and contact-form mail is delivered; ORDERS_EMAIL overrides. */
+  ordersEmail: SHOP_EMAIL,
   socials: {
-    instagram: "https://www.instagram.com/",
+    instagram: INSTAGRAM_URL,
+    /** ⟨EDITABLE⟩ no TikTok handle supplied yet */
     tiktok: "https://www.tiktok.com/",
   },
   /** ⟨EDITABLE⟩ typical made-to-order production window */
@@ -33,9 +39,6 @@ export const SITE = {
  * No account-holder name is listed for either method because none was supplied.
  * Add `holder` to a method here if the shop wants one shown.
  */
-export const INSTAGRAM_HANDLE = "thelittlebookshop.ph";
-export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
-
 export interface PaymentMethod {
   id: "gcash" | "maribank";
   name: string;
