@@ -27,7 +27,7 @@ export const CATEGORIES: Record<
     blurb:
       "Three designs, nine colors, two sizes. Classic, Arched or Scalloped, printed to order.",
     art: "shelf-scalloped",
-    photo: "/marketing/arched-shelf/15.webp",
+    photo: "/marketing/shelf-mains/01.webp",
   },
   "mini-books": {
     name: "Miniature Books",
@@ -35,7 +35,7 @@ export const CATEGORIES: Record<
     blurb:
       "Your titles, made tiny. Sets of six, printed in PLA and assembled by hand.",
     art: "books-set",
-    photo: "/marketing/mini-books/05.webp",
+    photo: "/marketing/mini-books/02.webp",
   },
   keychains: {
     name: "Keychains",

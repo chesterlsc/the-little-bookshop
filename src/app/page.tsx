@@ -172,9 +172,21 @@ export default function HomePage() {
               </span>
             </h1>
 
-            <p className="story-line mx-auto mt-4 max-w-[34ch] text-pretty text-[1.15rem] leading-relaxed text-ink-600 sm:text-[1.22rem] lg:mx-0">
-              Your books. Your shelf. Your little library.
-            </p>
+            <div className="mx-auto mt-4 max-w-[46ch] space-y-3 text-pretty lg:mx-0">
+              <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
+                <span className="font-bold text-ink-800">
+                  Some stories stay with us long after the last page.
+                </span>{" "}
+                This is your little space to keep them close. A tiny shelf for the stories that
+                made you laugh, cry, fall in love, or see the world a little differently.
+              </p>
+              <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
+                <span className="font-bold text-ink-800">
+                  Made for book lovers, by a book lover.
+                </span>{" "}
+                Because every story deserves a place to be remembered.
+              </p>
+            </div>
 
             <div className="mt-6 flex flex-col items-stretch gap-3 sm:mt-7 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               <ButtonLink href="/build" className="btn-lg group">
@@ -198,8 +210,8 @@ export default function HomePage() {
             <div className="arch absolute inset-0 rotate-[-1.5deg] border-[1.5px] border-taupe-300 bg-cream-50 p-2.5 shadow-[0_26px_36px_-18px_rgba(94,73,52,0.42)]">
               <div className="arch relative h-full w-full overflow-hidden">
                 <Image
-                  src="/marketing/classic-shelf/12.webp"
-                  alt="A choco brown miniature bookshelf filled with tiny books, a plant and a brass globe, lit by window light beside a candle and an open book"
+                  src="/marketing/shelf-mains/03.webp"
+                  alt="The Choco Brown Classic bookshelf styled with a LITERATURE topper, tulips and candlelight, beside a full-size novel"
                   fill
                   preload
                   sizes="(min-width:1024px) 44vw, 90vw"
@@ -242,7 +254,7 @@ export default function HomePage() {
       <Section className="pt-5">
         <ul className="enter clay-sm mx-auto grid max-w-md grid-cols-3 divide-x-[1.5px] divide-dashed divide-taupe-300 lg:max-w-2xl">
           {([
-            ["hand", "Handmade to order"],
+            ["hand", "Manually assembled"],
             ["six", "Books come in sets of six"],
             ["box", "Arrives in an illustrated box"],
           ] as const).map(([kind, label], i) => (
