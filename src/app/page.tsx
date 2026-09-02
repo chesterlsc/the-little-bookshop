@@ -38,7 +38,7 @@ function HeroWindow() {
       preserveAspectRatio="none"
       aria-hidden
       role="presentation"
-      className="pointer-events-none absolute bottom-[-13%] left-[-23%] -z-10 h-[44%] w-[146%]"
+      className="pointer-events-none absolute bottom-[-13%] left-[-23%] -z-10 hidden h-[44%] w-[146%] lg:block"
     >
       <circle cx="366" cy="74" r="40" fill="var(--color-sun-200)" opacity="0.6" />
       <path
@@ -70,6 +70,27 @@ function HeroWindow() {
       <circle cx="348" cy="56" r="2.6" fill="var(--color-blush-300)" opacity="0.75" className="animate-drift-slow" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: "1.6s" }} />
       <circle cx="26" cy="46" r="3" fill="var(--color-gold-400)" opacity="0.45" className="animate-drift-slow" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: "0.8s" }} />
     </svg>
+  );
+}
+
+/** The maker's story — inline in the desktop hero, a pinned note below the mobile fold. */
+function HeroStory() {
+  return (
+    <>
+      <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
+        <span className="font-bold text-ink-800">
+          Some stories stay with us long after the last page.
+        </span>{" "}
+        This is your little space to keep them close. A tiny shelf for the stories that
+        made you laugh, cry, fall in love, or see the world a little differently.
+      </p>
+      <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
+        <span className="font-bold text-ink-800">
+          Made for book lovers, by a book lover.
+        </span>{" "}
+        Because every story deserves a place to be remembered.
+      </p>
+    </>
   );
 }
 
@@ -128,7 +149,7 @@ export default function HomePage() {
       {/* ─── Hero ─── announcement bar + header + this fold = exactly one viewport */}
       <Section tint="paper" className="relative overflow-hidden">
         <div className="hero-fold">
-          <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] items-center gap-6 pt-6 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:grid-rows-1 lg:gap-14">
+          <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] items-center gap-5 pt-4 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:grid-rows-1 lg:gap-14">
           {/* ── copy ── */}
           <div className="animate-fade-up text-center lg:text-left">
             <p className="eyebrow inline-flex items-center gap-2 rounded-full border-[1.5px] border-dashed border-taupe-300 bg-cream-50/70 py-1.5 pl-2.5 pr-3.5">
@@ -138,7 +159,7 @@ export default function HomePage() {
               Miniatures for book lovers
             </p>
 
-            <h1 className="hero-h1 mt-4 text-balance font-display font-bold text-ink-900">
+            <h1 className="hero-h1 mt-3 text-balance font-display font-bold text-ink-900 lg:mt-4">
               Build a little shelf for the{" "}
               <span className="hero-accent">
                 stories you love.
@@ -172,23 +193,14 @@ export default function HomePage() {
               </span>
             </h1>
 
-            <div className="mx-auto mt-4 max-w-[46ch] space-y-3 text-pretty lg:mx-0">
-              <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
-                <span className="font-bold text-ink-800">
-                  Some stories stay with us long after the last page.
-                </span>{" "}
-                This is your little space to keep them close. A tiny shelf for the stories that
-                made you laugh, cry, fall in love, or see the world a little differently.
-              </p>
-              <p className="story-line text-[1.06rem] leading-relaxed text-ink-600 sm:text-[1.12rem]">
-                <span className="font-bold text-ink-800">
-                  Made for book lovers, by a book lover.
-                </span>{" "}
-                Because every story deserves a place to be remembered.
-              </p>
+            <p className="story-line mx-auto mt-3 max-w-[34ch] text-pretty text-[1.15rem] leading-relaxed text-ink-600 lg:hidden">
+              Your books. Your shelf. Your little library.
+            </p>
+            <div className="mx-auto mt-4 hidden max-w-[46ch] space-y-3 text-pretty lg:mx-0 lg:block">
+              <HeroStory />
             </div>
 
-            <div className="mt-6 flex flex-col items-stretch gap-3 sm:mt-7 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+            <div className="mt-5 flex flex-col items-stretch gap-3 sm:mt-7 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               <ButtonLink href="/build" className="btn-lg group">
                 Build your little shelf
                 <IconArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
@@ -201,7 +213,7 @@ export default function HomePage() {
 
           {/* ── the little window — fills whatever the fold has left ── */}
           <div
-            className="animate-fade-up relative isolate h-full min-h-32 w-full lg:mx-auto lg:aspect-[5/6] lg:h-auto lg:max-w-[calc((100svh-14rem)*5/6)]"
+            className="hero-window animate-fade-up relative isolate h-full w-full lg:mx-auto lg:aspect-[5/6] lg:h-auto lg:max-w-[calc((100svh-14rem)*5/6)]"
             style={{ animationDelay: "120ms" }}
           >
             <HeroWindow />
@@ -215,11 +227,11 @@ export default function HomePage() {
                   fill
                   preload
                   sizes="(min-width:1024px) 44vw, 90vw"
-                  className="object-cover object-[56%_50%]"
+                  className="object-cover object-[50%_32%] lg:object-[56%_50%]"
                 />
               </div>
             </div>
-            <figure className="hero-polaroid absolute -bottom-3 -left-1 m-0 w-[7.4rem] -rotate-6 sm:w-[8.6rem] lg:-bottom-9 lg:-left-11 lg:w-[9.4rem]">
+            <figure className="hero-polaroid absolute -bottom-2 -left-1 m-0 w-[7.4rem] -rotate-6 sm:w-[8.6rem] lg:-bottom-9 lg:-left-11 lg:w-[9.4rem]">
               <div className="clay-sm relative bg-cream-50 p-1.5 pb-0 shadow-[0_16px_22px_-10px_rgba(94,73,52,0.45)]">
                 <span
                   aria-hidden
@@ -242,7 +254,7 @@ export default function HomePage() {
           </div>
 
           {/* the drawn scroll cue: the fold's one pointer at the rest of the shop */}
-          <div className="hero-cue soft-in flex flex-col items-center gap-0.5 pb-24 pt-3 lg:pb-4 lg:pt-3" style={{ animationDelay: "1200ms" }}>
+          <div className="hero-cue soft-in flex flex-col items-center gap-0.5 pb-[5.5rem] pt-1.5 lg:pb-4 lg:pt-3" style={{ animationDelay: "1200ms" }}>
             <span className="story-line text-[0.78rem] text-ink-600">the shop, just below</span>
             <IconChevronDown className="cue-bob h-4 w-4 text-sage-700" />
           </div>
@@ -250,7 +262,25 @@ export default function HomePage() {
       </Section>
       <ScallopBand from="paper" to="cream" />
 
-      {/* ─── The three promises: first thing the scroll reveals ─── */}
+      {/* ─── The maker's note: the hero story, pinned just under the fold (mobile) ─── */}
+      <Section className="pt-8 lg:hidden">
+        <div className="stitch relative mx-auto max-w-md rotate-[-0.6deg] bg-cream-50 px-6 pb-7 pt-8 text-center">
+          <span
+            aria-hidden
+            className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-[-4deg] rounded-[2px] bg-blush-200/85 shadow-[inset_0_0_0_1px_rgba(214,138,120,0.35)]"
+          />
+          <svg viewBox="0 0 34 26" className="mx-auto mb-3 h-6 w-8" aria-hidden role="presentation">
+            <Leaf x={2} y={16} s={6} angle={-28} />
+            <FolkFlower x={24} y={9} r={5} />
+            <Sparkle x={31} y={22} s={3} />
+          </svg>
+          <div className="space-y-3">
+            <HeroStory />
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── The three promises ─── */}
       <Section className="pt-5">
         <ul className="enter clay-sm mx-auto grid max-w-md grid-cols-3 divide-x-[1.5px] divide-dashed divide-taupe-300 lg:max-w-2xl">
           {([

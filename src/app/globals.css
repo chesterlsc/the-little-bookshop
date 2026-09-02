@@ -571,10 +571,14 @@ a, button {
 /* short phones (SE-class): the cue would only hide behind the bottom nav —
    drop it and keep just its nav clearance, so the photo takes the space and
    the seam stays at the fold */
-@media (max-height: 700px) and (max-width: 1023px) {
+.hero-window { min-height: 10rem; }
+/* short phones: the cue and polaroid would only crowd the shallower photo —
+   drop them, keep the cue's nav clearance, let the arch go shallow */
+@media (max-width: 1023px) and (max-height: 700px) {
   .hero-cue { display: none; }
-  .hero-polaroid { display: none; } /* it would cover most of the short photo strip */
+  .hero-polaroid { display: none; }
   .hero-fold { padding-bottom: 88px; }
+  .hero-window { min-height: 6rem; }
 }
 
 /* hero display type: one fluid ramp, tight storybook leading */

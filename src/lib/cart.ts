@@ -102,6 +102,14 @@ export function validateCart(cart: Cart): LineIssue[] {
         });
       }
     } else {
+      // The cart arrives as untrusted JSON on the checkout route, so the types
+      // above are a claim, not a fact. Reject a shape we don't recognize rather
+      // than reading through it and turning a bad request into a 500.
+      const b = line as Partial<BundleLine>;
+      if (b.type !== "bundle" || !b.shelf || !b.set || !Array.isArray(b.accessories)) {
+        issues.push({ key: line.key, message: "This item is no longer in the catalog." });
+        continue;
+      }
       const shelf = getProduct(line.shelf.slug);
       const shelfVar = shelf && getVariant(shelf, line.shelf.variantId);
       const set = getProduct(line.set.slug);

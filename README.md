@@ -87,7 +87,7 @@ See `.env.example` (documented inline). The important ones:
 | Variable | Purpose |
 | --- | --- |
 | `PUBLIC_BASE_URL` | Public site URL (used in the order emails) |
-| `EMAIL_PROVIDER` | `dev` (writes `var/outbox/*.eml`) · `resend` · `smtp` |
+| `EMAIL_PROVIDER` | Override the auto-detected mailer: `dev` · `resend` · `smtp` |
 | `EMAIL_FROM`, `ORDERS_EMAIL` | Sender + business notification inbox |
 | `NEXT_PUBLIC_FLAT_SHIPPING_CENTS` | Flat shipping display value (recomputed server-side) |
 | `ORDERS_DB_PATH` | SQLite location (use a persistent volume in prod) |
@@ -147,10 +147,22 @@ shop wants one.
 
 ## Email configuration
 
-- `EMAIL_PROVIDER=dev` → messages become `.eml` files in `var/outbox/` (open
-  them in any mail app).
-- `EMAIL_PROVIDER=resend` → set `RESEND_API_KEY` and a verified `EMAIL_FROM`.
-- `EMAIL_PROVIDER=smtp` → set `SMTP_HOST/PORT/USER/PASS`.
+Every checkout sends two messages, and together they are the order record: the
+shop gets the customer, the full shipping address, the items and the totals; the
+customer gets their order number and the transfer details. Neither depends on
+the order store, so the shop still learns about an order the database lost.
+
+The mailer is picked from whichever credential is present, so one variable is
+enough to switch mail on:
+
+- `RESEND_API_KEY` set → Resend. Also set `EMAIL_FROM` to an address on a domain
+  verified in Resend, or the mail is rejected.
+- else `SMTP_HOST` set → SMTP via nodemailer (`SMTP_PORT/USER/PASS`).
+- else → the dev mailer, which writes `.eml` files to `var/outbox/`.
+
+`EMAIL_PROVIDER` overrides that choice; use it to force `dev` on a staging
+deploy. Leave it unset in production. The dev mailer writes to disk, so on a
+serverless host it fails and the shop is never told about the order.
 
 ## Testing
 

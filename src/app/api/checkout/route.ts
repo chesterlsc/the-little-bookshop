@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { Cart } from "@/lib/cart";
 import {
   buildSnapshot,
+  EMPTY_CUSTOMER,
   normalizeInstagram,
   validateCustomer,
   type CustomerInfo,
@@ -28,6 +29,22 @@ const recent = new Map<string, { number: string; at: number }>();
 const fingerprint = (key: string, snapshot: unknown) =>
   `${key}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex").slice(0, 32)}`;
 const IDEMPOTENCY_WINDOW_MS = 10 * 60 * 1000;
+
+/**
+ * The shop's notification is the order record, so a send failure must reach the
+ * customer rather than being logged into the void: they retry, and the shop
+ * hears about the order. `claimEmailSend` keeps an ordinary retry to one email.
+ */
+function emailFailed(orderNumber: string, err: unknown) {
+  console.error(`[checkout] order ${orderNumber} could not be emailed:`, err);
+  return NextResponse.json(
+    {
+      error: "email",
+      message: `We saved your order (${orderNumber}) but couldn't send the confirmation. Nothing was charged. Please press Place order again, or message us on Instagram with that number.`,
+    },
+    { status: 502 },
+  );
+}
 
 function remember(key: string, number: string) {
   const now = Date.now();
@@ -63,9 +80,14 @@ export async function POST(request: Request) {
   if (Object.keys(fieldErrors).length) {
     return NextResponse.json({ error: "customer", fieldErrors }, { status: 422 });
   }
-  const customer = Object.fromEntries(
-    Object.entries(body.customer as CustomerInfo).map(([k, v]) => [k, String(v ?? "").trim()]),
-  ) as unknown as CustomerInfo;
+  // Built on EMPTY_CUSTOMER so every field is a string even when the request
+  // omits an optional one; the normalizers below all assume that.
+  const customer: CustomerInfo = {
+    ...EMPTY_CUSTOMER,
+    ...Object.fromEntries(
+      Object.entries(body.customer as CustomerInfo).map(([k, v]) => [k, String(v ?? "").trim()]),
+    ),
+  };
   customer.instagram = normalizeInstagram(customer.instagram);
 
   const { snapshot, issues } = buildSnapshot({ lines: cart.lines }, customer);
@@ -80,12 +102,19 @@ export async function POST(request: Request) {
     const seen = recent.get(key);
     if (seen && Date.now() - seen.at < IDEMPOTENCY_WINDOW_MS) {
       const existing = await getOrder(seen.number);
-      if (existing)
+      if (existing) {
+        // A retry after a failed send lands here, so this must send too.
+        try {
+          await notifyNewOrder(existing.number);
+        } catch (err) {
+          return emailFailed(existing.number, err);
+        }
         return NextResponse.json({
           orderNumber: existing.number,
           pay: toPaySnapshot(existing.number, snapshot),
           reused: true,
         });
+      }
     }
   }
 
@@ -104,8 +133,11 @@ export async function POST(request: Request) {
   }
 
   if (key) remember(key, order.number);
-  // emails must never take the order down with them
-  await notifyNewOrder(order.number);
+  try {
+    await notifyNewOrder(order.number);
+  } catch (err) {
+    return emailFailed(order.number, err);
+  }
 
   return NextResponse.json({ orderNumber: order.number, pay: toPaySnapshot(order.number, snapshot) });
 }

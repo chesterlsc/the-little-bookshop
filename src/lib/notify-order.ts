@@ -15,7 +15,12 @@ export function baseUrl(): string {
  * watch for the transfer, and the customer needs their order number to quote on
  * Instagram. `claimEmailSend` makes this safe to call more than once.
  *
- * Never throws: a mail outage must not lose an order that is already saved.
+ * The two sends are deliberately not equal. The shop's copy IS the order
+ * record, so if it fails this throws and the caller must not report success:
+ * the order row lives in per-instance storage that the next request usually
+ * cannot see, making a swallowed failure an order nobody ever learns about.
+ * The customer's copy is a convenience (they already have the same details on
+ * screen), so a bad address only gets logged.
  */
 export async function notifyNewOrder(orderNumber: string): Promise<OrderRecord | null> {
   const order = await getOrder(orderNumber);
@@ -25,17 +30,22 @@ export async function notifyNewOrder(orderNumber: string): Promise<OrderRecord |
   try {
     const snapshot = parseSnapshot(order);
     const mailer = getEmailProvider();
-    const payUrl = `${baseUrl()}/order/${order.number}/pay`;
     const placedAt = new Date(order.created_at).toUTCString();
     await mailer.send(
       businessOrderEmail(ordersAddress(), order.number, snapshot, "awaiting payment", placedAt),
     );
-    await mailer.send(customerOrderEmail(order.number, snapshot, payUrl));
+
+    try {
+      await mailer.send(
+        customerOrderEmail(order.number, snapshot, `${baseUrl()}/order/${order.number}/pay`),
+      );
+    } catch (err) {
+      console.error(`[order ${order.number}] customer copy failed, shop was notified:`, err);
+    }
   } catch (err) {
-    // Hand the claim back so a later visit retries, rather than silently
-    // losing the only notification the shop gets about a real order.
+    // Hand the claim back so the customer's retry sends for real.
     await releaseEmailSend(order.number);
-    console.error(`[order ${order.number}] email delivery failed, will retry:`, err);
+    throw err;
   }
   return order;
 }
