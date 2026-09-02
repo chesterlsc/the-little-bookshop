@@ -189,7 +189,7 @@ Marked `⟨like this⟩` in `src/content/site.ts` / flagged in `src/lib/catalog.
 
 ## Notes on catalog fidelity
 
-Bookshelves (all six styles, sizes, ten colors, ladder option, capacities,
+Bookshelves (all three styles, sizes, nine colors, ladder option, capacities,
 dimensions, PLA material), accessories (plants, fish tank, bean bag, rug with
 their real options), stickers ($6 · 3×3in waterproof; $12 sheet; two genuinely
 sold-out items kept as unavailable-state demos) and mini-book construction

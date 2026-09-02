@@ -16,7 +16,7 @@ import { ThemeShelfDemo } from "@/components/theme-shelf-demo";
 import { ProductCard } from "@/components/product-card";
 import { CATEGORIES, getProduct, type Category } from "@/lib/catalog";
 import { FAQ } from "@/content/site";
-import { IconArrowRight } from "@/components/icons";
+import { IconArrowRight, IconChevronDown } from "@/components/icons";
 
 const FEATURED = [
   "mini-scalloped-bookshelf",
@@ -125,9 +125,10 @@ function HeroMark({ kind, delay = 0 }: { kind: keyof typeof HERO_MARKS; delay?: 
 export default function HomePage() {
   return (
     <div className="pb-nav">
-      {/* ─── Hero ─── */}
+      {/* ─── Hero ─── announcement bar + header + this fold = exactly one viewport */}
       <Section tint="paper" className="relative overflow-hidden">
-        <div className="grid items-center gap-9 py-8 sm:py-12 lg:grid-cols-[1.04fr_0.96fr] lg:gap-14 lg:py-16">
+        <div className="hero-fold">
+          <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] items-center gap-6 pt-6 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:grid-rows-1 lg:gap-14">
           {/* ── copy ── */}
           <div className="animate-fade-up text-center lg:text-left">
             <p className="eyebrow inline-flex items-center gap-2 rounded-full border-[1.5px] border-dashed border-taupe-300 bg-cream-50/70 py-1.5 pl-2.5 pr-3.5">
@@ -175,7 +176,7 @@ export default function HomePage() {
               Your books. Your shelf. Your little library.
             </p>
 
-            <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+            <div className="mt-6 flex flex-col items-stretch gap-3 sm:mt-7 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
               <ButtonLink href="/build" className="btn-lg group">
                 Build your little shelf
                 <IconArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
@@ -184,44 +185,29 @@ export default function HomePage() {
                 Shop the collection
               </ButtonLink>
             </div>
-
-            {/* the three promises, as one hand-cut note strip */}
-            <ul className="clay-sm mx-auto mt-7 grid max-w-md grid-cols-3 divide-x-[1.5px] divide-dashed divide-taupe-300 lg:mx-0">
-              {([
-                ["hand", "Handmade to order"],
-                ["six", "Books come in sets of six"],
-                ["box", "Arrives in an illustrated box"],
-              ] as const).map(([kind, label], i) => (
-                <li key={kind} className="flex flex-col items-center gap-1.5 px-2 py-3.5 text-center sm:px-3">
-                  <HeroMark kind={kind} delay={280 + i * 190} />
-                  <span className="font-sans text-[0.7rem] font-bold leading-tight text-ink-800 sm:text-[0.78rem]">
-                    {label}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
 
-          {/* ── the little window ── */}
+          {/* ── the little window — fills whatever the fold has left ── */}
           <div
-            className="animate-fade-up relative isolate mx-auto w-full max-w-[20rem] sm:max-w-[24rem] lg:max-w-none"
+            className="animate-fade-up relative isolate h-full min-h-32 w-full lg:mx-auto lg:aspect-[5/6] lg:h-auto lg:max-w-[calc((100svh-14rem)*5/6)]"
             style={{ animationDelay: "120ms" }}
           >
             <HeroWindow />
             {/* the pencil under-drawing, still showing under the finished thing */}
             <div aria-hidden className="arch absolute inset-0 rotate-[3.5deg] border-2 border-dashed border-taupe-300" />
-            <div className="arch relative rotate-[-1.5deg] border-[1.5px] border-taupe-300 bg-cream-50 p-2.5 shadow-[0_26px_36px_-18px_rgba(94,73,52,0.42)]">
-              <Image
-                src="/marketing/classic-shelf/12.webp"
-                alt="A choco brown miniature bookshelf filled with tiny books, a plant and a brass globe, lit by window light beside a candle and an open book"
-                width={1050}
-                height={1400}
-                priority
-                sizes="(min-width:1024px) 44vw, 90vw"
-                className="arch aspect-[5/6] w-full object-cover object-[56%_50%]"
-              />
+            <div className="arch absolute inset-0 rotate-[-1.5deg] border-[1.5px] border-taupe-300 bg-cream-50 p-2.5 shadow-[0_26px_36px_-18px_rgba(94,73,52,0.42)]">
+              <div className="arch relative h-full w-full overflow-hidden">
+                <Image
+                  src="/marketing/classic-shelf/12.webp"
+                  alt="A choco brown miniature bookshelf filled with tiny books, a plant and a brass globe, lit by window light beside a candle and an open book"
+                  fill
+                  preload
+                  sizes="(min-width:1024px) 44vw, 90vw"
+                  className="object-cover object-[56%_50%]"
+                />
+              </div>
             </div>
-            <figure className="absolute -bottom-9 -left-3 m-0 w-[7.4rem] -rotate-6 sm:w-[8.6rem] lg:-left-11 lg:w-[9.4rem]">
+            <figure className="hero-polaroid absolute -bottom-3 -left-1 m-0 w-[7.4rem] -rotate-6 sm:w-[8.6rem] lg:-bottom-9 lg:-left-11 lg:w-[9.4rem]">
               <div className="clay-sm relative bg-cream-50 p-1.5 pb-0 shadow-[0_16px_22px_-10px_rgba(94,73,52,0.45)]">
                 <span
                   aria-hidden
@@ -241,9 +227,34 @@ export default function HomePage() {
               </div>
             </figure>
           </div>
+          </div>
+
+          {/* the drawn scroll cue: the fold's one pointer at the rest of the shop */}
+          <div className="hero-cue soft-in flex flex-col items-center gap-0.5 pb-24 pt-3 lg:pb-4 lg:pt-3" style={{ animationDelay: "1200ms" }}>
+            <span className="story-line text-[0.78rem] text-ink-600">the shop, just below</span>
+            <IconChevronDown className="cue-bob h-4 w-4 text-sage-700" />
+          </div>
         </div>
       </Section>
       <ScallopBand from="paper" to="cream" />
+
+      {/* ─── The three promises: first thing the scroll reveals ─── */}
+      <Section className="pt-5">
+        <ul className="enter clay-sm mx-auto grid max-w-md grid-cols-3 divide-x-[1.5px] divide-dashed divide-taupe-300 lg:max-w-2xl">
+          {([
+            ["hand", "Handmade to order"],
+            ["six", "Books come in sets of six"],
+            ["box", "Arrives in an illustrated box"],
+          ] as const).map(([kind, label], i) => (
+            <li key={kind} className="flex flex-col items-center gap-1.5 px-2 py-3.5 text-center sm:px-3">
+              <HeroMark kind={kind} delay={280 + i * 190} />
+              <span className="font-sans text-[0.7rem] font-bold leading-tight text-ink-800 sm:text-[0.78rem]">
+                {label}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Section>
 
       {/* ─── Categories ─── */}
       <Section className="pb-14 pt-12 lg:pb-20 lg:pt-16">
@@ -301,7 +312,7 @@ export default function HomePage() {
           <ThemeShelfDemo />
           <div className="enter-stagger mt-10 grid gap-3 sm:grid-cols-3">
             {[
-              ["1", "Choose a shelf", "Six styles, ten studio colors, two sizes."],
+              ["1", "Choose a shelf", "Three styles, nine studio colors, two sizes."],
               ["2", "Pick six stories", "A ready-made set, or your own six titles."],
               ["3", "Make it yours", "Add tiny extras, a theme, and a note."],
             ].map(([n, title, body], i) => (

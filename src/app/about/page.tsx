@@ -83,7 +83,7 @@ export default function AboutPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { photo: "/products/custom-mini-book-set/04.webp", title: "Made to order", body: "Every set is printed, mounted and packed after you order it. Nothing sits in a warehouse." },
-              { photo: "/products/mini-scalloped-bookshelf/03.webp", title: "Ten studio colors", body: "Shelves come in ten colors we actually like, in plant-based PLA with a soft matte finish." },
+              { photo: "/products/mini-scalloped-bookshelf/03.webp", title: "Nine studio colors", body: "Shelves come in nine colors we actually like, in plant-based PLA with a soft matte finish." },
               { photo: "/products/mini-book-keychain/01.webp", title: "Gift-ready", body: "Illustrated boxes, six-slot cards and hanging cards. Packaging that's part of the present." },
             ].map((c) => (
               <div key={c.title} className="clay p-5 text-center">

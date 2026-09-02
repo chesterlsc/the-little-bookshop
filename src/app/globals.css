@@ -136,6 +136,7 @@
   .sketch-path, .sketch-once { animation: none; stroke-dashoffset: 0; }
   .soft-in { animation: none; }
   .animate-drift, .animate-drift-slow { animation: none; }
+  .cue-bob { animation: none; }
   .splash { display: none; }
 }
 
@@ -367,6 +368,15 @@ a, button {
   font-size: 1.08rem;
   min-height: 54px;
 }
+/* only the hero's own CTAs go compact on phones, so the photo keeps the fold —
+   never the checkout / payment CTAs that share .btn-lg */
+@media (max-width: 639px) {
+  .hero-fold .btn-lg {
+    padding: 0.7rem 1.6rem;
+    font-size: 1rem;
+    min-height: 46px;
+  }
+}
 
 /* the "drawn twice" outline button: an inked line with a hard offset second pass */
 .btn-sketch {
@@ -536,6 +546,35 @@ a, button {
 .story-line {
   font-family: var(--font-story);
   font-style: italic;
+}
+
+/* ─── The 100%-viewport hero ───────────────────────────────────────────────
+   The fold: announcement bar (~32px) + header (64px) + this flex column fill
+   the first viewport exactly; the shop starts on the first scroll. svh, so
+   mobile browser chrome can never push the fold off screen. On screens too
+   short for the content, min-height lets it grow instead of clipping. */
+.hero-fold {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 96px);
+  min-height: calc(100svh - 96px);
+}
+
+/* the drawn scroll cue at the foot of the fold */
+@keyframes cue-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+.cue-bob {
+  animation: cue-bob 2.4s ease-in-out infinite;
+}
+/* short phones (SE-class): the cue would only hide behind the bottom nav —
+   drop it and keep just its nav clearance, so the photo takes the space and
+   the seam stays at the fold */
+@media (max-height: 700px) and (max-width: 1023px) {
+  .hero-cue { display: none; }
+  .hero-polaroid { display: none; } /* it would cover most of the short photo strip */
+  .hero-fold { padding-bottom: 88px; }
 }
 
 /* hero display type: one fluid ramp, tight storybook leading */

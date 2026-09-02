@@ -108,7 +108,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "What are the shelves made of?",
-    a: "Made to order from sturdy, plant-based PLA with a soft matte finish, in ten studio colors: pistachio green and camel tan through to navy blue, espresso brown and midnight black.",
+    a: "Made to order from sturdy, plant-based PLA with a soft matte finish, in nine studio colors: sage green and camel tan through to navy blue, choco brown and midnight black.",
   },
   {
     q: "How long does an order take?",
@@ -177,7 +177,7 @@ export const POLICIES: Record<
 export const ABOUT = {
   intro: [
     "The Little Bookshop began with a simple, slightly ridiculous wish: to hold a whole reading life in two hands.",
-    "We make miniatures for book lovers: tiny shelves in ten colors, six-book sets you can customize title by title, keychains that carry one beloved story, and the small extras (a plant, a rug, a very calm fish) that make a shelf feel like a room.",
+    "We make miniatures for book lovers: tiny shelves in nine colors, six-book sets you can customize title by title, keychains that carry one beloved story, and the small extras (a plant, a rug, a very calm fish) that make a shelf feel like a room.",
     "Everything is made to order, slowly and by hand: covers recreated in miniature, printed on matte cardstock, mounted on foamboard, and packed into our illustrated box like a shelf being tucked into bed.",
   ],
   why: [
