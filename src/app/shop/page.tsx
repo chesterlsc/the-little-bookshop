@@ -8,7 +8,7 @@ import { IconSearch } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Shop all",
-  description: "Every tiny thing in The Little Bookshop: shelves, six-book sets, keychains, stickers and accessories.",
+  description: "Every tiny thing in The Little Bookshop: shelves, six-book sets, keychains and shelf accessories.",
 };
 
 export default async function ShopPage({ searchParams }: PageProps<"/shop">) {

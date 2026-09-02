@@ -25,8 +25,8 @@ const FEATURED = [
   "mini-plant",
   "mini-shelf-letters",
   "mini-arched-bookshelf",
-  "bookstore-acrylic-keychain",
-  "emily-henry-book-stack-sticker",
+  "mini-classic-bookshelf",
+  "mini-ladder",
 ];
 
 /** The one ambient touch: a soft folk landscape the little shelf sits in front of.

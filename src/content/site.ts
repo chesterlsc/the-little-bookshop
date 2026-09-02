@@ -9,7 +9,7 @@ export const SITE = {
   businessName: "The Little Bookshop",
   tagline: "Miniatures for book lovers",
   description:
-    "Handmade mini bookshelves, custom miniature book sets of six, keychains, stickers and tiny shelf accessories. Build a little shelf of the stories that made you.",
+    "Handmade mini bookshelves, custom miniature book sets of six, keychains and tiny shelf accessories. Build a little shelf of the stories that made you.",
   /** ⟨EDITABLE⟩ public contact email shown on the site */
   contactEmail: "hello@example.com",
   /** ⟨EDITABLE⟩ where order notification emails are sent */
@@ -88,11 +88,11 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How do custom mini book sets work?",
-    a: "You give us exactly six titles (authors help us find the right editions) and we recreate each cover in miniature, printed on matte cardstock and mounted by hand on a foamboard core, front, back and spine. The books are decorative and don't open, which is how they stay a quarter of an inch thick.",
+    a: "You give us exactly six titles (authors help us find the right editions) and we recreate each cover in miniature. They are 3D printed in PLA, waterproof, and assembled by hand. The books are decorative and don't open.",
   },
   {
     q: "How big are the mini books and shelves?",
-    a: "Each mini book is about 1 × 1.4 inches and 0.25 inches thick. Shelves range from about 6.4 to 9.3 inches tall depending on the style and size, so they suit a desk but still hold a whole reading year.",
+    a: "Each mini book is about 1 × 1.4 inches and 0.25 inches thick. Shelves come in two sizes: Mini at 7 × 4 × 1.5 inches and Regular at 9 × 5 × 1.5 inches.",
   },
   {
     q: "Can I choose the cover edition for my custom books?",
@@ -104,7 +104,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How many mini books fit on a shelf?",
-    a: "Between 33 and 68, depending on the style and size. Each product page carries the exact figure for both Regular and Miniature, along with a measured diagram.",
+    a: "Plenty — a Regular shelf holds a whole reading year of them. Each product page shows the shelf styled with a full set so you can judge the fit.",
   },
   {
     q: "What are the shelves made of?",

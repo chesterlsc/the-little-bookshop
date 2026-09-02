@@ -15,7 +15,6 @@ export type Category =
   | "bookshelves"
   | "mini-books"
   | "keychains"
-  | "stickers"
   | "accessories";
 
 export const CATEGORIES: Record<
@@ -45,14 +44,6 @@ export const CATEGORIES: Record<
       "One favorite book, on your keys. Tell us the title and we will make it small.",
     art: "keychain-book",
     photo: "/marketing/social/03.webp",
-  },
-  stickers: {
-    name: "Stickers",
-    short: "Stickers",
-    blurb:
-      "Waterproof book-stack decals. An author's whole backlist in one pile of spines.",
-    art: "sticker-stack",
-    photo: "/products/mini-book-lover-sticker-sheet/01.webp",
   },
   accessories: {
     name: "Shelf Accessories",
@@ -87,22 +78,6 @@ export interface ProductImage {
   alt: string;
   /** "chart" = a labelled size/color reference rather than a styled shot. */
   kind: "photo" | "chart" | "packaging" | "illustration";
-}
-
-/**
- * Gallery shorthand. Each entry is `"<file number>|<alt text>"`, optionally
- * `"|chart"` to mark it as a reference image rather than a styled photo.
- * Files live in public/products/<slug>/, pulled by scripts/fetch-photos.mjs.
- */
-function gallery(slug: string, ...entries: string[]): ProductImage[] {
-  return entries.map((entry) => {
-    const [n, alt, kind] = entry.split("|");
-    return {
-      src: `/products/${slug}/${n}.webp`,
-      alt,
-      kind: (kind as ProductImage["kind"]) ?? "photo",
-    };
-  });
 }
 
 /**
@@ -306,6 +281,7 @@ export const PRODUCTS: Product[] = [
     ],
     art: "shelf-scalloped",
     images: shots(
+      "shelf-mains/04|The Blush Pink Scalloped bookshelf styled with a FAVES topper, candles and tulips",
       "scalloped-shelf/09|A Blush Pink Scalloped bookshelf filled with tiny hardcovers and wooden FAVES letters, standing beside full-size paperbacks",
       "scalloped-shelf/03|An empty Blush Pink Scalloped bookshelf centred on a dark wood table, showing the scalloped trim on every shelf edge",
       "scalloped-shelf/08|Close view of the Scalloped shelf packed with tiny romance paperbacks and wooden FAVES letters",
@@ -340,6 +316,7 @@ export const PRODUCTS: Product[] = [
     ],
     art: "shelf-basic",
     images: shots(
+      "shelf-mains/03|The Choco Brown Classic bookshelf styled with a LITERATURE topper, candles and tulips",
       "classic-shelf/14|A choco brown Mini Classic bookshelf styled with tiny novels, a plant and white LITERATURE letters, standing next to a full-size hardback",
       "classic-shelf/12|The Classic shelf filled with miniature books, a plant and a brass globe, lit by window light beside a candle and an open book",
       "classic-shelf/16|The Classic shelf photographed at an angle with its little ladder leaning against the side",
@@ -372,6 +349,7 @@ export const PRODUCTS: Product[] = [
     ],
     art: "shelf-arched",
     images: shots(
+      "shelf-mains/02|The Bone White Arched bookshelf styled with a TBR topper, fairy lights and tulips",
       "arched-shelf/13|A Bone White Arched bookshelf packed with miniature books, a TBR topper and a mini plant, next to a full-size novel",
       "arched-shelf/11|A hand holding a Bone White Arched bookshelf filled with tiny paperbacks, a wooden TBR topper and a miniature plant",
       "arched-shelf/15|Full-size novels, a styled Arched shelf and an empty one lined up together on a wood table",
@@ -430,46 +408,6 @@ export const PRODUCTS: Product[] = [
     related: ["mini-scalloped-bookshelf", "mini-book-keychain"],
   }),
   make({
-    slug: "mini-twilight-saga-set",
-    name: "Mini Twilight Saga Set",
-    category: "mini-books",
-    blurb: "The whole Forks shelf in miniature.",
-    description: [
-      "The original four, plus Midnight Sun and Life and Death. Those covers have been recognizable from across a room for twenty years, and they lose none of it at an inch.",
-      "The set people buy for someone who read them at thirteen and never quite let go.",
-      `${BOOK_SIZE} ${BOOK_MATERIALS}`,
-    ],
-    art: "books-set",
-    images: gallery(
-      "mini-twilight-saga-set",
-      "01|The mini Twilight saga fanned out across the pages of an open book",
-      "03|Six mini saga covers held in one hand",
-      "02|The full set laid flat, all six covers face up",
-      "04|Cover and spine options: front, back and spine, or double-sided|chart",
-    ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
-    badges: ["Set of six"],
-    setOfSix: true,
-    includedTitles: [
-      "Twilight",
-      "New Moon",
-      "Eclipse",
-      "Breaking Dawn",
-      "Midnight Sun",
-      "Life and Death",
-    ],
-    details: {
-      included: ["Six ready-made mini books from the saga"],
-      packaging: SET_PACKAGING,
-      dimensions: [BOOK_SIZE],
-      materials: BOOK_MATERIALS,
-      care: "Keep dry. Wipe gently with a soft, dry cloth.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["custom-mini-book-set", "mini-arched-bookshelf", "twilight-book-stack-sticker"],
-  }),
-  make({
     slug: "mini-sarah-j-maas-set",
     name: "Mini Sarah J. Maas Set",
     category: "mini-books",
@@ -480,13 +418,8 @@ export const PRODUCTS: Product[] = [
       `${BOOK_SIZE} ${BOOK_MATERIALS}`,
     ],
     art: "books-set",
-    images: gallery(
-      "mini-sarah-j-maas-set",
-      "01|Six mini Sarah J. Maas covers fanned across a hand",
-      "03|The full set spread out, jewel-toned covers face up",
-      "08|The set stood spine-out in a row, held between finger and thumb",
-      "07|Mini spines lined up along the gutter of an open book",
-      "06|The stack held together in one hand for scale",
+    images: shots(
+      "book-set-covers/02|Six mini Sarah J. Maas covers fanned across an open book",
     ),
     ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
@@ -514,13 +447,8 @@ export const PRODUCTS: Product[] = [
       `${BOOK_SIZE} ${BOOK_MATERIALS}`,
     ],
     art: "books-set",
-    images: gallery(
-      "mini-fourth-wing-set",
-      "01|Mini Fourth Wing, Iron Flame and Onyx Storm covers laid on an open book",
-      "05|The Empyrean set held in one hand, covers facing out",
-      "03|The full set fanned across a page",
-      "04|Three mini covers standing upright against the spine of a paperback",
-      "06|Cover and spine options: front, back and spine, or double-sided|chart",
+    images: shots(
+      "book-set-covers/01|Mini Fourth Wing, Iron Flame and Onyx Storm covers laid on an open book",
     ),
     ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
@@ -535,7 +463,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["mini-sarah-j-maas-set", "special-edition-fourth-wing-sticker", "custom-mini-book-set"],
+    related: ["mini-sarah-j-maas-set", "custom-mini-book-set"],
   }),
   make({
     slug: "mini-jenny-han-set",
@@ -548,13 +476,8 @@ export const PRODUCTS: Product[] = [
       `${BOOK_SIZE} ${BOOK_MATERIALS}`,
     ],
     art: "books-set",
-    images: gallery(
-      "mini-jenny-han-set",
-      "01|Pastel mini covers from both trilogies spread across an open book",
-      "03|The six covers fanned out in one hand",
-      "02|The set stood upright in a row on a page",
-      "04|A single mini cover held between finger and thumb for scale",
-      "05|Cover and spine options: front, back and spine, or double-sided|chart",
+    images: shots(
+      "book-set-covers/04|The mini Jenny Han summer covers on an open book",
     ),
     ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
@@ -590,13 +513,8 @@ export const PRODUCTS: Product[] = [
       `${BOOK_SIZE} ${BOOK_MATERIALS}`,
     ],
     art: "books-set",
-    images: gallery(
-      "mini-freida-mcfadden-set",
-      "03|Mini thriller covers spread across a desk, titles clearly readable",
-      "01|The set scattered beside a laptop",
-      "04|Six mini covers laid out in two rows",
-      "05|The set arranged next to a notebook and pen",
-      "02|The covers viewed at an angle, showing their thickness",
+    images: shots(
+      "book-set-covers/03|Mini Freida McFadden thriller covers arranged on an open book",
     ),
     ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
     priceStatus: "placeholder",
@@ -611,7 +529,7 @@ export const PRODUCTS: Product[] = [
       care: "Keep dry. Wipe gently with a soft, dry cloth.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["freida-mcfadden-book-stack-sticker", "custom-mini-book-set"],
+    related: ["custom-mini-book-set"],
   }),
 
   /* ─── Keychains ─── */
@@ -646,149 +564,8 @@ export const PRODUCTS: Product[] = [
       care: "Splash-friendly, not swim-friendly. Wipe dry if it gets caught in the rain.",
       shipping: SHELF_SHIPPING,
     },
-    related: ["custom-mini-book-set", "book-stack-acrylic-keychain", "mini-book-lover-sticker-sheet"],
+    related: ["custom-mini-book-set"],
   }),
-  make({
-    slug: "book-stack-acrylic-keychain",
-    name: "Book Stack Acrylic Keychain",
-    category: "keychains",
-    blurb: "A leaning stack of books in clear acrylic.",
-    description: [
-      "Our illustrated stack, five books piled the way books actually pile, printed crisp on durable clear acrylic with a sturdy ring.",
-      "Two inches square, light enough that you forget it is there until someone points at it.",
-    ],
-    art: "keychain-acrylic",
-    images: gallery(
-      "book-stack-acrylic-keychain",
-      "01|Book stack acrylic keychain laid flat on a kraft background",
-      "02|The keychain held in a hand for scale",
-    ),
-    ...simpleVariants(17900),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: ["About 2 × 2 in"],
-      materials: "Printed acrylic charm with metal keyring.",
-      care: "Wipe clean with a soft cloth.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["bookstore-acrylic-keychain", "mini-book-keychain", "emily-henry-book-stack-sticker"],
-  }),
-  make({
-    slug: "bookstore-acrylic-keychain",
-    name: "Bookstore Acrylic Keychain",
-    category: "keychains",
-    blurb: "A tiny storefront with the lights on.",
-    description: [
-      "A little shop with warm windows and full shelves, printed on clear acrylic. For everyone whose happy place has a bell above the door.",
-    ],
-    art: "keychain-acrylic",
-    images: gallery(
-      "bookstore-acrylic-keychain",
-      "01|Bookstore acrylic keychain laid flat, storefront illustration visible",
-      "02|The keychain held in a hand for scale",
-    ),
-    ...simpleVariants(17900),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: ["About 2 × 2 in"],
-      materials: "Printed acrylic charm with metal keyring.",
-      care: "Wipe clean with a soft cloth.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["book-stack-acrylic-keychain", "mini-book-keychain", "bookish-castle-acrylic-keychain"],
-  }),
-  make({
-    slug: "bookish-castle-acrylic-keychain",
-    name: "Castle Library Acrylic Keychain",
-    category: "keychains",
-    blurb: "Turrets, towers, and presumably a library somewhere inside.",
-    description: [
-      "A storybook castle in clear acrylic, with enough spires to suggest at least one restricted section.",
-    ],
-    art: "keychain-acrylic",
-    images: gallery(
-      "bookish-castle-acrylic-keychain",
-      "01|Castle library acrylic keychain laid flat on a white background",
-      "02|The castle keychain held in a hand for scale",
-    ),
-    ...simpleVariants(17900),
-    priceStatus: "confirmed",
-    details: {
-      dimensions: ["About 2 × 1.5 in"],
-      materials: "Printed acrylic charm with metal keyring.",
-      care: "Wipe clean with a soft cloth.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["bookstore-acrylic-keychain", "book-stack-acrylic-keychain"],
-  }),
-
-  /* ─── Stickers ─── */
-  make({
-    slug: "mini-book-lover-sticker-sheet",
-    name: "Mini Book Lover Sticker Sheet",
-    category: "stickers",
-    blurb: "One sheet, a dozen tiny bookish things.",
-    description: [
-      "Book stacks, a storefront, a tote, a little shelf and a lettering piece. A 3 × 4.5 inch sheet printed with eco-friendly ink and cut ready to peel.",
-      "Sized deliberately small, for the margin of a reading journal or the back of a Kindle.",
-    ],
-    art: "sticker-sheet",
-    images: gallery(
-      "mini-book-lover-sticker-sheet",
-      "01|The mini book lover sticker sheet held up, all designs visible",
-      "02|Individual stickers peeled off and arranged on a desk",
-      "06|A book stack sticker applied to the lid of a laptop",
-      "08|The sticker sheet resting on a closed notebook",
-      "03|A pile of cut sticker sheets",
-    ),
-    options: [],
-    variants: [{ id: "default", options: {}, price: 12900, available: false }],
-    priceStatus: "confirmed",
-    details: {
-      dimensions: ["Sheet is 3 × 4.5 in"],
-      materials: "Printed with eco-friendly ink.",
-      shipping: SHELF_SHIPPING,
-    },
-    related: ["emily-henry-book-stack-sticker", "mini-book-keychain", "twilight-book-stack-sticker"],
-  }),
-  ...(
-    [
-      ["emily-henry-book-stack-sticker", "Emily Henry Inspired Book Stack Sticker", "Beach reads, happy places and funny stories, stacked in the sun.", "Every summer she publishes and every summer we all pretend to be surprised. A warm, sun-yellow stack for the people who reread these on purpose.", true],
-      ["abby-jimenez-book-stack-sticker", "Abby Jimenez Inspired Book Stack Sticker", "Love stories that make you laugh, then quietly wreck you.", "The ones that are funny for two hundred pages and then are not. A soft, hopeful stack for readers who like to be ambushed.", true],
-      ["special-edition-fourth-wing-sticker", "Special Edition Fourth Wing Book Stack Sticker", "The dragon-edged special editions, in one very glossy stack.", "Sprayed edges, foiled dragons, the whole Empyrean production. If your copies live on a display stand rather than a shelf, this is your sticker.", true],
-      ["magnolia-parks-book-stack-sticker", "Magnolia Parks Book Stack Sticker", "London, longing, and a very dramatic stack of spines.", "Fashion, heartbreak and extremely poor decision-making, in a stack of covers that look like a magazine spread. Worn best on a laptop in a coffee shop.", true],
-      ["twilight-book-stack-sticker", "Twilight Book Stack Sticker", "The saga stack. Hands holding an apple not included.", "Black, red and white, legible from across a lecture hall. Twenty years on, this stack still starts conversations.", true],
-      ["freida-mcfadden-book-stack-sticker", "Freida McFadden Book Stack Sticker", "A stack of thrillers that all end with a gasp.", "The housemaid, the teacher, the coworker, the inmate. Six-hour reads with one-hour endings, piled up where your water bottle can show them off.", true],
-      ["mary-kubica-book-stack-sticker", "Mary Kubica Book Stack Sticker", "Quiet covers, loud twists. For the suspense shelf.", "Muted, misty covers hiding a great deal of trouble. A restrained-looking stack for a reader who is anything but.", true],
-      ["acotar-book-stack-sticker", "ACOTAR Book Stack Sticker", "To the stars who listen, and the readers who sticker.", "Thorns, mist, wings and ruin, stacked in order. Currently sold out, which surprises absolutely nobody.", false],
-    ] as [string, string, string, string, boolean][]
-  ).map(([slug, name, blurb, line, available]) =>
-    make({
-      slug,
-      name,
-      category: "stickers",
-      blurb,
-      description: [
-        line,
-        "Printed on waterproof, weather-resistant vinyl at about 3 × 3 inches, with a clean die cut around the stack. Happy on Kindles, phones, laptop lids, water bottles and notebooks.",
-      ],
-      art: "sticker-stack",
-      images: gallery(
-        slug,
-        `01|${name} shown flat, every spine in the stack readable`,
-        `02|The sticker applied and photographed in use`,
-      ),
-      options: [],
-      variants: [{ id: "default", options: {}, price: 7900, available }],
-      priceStatus: "confirmed",
-      details: {
-        dimensions: ["About 3 × 3 in"],
-        materials: "Waterproof, weather-resistant vinyl sticker.",
-        shipping: SHELF_SHIPPING,
-      },
-      related: ["mini-book-lover-sticker-sheet", "custom-mini-book-set", "mini-book-keychain"],
-    }),
-  ),
 
   /* ─── Shelf accessories ─── */
   make({

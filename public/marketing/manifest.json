@@ -513,5 +513,65 @@
       "h": 1050,
       "orient": "landscape"
     }
+  ],
+  "shelf-mains": [
+    {
+      "src": "/marketing/shelf-mains/01.webp",
+      "from": "Main Photo for shelves/IMG_9415",
+      "w": 1112,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/shelf-mains/02.webp",
+      "from": "Main Photo for shelves/IMG_9416",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/shelf-mains/03.webp",
+      "from": "Main Photo for shelves/IMG_9417",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/shelf-mains/04.webp",
+      "from": "Main Photo for shelves/IMG_9418",
+      "w": 1050,
+      "h": 1400,
+      "orient": "portrait"
+    }
+  ],
+  "book-set-covers": [
+    {
+      "src": "/marketing/book-set-covers/01.webp",
+      "from": "New Mini Book Sets Main Cover/IMG_9430",
+      "w": 1254,
+      "h": 1254,
+      "orient": "square"
+    },
+    {
+      "src": "/marketing/book-set-covers/02.webp",
+      "from": "New Mini Book Sets Main Cover/IMG_9431",
+      "w": 1254,
+      "h": 1254,
+      "orient": "square"
+    },
+    {
+      "src": "/marketing/book-set-covers/03.webp",
+      "from": "New Mini Book Sets Main Cover/IMG_9434",
+      "w": 1120,
+      "h": 1400,
+      "orient": "portrait"
+    },
+    {
+      "src": "/marketing/book-set-covers/04.webp",
+      "from": "New Mini Book Sets Main Cover/IMG_9435",
+      "w": 1120,
+      "h": 1400,
+      "orient": "portrait"
+    }
   ]
 }

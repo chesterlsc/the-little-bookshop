@@ -898,11 +898,6 @@ const DOODLE_PATHS: Record<string, string[]> = {
     "M12 20 H28 V36 H12 Z",
     "M15 25 H25 M15 29 H22",
   ],
-  stickers: [
-    "M8 8 H30 Q34 8 34 12 V28 L26 36 H12 Q8 36 8 32 Z",
-    "M26 36 L26 28 L34 28",
-    "M14 16 H28 M14 21 H25 M14 26 H22",
-  ],
   accessories: [
     "M13 24 H27 L25 35 H15 Z",
     "M20 24 Q14 17 12 8",

@@ -32,6 +32,8 @@ const FOLDER = {
   Packaging: "packaging",
   "Multiple Shelves": "multiple-shelves",
   "Social Media Posting": "social",
+  "Main Photo for shelves": "shelf-mains",
+  "New Mini Book Sets Main Cover": "book-set-covers",
 };
 
 const exists = (p) => access(p).then(() => true, () => false);
