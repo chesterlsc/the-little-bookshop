@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
 import { CLEAR_CART_KEY } from "@/components/clear-cart-on-mount";
+import { rememberOrder } from "@/lib/pay-snapshot";
 import { Button, ButtonLink, Eyebrow, Field, inputClass, Section } from "@/components/ui";
 import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, describeLine, shippingFor, validateCart } from "@/lib/cart";
 import { EMPTY_CUSTOMER, validateCustomer, type CustomerInfo, type FieldErrors } from "@/lib/checkout";
@@ -89,6 +90,8 @@ export default function CheckoutPage() {
         // this marker tells that page the basket it finds is the one just ordered.
         try {
           sessionStorage.setItem(CLEAR_CART_KEY, json.orderNumber);
+          // keep a copy so the payment screen works even if the order store is unreachable
+          if (json.pay) rememberOrder(json.pay);
         } catch {
           /* storage unavailable; the basket simply stays put */
         }

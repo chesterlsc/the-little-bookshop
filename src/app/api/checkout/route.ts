@@ -9,6 +9,7 @@ import {
 } from "@/lib/checkout";
 import { createOrder, getOrder } from "@/lib/orders";
 import { notifyNewOrder } from "@/lib/notify-order";
+import { toPaySnapshot } from "@/lib/pay-snapshot";
 
 export const runtime = "nodejs";
 
@@ -79,7 +80,12 @@ export async function POST(request: Request) {
     const seen = recent.get(key);
     if (seen && Date.now() - seen.at < IDEMPOTENCY_WINDOW_MS) {
       const existing = await getOrder(seen.number);
-      if (existing) return NextResponse.json({ orderNumber: existing.number, reused: true });
+      if (existing)
+        return NextResponse.json({
+          orderNumber: existing.number,
+          pay: toPaySnapshot(existing.number, snapshot),
+          reused: true,
+        });
     }
   }
 
@@ -101,5 +107,5 @@ export async function POST(request: Request) {
   // emails must never take the order down with them
   await notifyNewOrder(order.number);
 
-  return NextResponse.json({ orderNumber: order.number });
+  return NextResponse.json({ orderNumber: order.number, pay: toPaySnapshot(order.number, snapshot) });
 }
