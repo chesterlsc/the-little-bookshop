@@ -6,9 +6,9 @@ import type { Cents } from "./money";
  * Product data lives here, separate from the interface, so names, prices,
  * options, availability and copy can be edited without touching components.
  *
- * Prices, sizes, colors and materials come from the shop's own order form
- * (docs.google.com/forms/.../1FAIpQLSe_DA-jeyOb0tD5gdAdit8dVEv2AlIdLa89exjCIvpYHVkrsw)
- * and are authoritative. Update them there first, then here.
+ * This file is the source of truth for prices, sizes, colors and materials.
+ * The current values were reconciled against the shop's Google order form,
+ * which the site's own checkout has since replaced; edit them here.
  */
 
 export type Category =
