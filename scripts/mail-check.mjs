@@ -69,10 +69,19 @@ function explain(err) {
     ],
     [
       /domain is not verified|only send testing emails to your own/i,
-      `Resend will not send this yet.
-   Without a verified domain, Resend only delivers to the address that owns the
-   Resend account, and only from onboarding@resend.dev. Either verify a domain
-   (free, up to three) or use Gmail SMTP, which has no such limit.`,
+      `Resend will not send this yet. Until a domain is verified it delivers
+   only to the address that owns the Resend account, which the error above
+   names, and only from onboarding@resend.dev. Three ways on:
+
+     - point ORDERS_EMAIL at that account address, and your order mail works
+       today. Customers still get nothing.
+     - or change the Resend account's email to the shop mailbox, so orders
+       land there instead with no config change.
+     - or verify a domain (free, up to three) and set EMAIL_FROM to an address
+       on it. This is the only option where customers are emailed too, and it
+       needs the shop's own domain to be live.
+
+   Gmail SMTP has no such limit and emails customers today.`,
     ],
     [/401|API key is invalid/i, `RESEND_API_KEY was rejected. Copy it again from resend.com/api-keys.`],
     [/RESEND_API_KEY is not set|SMTP_HOST is not set/i, `${err.message} Add it to .env.local.`],
