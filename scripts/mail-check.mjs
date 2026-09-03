@@ -22,16 +22,18 @@ for (const file of [".env.local", ".env"]) {
   }
 }
 
-// The one place the shop mailbox is defined, so this cannot drift from the site.
+// The one place these are defined, so this cannot drift from the site.
 const site = fs.readFileSync("src/content/site.ts", "utf8");
-const SHOP_EMAIL = site.match(/const SHOP_EMAIL = "([^"]+)"/)?.[1];
-if (!SHOP_EMAIL) {
-  console.error("Could not find SHOP_EMAIL in src/content/site.ts.");
+const read = (name) => site.match(new RegExp(`const ${name} = "([^"]+)"`))?.[1];
+const SHOP_EMAIL = read("SHOP_EMAIL");
+const SENDING_EMAIL = read("SENDING_EMAIL");
+if (!SHOP_EMAIL || !SENDING_EMAIL) {
+  console.error("Could not find SHOP_EMAIL / SENDING_EMAIL in src/content/site.ts.");
   process.exit(1);
 }
 
 const to = process.env.ORDERS_EMAIL || SHOP_EMAIL;
-const from = process.env.EMAIL_FROM || `The Little Bookshop <${SHOP_EMAIL}>`;
+const from = process.env.EMAIL_FROM || `The Little Bookshop <${SENDING_EMAIL}>`;
 // This exists to prove a real credential works, so an EMAIL_PROVIDER=dev left in
 // .env.local to keep the dev server off real mail must not skip the test.
 const forced = process.env.EMAIL_PROVIDER === "dev" ? "" : process.env.EMAIL_PROVIDER;

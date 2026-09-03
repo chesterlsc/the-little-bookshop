@@ -18,7 +18,7 @@ export interface EmailProvider {
  * that requires its own verified domain.
  */
 export function fromAddress(): string {
-  return process.env.EMAIL_FROM || `${SITE.name} <${SITE.ordersEmail}>`;
+  return process.env.EMAIL_FROM || `${SITE.name} <${SITE.sendingEmail}>`;
 }
 
 export function ordersAddress(): string {

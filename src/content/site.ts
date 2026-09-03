@@ -10,6 +10,13 @@ export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
 /** The shop's mailbox: shown to customers, and where order mail is delivered. */
 const SHOP_EMAIL = "thelittlebookshop.ph.store@gmail.com";
 
+/**
+ * The address mail is sent FROM, on the shop's own verified domain. It cannot
+ * be the Gmail one: no provider will let a server send as @gmail.com. Nothing
+ * needs to receive here, though the domain forwards anyway.
+ */
+const SENDING_EMAIL = "orders@thelittlebookshop.store";
+
 export const SITE = {
   name: "The Little Bookshop",
   businessName: "The Little Bookshop",
@@ -22,6 +29,8 @@ export const SITE = {
   contactEmail: SHOP_EMAIL,
   /** Where order and contact-form mail is delivered; ORDERS_EMAIL overrides. */
   ordersEmail: SHOP_EMAIL,
+  /** Who it is sent as; EMAIL_FROM overrides. */
+  sendingEmail: SENDING_EMAIL,
   socials: {
     instagram: INSTAGRAM_URL,
     /** ⟨EDITABLE⟩ no TikTok handle supplied yet */
