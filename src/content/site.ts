@@ -17,6 +17,9 @@ const SHOP_EMAIL = "thelittlebookshop.ph.store@gmail.com";
  */
 const SENDING_EMAIL = "orders@thelittlebookshop.store";
 
+/** The owner's own mailbox, copied on every order alongside the shop's. */
+const OWNER_EMAIL = "chestercatapia08@gmail.com";
+
 export const SITE = {
   name: "The Little Bookshop",
   businessName: "The Little Bookshop",
@@ -29,6 +32,9 @@ export const SITE = {
   contactEmail: SHOP_EMAIL,
   /** Where order and contact-form mail is delivered; ORDERS_EMAIL overrides. */
   ordersEmail: SHOP_EMAIL,
+  /** Everyone who gets a copy of each order. Both inboxes, so neither of you
+   *  has to be the single point of failure for seeing a sale come in. */
+  orderRecipients: [SHOP_EMAIL, OWNER_EMAIL],
   /** Who it is sent as; EMAIL_FROM overrides. */
   sendingEmail: SENDING_EMAIL,
   socials: {

@@ -1,7 +1,8 @@
 import { SITE } from "@/content/site";
 
 export interface Mail {
-  to: string;
+  /** one address, or several for the shop's own copies */
+  to: string | string[];
   subject: string;
   html: string;
   text: string;
@@ -21,6 +22,12 @@ export function fromAddress(): string {
   return process.env.EMAIL_FROM || `${SITE.name} <${SITE.sendingEmail}>`;
 }
 
-export function ordersAddress(): string {
-  return process.env.ORDERS_EMAIL || SITE.ordersEmail;
+/**
+ * Everyone who should receive order and contact mail. ORDERS_EMAIL overrides
+ * and may list several, comma separated.
+ */
+export function ordersAddress(): string[] {
+  const override = process.env.ORDERS_EMAIL;
+  if (!override) return SITE.orderRecipients;
+  return override.split(",").map((a) => a.trim()).filter(Boolean);
 }

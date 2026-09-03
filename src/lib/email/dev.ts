@@ -12,11 +12,12 @@ export const devEmail: EmailProvider = {
     const dir = path.resolve(process.cwd(), "var/outbox");
     fs.mkdirSync(dir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const safeTo = mail.to.replace(/[^a-z0-9@._-]/gi, "_").slice(0, 60);
+    const recipients = Array.isArray(mail.to) ? mail.to.join(", ") : mail.to;
+    const safeTo = recipients.replace(/[^a-z0-9@._-]/gi, "_").slice(0, 60);
     const file = path.join(dir, `${stamp}_${safeTo}.eml`);
     const eml = [
       `From: ${fromAddress()}`,
-      `To: ${mail.to}`,
+      `To: ${recipients}`,
       `Subject: ${mail.subject}`,
       "MIME-Version: 1.0",
       'Content-Type: text/html; charset="utf-8"',

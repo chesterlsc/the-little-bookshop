@@ -27,12 +27,17 @@ const site = fs.readFileSync("src/content/site.ts", "utf8");
 const read = (name) => site.match(new RegExp(`const ${name} = "([^"]+)"`))?.[1];
 const SHOP_EMAIL = read("SHOP_EMAIL");
 const SENDING_EMAIL = read("SENDING_EMAIL");
+const OWNER_EMAIL = read("OWNER_EMAIL");
 if (!SHOP_EMAIL || !SENDING_EMAIL) {
   console.error("Could not find SHOP_EMAIL / SENDING_EMAIL in src/content/site.ts.");
   process.exit(1);
 }
 
-const to = process.env.ORDERS_EMAIL || SHOP_EMAIL;
+// same list production sends to, so this proves every inbox, not just one
+const recipients = process.env.ORDERS_EMAIL
+  ? process.env.ORDERS_EMAIL.split(",").map((a) => a.trim()).filter(Boolean)
+  : [SHOP_EMAIL, OWNER_EMAIL].filter(Boolean);
+const to = recipients;
 const from = process.env.EMAIL_FROM || `The Little Bookshop <${SENDING_EMAIL}>`;
 // This exists to prove a real credential works, so an EMAIL_PROVIDER=dev left in
 // .env.local to keep the dev server off real mail must not skip the test.
@@ -51,7 +56,7 @@ const mail = {
 
 console.log(`provider : ${provider}`);
 console.log(`from     : ${from}`);
-console.log(`to       : ${to}\n`);
+console.log(`to       : ${recipients.join(", ")}\n`);
 
 /* ── what went wrong, in words the shop can act on ───────────────────────── */
 function explain(err) {
@@ -133,12 +138,13 @@ Pick one and add it to .env.local:
         Authorization: `Bearer ${process.env.RESEND_API_KEY ?? ""}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to: [to], subject: mail.subject, html: mail.html, text: mail.text }),
+      body: JSON.stringify({ from, to: recipients, subject: mail.subject, html: mail.html, text: mail.text }),
     });
     if (!res.ok) throw new Error(`Resend replied ${res.status}: ${(await res.text()).slice(0, 400)}`);
   }
 
-  console.log(`\nSent. Check ${to} (and the spam folder the first time).`);
+  console.log(`\nSent to ${recipients.length} inbox(es): ${recipients.join(", ")}`);
+console.log("Check spam the first time.");
   console.log("Once it arrives, copy the same values into Vercel and redeploy.");
 } catch (err) {
   console.error(`\nFAILED: ${err?.message ?? err}\n`);

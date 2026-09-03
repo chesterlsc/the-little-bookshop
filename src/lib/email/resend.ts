@@ -11,7 +11,7 @@ export const resendEmail: EmailProvider = {
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: fromAddress(),
-        to: [mail.to],
+        to: Array.isArray(mail.to) ? mail.to : [mail.to],
         subject: mail.subject,
         html: mail.html,
         text: mail.text,

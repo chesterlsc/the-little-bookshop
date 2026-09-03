@@ -74,7 +74,7 @@ function customerHtml(snapshot: OrderSnapshot): string {
 }
 
 export function businessOrderEmail(
-  to: string,
+  to: string | string[],
   orderNumber: string,
   snapshot: OrderSnapshot,
   paymentReference: string,
@@ -136,7 +136,7 @@ export function customerOrderEmail(
   };
 }
 
-export function contactEmail(to: string, name: string, fromEmail: string, message: string): Mail {
+export function contactEmail(to: string | string[], name: string, fromEmail: string, message: string): Mail {
   return {
     to,
     subject: `📮 Message from ${name} · the website contact form`,
