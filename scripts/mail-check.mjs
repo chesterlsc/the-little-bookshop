@@ -11,6 +11,7 @@
  * choice below is the same rule as src/lib/email/index.ts; keep them in step.
  */
 import fs from "node:fs";
+import dns from "node:dns/promises";
 import nodemailer from "nodemailer";
 
 /* ── environment ─────────────────────────────────────────────────────────── */
@@ -53,6 +54,33 @@ const mail = {
          <p style="color:#666">Sent by <code>npm run mail:check</code>. Nothing was ordered.</p>`,
   text: "If you are reading this, order emails will reach you. Sent by npm run mail:check.",
 };
+
+/* ── how the sending domain is set up ─────────────────────────────────────── */
+const domain = (process.env.EMAIL_FROM || SENDING_EMAIL).split("@").pop().replace(/>$/, "").trim();
+
+const txt = async (name) => {
+  try { return (await dns.resolveTxt(name)).map((r) => r.join("")); } catch { return []; }
+};
+const has = async (name) => {
+  try { return (await dns.resolveCname(name)).length > 0; } catch { return false; }
+};
+
+if (!domain.endsWith("resend.dev")) {
+  const [spf, dkim, dmarc, bimi, sendCname] = await Promise.all([
+    txt(domain), txt(`resend._domainkey.${domain}`), txt(`_dmarc.${domain}`),
+    txt(`default._bimi.${domain}`), has(`send.${domain}`),
+  ]);
+  const policy = dmarc.join(" ").match(/p=(\w+)/)?.[1];
+  const line = (ok, label, note) => console.log(`  ${ok ? "OK  " : "--  "}${label.padEnd(7)} ${note}`);
+
+  console.log(`DNS for ${domain}`);
+  line(sendCname, "sender", sendCname ? "send. subdomain present" : "send. subdomain missing, Resend cannot bounce-handle");
+  line(dkim.length, "DKIM", dkim.length ? "signing key published" : "no resend._domainkey record");
+  line(spf.some((r) => r.startsWith("v=spf1")), "SPF", spf.find((r) => r.startsWith("v=spf1")) ?? "none on the root");
+  line(policy, "DMARC", policy ? `p=${policy}` : "none. Add a TXT record at _dmarc: v=DMARC1; p=none; rua=mailto:" + SHOP_EMAIL);
+  line(bimi.length, "BIMI", bimi.length ? "logo record present" : "none. Needs DMARC at p=quarantine or stricter, plus a paid certificate for Gmail");
+  console.log();
+}
 
 console.log(`provider : ${provider}`);
 console.log(`from     : ${from}`);
