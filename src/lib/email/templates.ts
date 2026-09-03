@@ -1,6 +1,6 @@
 import type { OrderSnapshot } from "../checkout";
 import { formatMoney } from "../money";
-import { INSTAGRAM_HANDLE, PAYMENT_METHODS } from "@/content/site";
+import { INSTAGRAM_HANDLE, PAYMENT_METHODS, SITE } from "@/content/site";
 import type { Mail } from "./types";
 
 /**
@@ -11,7 +11,10 @@ import type { Mail } from "./types";
 const wrap = (title: string, body: string) => `<!doctype html>
 <html><body style="margin:0;padding:24px;background:#fbf6eb;font-family:Verdana,Geneva,sans-serif;color:#43362a;">
   <div style="max-width:560px;margin:0 auto;">
-    <p style="text-align:center;font-size:20px;font-weight:800;margin:0 0 2px;">The Little Bookshop</p>
+    <a href="${SITE.url}" style="text-decoration:none;border:0;">
+      <img src="${SITE.url}/brand/logo_email.png" alt="${SITE.name}" width="220"
+           style="display:block;margin:0 auto 4px;width:220px;max-width:62%;height:auto;border:0;outline:none;text-decoration:none;">
+    </a>
     <p style="text-align:center;font-size:11px;letter-spacing:2px;margin:0 0 18px;color:#93826d;">MINIATURES FOR BOOK LOVERS</p>
     <div style="background:#f9f3e3;border:1.5px solid #e2d5bf;border-radius:20px;padding:22px;">
       <h1 style="font-size:18px;margin:0 0 12px;">${title}</h1>
