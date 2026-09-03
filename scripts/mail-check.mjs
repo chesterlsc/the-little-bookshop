@@ -32,9 +32,11 @@ if (!SHOP_EMAIL) {
 
 const to = process.env.ORDERS_EMAIL || SHOP_EMAIL;
 const from = process.env.EMAIL_FROM || `The Little Bookshop <${SHOP_EMAIL}>`;
+// This exists to prove a real credential works, so an EMAIL_PROVIDER=dev left in
+// .env.local to keep the dev server off real mail must not skip the test.
+const forced = process.env.EMAIL_PROVIDER === "dev" ? "" : process.env.EMAIL_PROVIDER;
 const provider =
-  process.env.EMAIL_PROVIDER ||
-  (process.env.SMTP_HOST ? "smtp" : process.env.RESEND_API_KEY ? "resend" : "dev");
+  forced || (process.env.SMTP_HOST ? "smtp" : process.env.RESEND_API_KEY ? "resend" : "dev");
 
 const mail = {
   to,

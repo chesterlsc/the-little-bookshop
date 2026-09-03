@@ -1,10 +1,14 @@
+import { SITE } from "@/content/site";
 import { getEmailProvider } from "./email";
 import { businessOrderEmail, customerOrderEmail } from "./email/templates";
 import { ordersAddress } from "./email/types";
 import { claimEmailSend, getOrder, parseSnapshot, releaseEmailSend, type OrderRecord } from "./orders";
 
+/** The site's own address, so a forgotten env var cannot put localhost in a
+ *  customer's inbox. PUBLIC_BASE_URL still wins, for preview deployments. */
 export function baseUrl(): string {
-  return (process.env.PUBLIC_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const fallback = process.env.NODE_ENV === "production" ? SITE.url : "http://localhost:3000";
+  return (process.env.PUBLIC_BASE_URL || fallback).replace(/\/$/, "");
 }
 
 /**

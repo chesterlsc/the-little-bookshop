@@ -13,6 +13,8 @@ const SHOP_EMAIL = "thelittlebookshop.ph.store@gmail.com";
 export const SITE = {
   name: "The Little Bookshop",
   businessName: "The Little Bookshop",
+  /** Canonical public URL. The apex redirects here, so www is the real one. */
+  url: "https://www.thelittlebookshop.store",
   tagline: "Miniatures for book lovers",
   description:
     "Handmade mini bookshelves, custom miniature book sets of six, keychains and tiny shelf accessories. Build a little shelf of the stories that made you.",

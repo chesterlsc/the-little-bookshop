@@ -166,6 +166,18 @@ enough to switch mail on:
 `EMAIL_FROM` and `ORDERS_EMAIL` both default to the shop mailbox in
 `src/content/site.ts`, so neither has to be set to receive orders.
 
+### Mail must work, or checkout stops
+
+Since the shop's copy is the order record, a send that fails is not swallowed:
+the checkout API answers 502 and the customer is asked to try again. That is
+deliberate, and it means **a mail configuration that cannot deliver takes the
+shop offline**, not just its notifications. Never put a credential into Vercel
+that `npm run mail:check` has not passed with the same `ORDERS_EMAIL`.
+
+The trap worth naming: a Resend key whose domain is unverified can only deliver
+to the address that owns the Resend account. Point `ORDERS_EMAIL` anywhere else
+and every checkout 502s.
+
 ### Checking it works
 
 ```bash

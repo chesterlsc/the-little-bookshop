@@ -14,6 +14,8 @@ import { BottomNav } from "@/components/bottom-nav";
 import { SITE } from "@/content/site";
 
 export const metadata: Metadata = {
+  // Without this, Open Graph image paths stay relative and no scraper resolves them.
+  metadataBase: new URL(SITE.url),
   title: {
     default: `${SITE.name} · ${SITE.tagline}`,
     template: `%s · ${SITE.name}`,
