@@ -166,6 +166,28 @@ enough to switch mail on:
 `EMAIL_FROM` and `ORDERS_EMAIL` both default to the shop mailbox in
 `src/content/site.ts`, so neither has to be set to receive orders.
 
+### Checking it works
+
+```bash
+npm run mail:check
+```
+
+Reads `.env.local`, sends one real message to the shop inbox, and names the
+cause when it fails: a rejected App Password, an unreachable host, an invalid
+Resend key, or Resend's unverified-domain limit. Get this passing locally, then
+copy the same values into Vercel and redeploy. Nothing is ordered, so it is
+safe to run against production credentials.
+
+### Choosing between them
+
+Gmail delivers both emails to anybody and needs no domain, which is why it is
+the default path; the cost is turning on 2-Step Verification to mint an App
+Password. Resend needs no Gmail settings changed, but until a domain is
+verified with them it only delivers to the address that owns the Resend
+account: the shop's copy arrives, the customer's does not. That is survivable,
+since a failed customer copy is logged rather than fatal and the payment page
+carries the same details, but it is a downgrade until the domain is live.
+
 `EMAIL_PROVIDER` overrides that choice; use it to force `dev` on a staging
 deploy. Leave it unset in production. The dev mailer writes to disk, so on a
 serverless host it fails and the shop is never told about the order.
