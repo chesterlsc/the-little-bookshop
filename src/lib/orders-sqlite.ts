@@ -69,6 +69,21 @@ export function markStatus(number: string, status: OrderStatus, note?: string): 
     .run(status, note ?? null, status, new Date().toISOString(), number);
 }
 
+/** The shop hands the parcel over. See the Postgres store for the contract. */
+export function markShipped(
+  number: string,
+  courier: string,
+  trackingNumber: string,
+  trackingUrl?: string,
+): void {
+  getDb()
+    .prepare(
+      `UPDATE orders SET status = 'shipped', courier = ?, tracking_number = ?, tracking_url = ?,
+              shipped_at = COALESCE(shipped_at, ?) WHERE number = ?`,
+    )
+    .run(courier, trackingNumber, trackingUrl ?? null, new Date().toISOString(), number);
+}
+
 /** Claim the right to send the order emails exactly once. */
 export function claimEmailSend(number: string): boolean {
   const res = getDb()

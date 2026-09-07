@@ -55,6 +55,18 @@ export async function markStatus(
   return usePg ? (await pg()).markStatus(number, status, note) : sqlite.markStatus(number, status, note);
 }
 
+/** Records the courier and tracking number once the parcel is handed over. */
+export async function markShipped(
+  number: string,
+  courier: string,
+  trackingNumber: string,
+  trackingUrl?: string,
+): Promise<void> {
+  return usePg
+    ? (await pg()).markShipped(number, courier, trackingNumber, trackingUrl)
+    : sqlite.markShipped(number, courier, trackingNumber, trackingUrl);
+}
+
 /** Claim the right to send the order emails exactly once. */
 export async function claimEmailSend(number: string): Promise<boolean> {
   return usePg ? (await pg()).claimEmailSend(number) : sqlite.claimEmailSend(number);

@@ -21,6 +21,11 @@ export interface Queryable {
 
 let pool: Queryable | null = null;
 
+/** Shared by the subscribers store, so both use one connection pool. */
+export async function getPool(): Promise<Queryable> {
+  return db();
+}
+
 /** Lazily opened, so importing this module never dials out on its own. */
 async function db(): Promise<Queryable> {
   if (pool) return pool;
@@ -66,6 +71,11 @@ export function migrate(q?: Queryable): Promise<void> {
     // The human half of the order number. A sequence, not the row id, so it is
     // allocated atomically inside the INSERT and can never repeat or restart.
     await c.query(`CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1001`);
+    // Where the parcel is, for the customer's own tracking page. Added
+    // separately so a database created before this still gains them.
+    for (const col of ["courier TEXT", "tracking_number TEXT", "tracking_url TEXT", "shipped_at TEXT"]) {
+      await c.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS ${col}`);
+    }
   })();
   return ready;
 }
@@ -114,6 +124,17 @@ export async function getOrder(number: string): Promise<OrderRecord | undefined>
   return rows[0] ? toRecord(rows[0]) : undefined;
 }
 
+/** The order book, newest first. For the shop's own eyes only. */
+export async function listOrders(limit = 100): Promise<OrderRecord[]> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query(
+    "SELECT * FROM orders ORDER BY id DESC LIMIT $1",
+    [Math.min(Math.max(1, limit), 1000)],
+  );
+  return rows.map(toRecord);
+}
+
 export async function setPaymentMethod(number: string, method: string): Promise<void> {
   const c = await db();
   await migrate(c);
@@ -137,6 +158,31 @@ export async function markStatus(
             paid_at = CASE WHEN $1 = 'confirmed' AND paid_at IS NULL THEN $3 ELSE paid_at END
       WHERE number = $4`,
     [status, note ?? null, new Date().toISOString(), number],
+  );
+}
+
+/**
+ * The shop hands the parcel over. Moves the order to `shipped`, stamps the
+ * date, and records whatever the courier gave us so the tracking page can
+ * show it. Called by the shop, never by the storefront.
+ */
+export async function markShipped(
+  number: string,
+  courier: string,
+  trackingNumber: string,
+  trackingUrl?: string,
+): Promise<void> {
+  const c = await db();
+  await migrate(c);
+  await c.query(
+    `UPDATE orders
+        SET status = 'shipped',
+            courier = $1,
+            tracking_number = $2,
+            tracking_url = $3,
+            shipped_at = COALESCE(shipped_at, $4)
+      WHERE number = $5`,
+    [courier, trackingNumber, trackingUrl ?? null, new Date().toISOString(), number],
   );
 }
 

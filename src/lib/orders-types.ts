@@ -42,6 +42,11 @@ export interface OrderRecord {
   emails_sent: number;
   created_at: string;
   paid_at: string | null;
+  /** filled once the shop hands the parcel to a courier */
+  courier?: string | null;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  shipped_at?: string | null;
 }
 
 /** Human half of the order number: LB1024-… starts the sequence at 1001. */

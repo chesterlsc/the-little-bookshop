@@ -204,6 +204,42 @@ carries the same details, but it is a downgrade until the domain is live.
 deploy. Leave it unset in production. The dev mailer writes to disk, so on a
 serverless host it fails and the shop is never told about the order.
 
+## The database
+
+Two tables, both in one Postgres. `DATABASE_URL` turns them on; without it the
+site still works and still emails, but nothing is kept.
+
+| Table | Holds | Written by |
+| --- | --- | --- |
+| `orders` | the order, the customer, what they paid, and where the parcel is | checkout |
+| `subscribers` | who joined the welcome list and where they found the shop | the welcome popup |
+
+Order numbers come from a Postgres sequence, so they never repeat or restart.
+Subscribers are keyed on the address: signing up twice keeps the original date,
+refreshes where they found us, and un-removes anyone previously taken off.
+
+Set it up once at [neon.tech](https://neon.tech) (the free tier suits this
+shop), copy the **pooled** connection string into `DATABASE_URL` in both
+`.env.local` and Vercel, and redeploy. The tables create themselves on first
+use; there is no migration step to run.
+
+### Reading it
+
+```bash
+npm run shop orders          # the order book, newest first
+npm run shop subscribers     # who is on the mailing list
+npm run shop export          # var/subscribers.csv, for a mail tool
+npm run shop ship LB1024-AB3XYZ "J&T Express" JT0099887766 [url]
+```
+
+`ship` records the courier and tracking number and moves the order to
+`shipped`. Correcting a courier later keeps the original ship date. That is
+what a customer-facing "Track my little books" page would read.
+
+```bash
+npm run verify:pg   # runs the real SQL against Postgres-in-WASM, no database needed
+```
+
 ## Testing
 
 ```bash

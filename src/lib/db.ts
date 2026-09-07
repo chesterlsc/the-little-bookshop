@@ -52,6 +52,14 @@ export function getDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_orders_number ON orders(number);
   `);
+  // Match the Postgres schema so local development sees the same columns.
+  for (const col of ["courier TEXT", "tracking_number TEXT", "tracking_url TEXT", "shipped_at TEXT"]) {
+    try {
+      db.exec(`ALTER TABLE orders ADD COLUMN ${col}`);
+    } catch {
+      /* already there */
+    }
+  }
   // Older rows used the gateway statuses; bring them onto the manual set.
   db.exec(`
     UPDATE orders SET status = 'awaiting_payment' WHERE status = 'pending';

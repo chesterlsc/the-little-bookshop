@@ -8,6 +8,7 @@ import {
 } from "@/lib/email/templates";
 import { ordersAddress } from "@/lib/email/types";
 import { WELCOME_CODE } from "@/lib/discount";
+import { addSubscriber } from "@/lib/subscribers";
 
 export const runtime = "nodejs";
 
@@ -93,6 +94,15 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+  // Saved only once the address has proved deliverable, so the list does not
+  // fill with typos. A failure here is not worth failing the signup for: the
+  // shop's notice below is still the record it had before this table existed.
+  try {
+    await addSubscriber(email, source, WELCOME_CODE);
+  } catch (err) {
+    console.error("[subscribe] could not save to the list:", err);
+  }
+
   try {
     await mailer.send(subscriberNoticeEmail(ordersAddress(), email, source));
   } catch (err) {
