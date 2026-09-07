@@ -218,10 +218,27 @@ Order numbers come from a Postgres sequence, so they never repeat or restart.
 Subscribers are keyed on the address: signing up twice keeps the original date,
 refreshes where they found us, and un-removes anyone previously taken off.
 
-Set it up once at [neon.tech](https://neon.tech) (the free tier suits this
-shop), copy the **pooled** connection string into `DATABASE_URL` in both
-`.env.local` and Vercel, and redeploy. The tables create themselves on first
-use; there is no migration step to run.
+The quickest way to set it up is to let Vercel provision it, so no one has to
+copy a database password by hand:
+
+```bash
+vercel link
+vercel integration add neon    # provisions Neon, connects it, writes DATABASE_URL
+```
+
+That sets `DATABASE_URL` for Production, Preview and Development and pulls it
+into `.env.local`. The tables create themselves on first use; there is no
+migration step to run. A connection string pasted in by hand works just as
+well: use the **pooled** one, whose host contains `-pooler`.
+
+### Keeping development out of the real order book
+
+`.env.development.local` blanks `DATABASE_URL`, which Next.js applies ahead of
+`.env.local` in development only. So `npm run dev` and `npm run smoke` write to
+the local SQLite store and cannot put test orders in front of real customers,
+while `npm run shop` still reads Postgres and production is unaffected. It is a
+separate file because `vercel env pull` rewrites `.env.local` and would
+otherwise put the production database back under the dev server.
 
 ### Reading it
 
