@@ -52,6 +52,16 @@ export function getDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_orders_number ON orders(number);
   `);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS subscribers (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      email           TEXT UNIQUE NOT NULL,
+      source          TEXT NOT NULL,
+      code            TEXT NOT NULL,
+      created_at      TEXT NOT NULL,
+      unsubscribed_at TEXT
+    );
+  `);
   // Match the Postgres schema so local development sees the same columns.
   for (const col of ["courier TEXT", "tracking_number TEXT", "tracking_url TEXT", "shipped_at TEXT"]) {
     try {

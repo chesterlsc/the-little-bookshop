@@ -38,6 +38,11 @@ export async function getOrder(number: string): Promise<OrderRecord | undefined>
   return usePg ? (await pg()).getOrder(number) : sqlite.getOrder(number);
 }
 
+/** The order book, newest first. For the shop's own eyes only. */
+export async function listOrders(limit = 100): Promise<OrderRecord[]> {
+  return usePg ? (await pg()).listOrders(limit) : sqlite.listOrders(limit);
+}
+
 /** Records which method the customer said they used. Never a confirmation. */
 export async function setPaymentMethod(number: string, method: string): Promise<void> {
   return usePg ? (await pg()).setPaymentMethod(number, method) : sqlite.setPaymentMethod(number, method);

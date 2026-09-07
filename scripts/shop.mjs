@@ -32,18 +32,12 @@ if (!cmd || !["orders", "subscribers", "export", "ship"].includes(cmd)) {
   process.exit(0);
 }
 
-if (!process.env.DATABASE_URL) {
-  console.error(`No DATABASE_URL set, so there is no database to read.
-
-Add a Postgres connection string to .env.local (and the same one to Vercel):
-  DATABASE_URL=postgresql://...
-
-Neon (neon.tech) has a free tier that suits this shop. Use the POOLED string.`);
-  process.exit(1);
-}
-
-const orders = await import("../src/lib/orders-pg.ts");
-const list = await import("../src/lib/subscribers-pg.ts");
+// Reads whichever store this machine has: Postgres when DATABASE_URL is set,
+// otherwise the local SQLite the dev server writes to.
+const remote = Boolean(process.env.DATABASE_URL);
+const orders = await import("../src/lib/orders.ts");
+const list = await import("../src/lib/subscribers.ts");
+console.log(remote ? "Reading Postgres (DATABASE_URL)\n" : "Reading the local database in var/data\n");
 const peso = (c) => `PHP ${(c / 100).toFixed(2)}`;
 const day = (iso) => (iso ? String(iso).slice(0, 10) : "");
 

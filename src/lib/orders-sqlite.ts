@@ -50,6 +50,13 @@ export function getOrder(number: string): OrderRecord | undefined {
     .get(number) as OrderRecord | undefined;
 }
 
+/** The order book, newest first. */
+export function listOrders(limit = 100): OrderRecord[] {
+  return getDb()
+    .prepare("SELECT * FROM orders WHERE number NOT LIKE 'tmp-%' ORDER BY id DESC LIMIT ?")
+    .all(Math.min(Math.max(1, limit), 1000)) as OrderRecord[];
+}
+
 /** Records which method the customer says they paid with. Never a confirmation. */
 export function setPaymentMethod(number: string, method: string): void {
   getDb()

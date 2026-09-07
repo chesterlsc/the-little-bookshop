@@ -1,18 +1,20 @@
 import type { SubscriberRecord } from "./subscribers-pg";
+import * as sqlite from "./subscribers-sqlite";
 
 export type { SubscriberRecord } from "./subscribers-pg";
 
 /**
- * The mailing list, with one async surface over the one backend it has.
+ * The mailing list, with one async surface over two backends, exactly as the
+ * order store works.
  *
- * Postgres whenever DATABASE_URL is set, which is how production runs. With no
- * DATABASE_URL there is nowhere durable to write: serverless hosts give every
- * request a fresh, read-only filesystem, so a local file would be a list that
- * vanishes. Rather than pretend, every call becomes a no-op and `enabled` says
- * so plainly. The signup emails still go out either way, so the shop keeps its
- * record in the inbox exactly as it did before this table existed.
+ * Postgres whenever DATABASE_URL is set, which is how production runs, because
+ * serverless hosts give every request a fresh read-only filesystem. SQLite
+ * otherwise, so a laptop records signups with no configuration at all.
+ *
+ * The signup emails remain the record either way: a write that fails here is
+ * logged by the route rather than failing the customer.
  */
-export const enabled = Boolean(process.env.DATABASE_URL);
+const usePg = Boolean(process.env.DATABASE_URL);
 
 type PgModule = typeof import("./subscribers-pg");
 let pgPromise: Promise<PgModule> | null = null;
@@ -23,22 +25,20 @@ export async function addSubscriber(
   email: string,
   source: string,
   code: string,
-): Promise<SubscriberRecord | null> {
-  if (!enabled) return null;
-  return (await pg()).addSubscriber(email, source, code);
+): Promise<SubscriberRecord> {
+  return usePg
+    ? (await pg()).addSubscriber(email, source, code)
+    : sqlite.addSubscriber(email, source, code);
 }
 
 export async function listSubscribers(limit?: number): Promise<SubscriberRecord[]> {
-  if (!enabled) return [];
-  return (await pg()).listSubscribers(limit);
+  return usePg ? (await pg()).listSubscribers(limit) : sqlite.listSubscribers(limit);
 }
 
 export async function removeSubscriber(email: string): Promise<void> {
-  if (!enabled) return;
-  return (await pg()).removeSubscriber(email);
+  return usePg ? (await pg()).removeSubscriber(email) : sqlite.removeSubscriber(email);
 }
 
 export async function countSubscribers(): Promise<number> {
-  if (!enabled) return 0;
-  return (await pg()).countSubscribers();
+  return usePg ? (await pg()).countSubscribers() : sqlite.countSubscribers();
 }

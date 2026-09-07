@@ -67,6 +67,26 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
             <p className="mt-1 font-sans text-xs text-ink-400">
               Placed {new Date(order.created_at).toUTCString()}
             </p>
+            {order.tracking_number && (
+              <div className="stitch mx-auto mt-4 max-w-sm bg-cream-50 px-4 py-3">
+                <p className="font-sans text-xs uppercase tracking-[0.14em] text-ink-400">
+                  {order.courier ?? "Courier"}
+                </p>
+                <p className="mt-0.5 font-display text-lg font-bold tracking-wide text-ink-900">
+                  {order.tracking_number}
+                </p>
+                {order.tracking_url && (
+                  <a
+                    href={order.tracking_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-link mt-1 inline-block font-sans text-sm"
+                  >
+                    Track this parcel
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="clay mt-6 p-5 sm:p-6">
