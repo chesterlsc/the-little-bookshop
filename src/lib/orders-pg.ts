@@ -30,10 +30,17 @@ export async function getPool(): Promise<Queryable> {
 async function db(): Promise<Queryable> {
   if (pool) return pool;
   const { Pool } = await import("pg");
+  const url = process.env.DATABASE_URL ?? "";
+  const local = url.includes("localhost") || url.includes("127.0.0.1");
   pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    // hosted Postgres terminates TLS at the proxy with its own chain
-    ssl: process.env.DATABASE_URL?.includes("localhost") ? undefined : { rejectUnauthorized: false },
+    // The query string's own sslmode is dropped: pg reads `require` as
+    // `verify-full` today and will read it as libpq's weaker meaning in a
+    // future major, so the mode is stated here instead of inherited.
+    connectionString: url.split("?")[0],
+    // Hosted Postgres presents a publicly trusted certificate, so the chain is
+    // verified. Accepting any certificate would let anything between here and
+    // the database read every order.
+    ssl: local ? undefined : true,
     max: 3,
   }) as unknown as Queryable;
   return pool;
