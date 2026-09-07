@@ -123,6 +123,8 @@ const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", header
 const joined = await (await sub({ email: `smoke-${Date.now()}@example.com`, source: "instagram" })).json();
 check("signup returns the welcome code", joined.ok === true && joined.code === "WELCOME5");
 check("signup rejects a bad address", (await sub({ email: "nope", source: "tiktok" })).status === 422);
+check("signup rejects a missing survey answer", (await sub({ email: "no-survey@example.com" })).status === 422);
+check("non-JSON posts are refused", (await fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ email: "x@example.com", source: "instagram" }) })).status === 415);
 const bot = await (await sub({ email: "bot@example.com", source: "instagram", website: "spam" })).json();
 check("honeypot looks like success to the bot", bot.ok === true);
 
@@ -131,7 +133,10 @@ check("old payment gateway routes are gone", gone.status === 404);
 
 /* ── welcome popup + cookie bar, in a fresh browser ─────────────────────── */
 {
-  const fresh = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const fresh = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    extraHTTPHeaders: { "x-forwarded-for": `smoke-popup-${Date.now()}` }, // own throttle bucket
+  });
   const pp = await fresh.newPage();
   const perr = [];
   pp.on("pageerror", (e) => perr.push(String(e)));
@@ -142,6 +147,9 @@ check("old payment gateway routes are gone", gone.status === 404);
   check("popup appears once the splash is done", (await dialog.count()) === 1);
   check("cookie bar present", (await pp.locator('aside[aria-label="Cookies"]').count()) === 1);
   await pp.locator('[role="dialog"] input[type="email"]').fill(`smoke-popup-${Date.now()}@example.com`);
+  await pp.locator('[role="dialog"] button[type="submit"]').click();
+  await pp.waitForTimeout(300);
+  check("no code without the survey answer", /Pick one/.test(await dialog.textContent()) && !/There it is/.test(await dialog.textContent()));
   await pp.locator('[role="dialog"] label:has-text("Instagram")').click();
   await pp.locator('[role="dialog"] button[type="submit"]').click();
   await pp.waitForTimeout(1800);

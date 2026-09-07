@@ -62,6 +62,10 @@ function remember(key: string, number: string) {
  * a screenshot on Instagram, so this endpoint never moves money.
  */
 export async function POST(request: Request) {
+  // JSON only: a cross-site form or text/plain fetch cannot reach the send.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return NextResponse.json({ error: "invalid request" }, { status: 415 });
+  }
   let body: {
     cart?: Cart;
     customer?: Partial<CustomerInfo>;

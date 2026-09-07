@@ -8,6 +8,10 @@ export const runtime = "nodejs";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function POST(request: Request) {
+  // JSON only: a cross-site form or text/plain fetch cannot reach the send.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return NextResponse.json({ error: "invalid request" }, { status: 415 });
+  }
   const body = (await request.json().catch(() => null)) as {
     name?: string;
     email?: string;

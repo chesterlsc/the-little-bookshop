@@ -42,6 +42,11 @@ function throttled(ip: string): boolean {
  * is real, and a one-line notice to the shop, whose inbox is the mailing list.
  */
 export async function POST(request: Request) {
+  // application/json forces a CORS preflight, which this route does not answer,
+  // so a page on another origin cannot make the shop send mail on its behalf.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return NextResponse.json({ error: "invalid request" }, { status: 415 });
+  }
   const body = (await request.json().catch(() => null)) as {
     email?: string;
     source?: string;
@@ -52,13 +57,18 @@ export async function POST(request: Request) {
   if (body?.website) return NextResponse.json({ ok: true, code: WELCOME_CODE }); // quiet bot trap
 
   const email = (body?.email ?? "").trim().toLowerCase().slice(0, 200);
-  const source = (SUBSCRIBE_SOURCES as readonly string[]).includes(body?.source ?? "")
-    ? (body!.source as SubscribeSource)
-    : "other";
+  const source = body?.source as SubscribeSource | undefined;
 
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json(
       { error: "email", message: "That email address doesn't look right." },
+      { status: 422 },
+    );
+  }
+  // The answer is part of the price of the code, so the API cannot skip it either.
+  if (!source || !(SUBSCRIBE_SOURCES as readonly string[]).includes(source)) {
+    return NextResponse.json(
+      { error: "source", message: "Tell us where you found us." },
       { status: 422 },
     );
   }

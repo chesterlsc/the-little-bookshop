@@ -44,6 +44,7 @@ export function WelcomePopup() {
   const [email, setEmail] = useState("");
   const [source, setSource] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [surveyError, setSurveyError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [mailFailed, setMailFailed] = useState(false);
 
@@ -60,6 +61,7 @@ export function WelcomePopup() {
   const h2Id = `${id}-title`;
   const emailId = `${id}-email`;
   const errId = `${id}-err`;
+  const surveyId = `${id}-survey`;
 
   // one timer, set on mount: internal navigations never remount the layout
   useEffect(() => {
@@ -140,18 +142,25 @@ export function WelcomePopup() {
       return;
     }
     setError(null);
+    if (!source) {
+      setSurveyError("Pick one so we know who to thank.");
+      panelRef.current?.querySelector<HTMLInputElement>('input[name="source"]')?.focus();
+      return;
+    }
+    setSurveyError(null);
     setBusy(true);
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: addr, source: source || undefined, website }),
+        body: JSON.stringify({ email: addr, source, website }),
         signal: AbortSignal.timeout(6000),
       });
       if (res.status === 422 || res.status === 429) {
         const json = (await res.json().catch(() => ({}))) as { message?: string };
         setError(json.message ?? "That didn't send. Try once more?");
         setBusy(false);
+        emailRef.current?.focus();
         return;
       }
       setMailFailed(!res.ok);
@@ -175,6 +184,25 @@ export function WelcomePopup() {
       aria-labelledby={h2Id}
       onAnimationEnd={(e) => {
         if (closing && e.target === e.currentTarget) finish();
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== "Tab" || !panelRef.current) return;
+        const items = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([type="hidden"]):not([tabindex="-1"]), [tabindex="0"]',
+          ),
+        ).filter((el) => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || active === panelRef.current)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }}
     >
       <button
@@ -337,7 +365,7 @@ export function WelcomePopup() {
                   {error}
                 </p>
               )}
-              <fieldset className="mt-3">
+              <fieldset className="mt-3" aria-describedby={surveyError ? surveyId : undefined}>
                 <legend className="mb-1.5 font-sans text-sm font-bold text-ink-800">Where did you find us?</legend>
                 <div className="flex flex-wrap gap-1.5">
                   {SOURCES.map(([value, name]) => (
@@ -347,7 +375,10 @@ export function WelcomePopup() {
                         name="source"
                         value={value}
                         checked={source === value}
-                        onChange={() => setSource(value)}
+                        onChange={() => {
+                          setSource(value);
+                          if (surveyError) setSurveyError(null);
+                        }}
                         className="sr-only"
                       />
                       <IconCheck className="tag-pick-check h-3 w-3" aria-hidden />
@@ -355,6 +386,11 @@ export function WelcomePopup() {
                     </label>
                   ))}
                 </div>
+                {surveyError && (
+                  <p id={surveyId} role="alert" className="mt-1.5 text-xs font-bold text-rose-600">
+                    {surveyError}
+                  </p>
+                )}
               </fieldset>
               <Button type="submit" disabled={busy} className="mt-4 w-full">
                 {busy ? "Shelving..." : "Add the last book"}
@@ -367,7 +403,7 @@ export function WelcomePopup() {
                 No thanks, full price is fine
               </button>
               <p className="mt-2 text-center text-xs text-ink-400">
-                One email with the code. Reply to any email to be removed.
+                Your code by email, plus the occasional new tiny thing. Reply to be removed.
               </p>
             </form>
           </>
