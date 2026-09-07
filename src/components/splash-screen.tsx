@@ -12,12 +12,15 @@ import { SketchScene } from "./sketch-scene";
  * The fade-out is pure CSS (works before hydration); JS only removes the DOM
  * afterwards and lets a click skip ahead. Reduced-motion users never see it.
  */
+/** How long the splash holds the page; anything timed after it reads this. */
+export const SPLASH_MS = 3200;
+
 export function SplashScreen() {
   const pathname = usePathname();
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setGone(true), 3200);
+    const t = window.setTimeout(() => setGone(true), SPLASH_MS);
     return () => window.clearTimeout(t);
   }, []);
 

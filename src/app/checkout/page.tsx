@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
@@ -10,6 +10,8 @@ import { Button, ButtonLink, Eyebrow, Field, inputClass, Section } from "@/compo
 import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, describeLine, shippingFor, validateCart } from "@/lib/cart";
 import { EMPTY_CUSTOMER, validateCustomer, type CustomerInfo, type FieldErrors } from "@/lib/checkout";
 import { formatMoney } from "@/lib/money";
+import { WELCOME_PERCENT, discountFor, isValidCode, normalizeCode } from "@/lib/discount";
+import { joinWelcome, readWelcome } from "@/lib/welcome";
 import { IconCheck } from "@/components/icons";
 
 const FIELDS: {
@@ -56,7 +58,42 @@ export default function CheckoutPage() {
   const idempotencyKey = useRef(newIdempotencyKey());
   const inFlight = useRef(false);
 
+  // The discount box: what they typed, and what has been applied. Only an
+  // applied code is sent, and the server recomputes the amount regardless.
+  const [codeInput, setCodeInput] = useState("");
+  const [appliedCode, setAppliedCode] = useState("");
+  const [codeMessage, setCodeMessage] = useState<string | null>(null);
+
+  // Someone who joined through the welcome popup should not have to retype
+  // their code; it is filled in and applied for them.
+  useEffect(() => {
+    const w = readWelcome();
+    if (w?.status === "joined" && w.code && isValidCode(w.code)) {
+      setCodeInput(w.code);
+      setAppliedCode(normalizeCode(w.code));
+    }
+  }, []);
+
+  const applyCode = () => {
+    const code = normalizeCode(codeInput);
+    if (!code) {
+      setAppliedCode("");
+      setCodeMessage(null);
+      return;
+    }
+    if (isValidCode(code)) {
+      setAppliedCode(code);
+      setCodeMessage(null);
+      // They have the code, however they got it; the popup need not offer it again.
+      joinWelcome(code);
+    } else {
+      setAppliedCode("");
+      setCodeMessage("That code isn't one of ours.");
+    }
+  };
+
   const subtotal = cartSubtotal(cart);
+  const discount = discountFor(appliedCode, subtotal);
   const shipping = shippingFor(subtotal);
   const localIssues = ready ? validateCart(cart) : [];
 
@@ -81,7 +118,12 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, customer, idempotencyKey: idempotencyKey.current }),
+        body: JSON.stringify({
+          cart,
+          customer,
+          idempotencyKey: idempotencyKey.current,
+          ...(appliedCode ? { discountCode: appliedCode } : {}),
+        }),
       });
       const json = await res.json();
       if (res.ok && json.orderNumber) {
@@ -215,11 +257,51 @@ export default function CheckoutPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-3">
+              <label htmlFor="field-discount" className="mb-1.5 block font-sans text-sm font-bold text-ink-800">
+                Discount code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="field-discount"
+                  value={codeInput}
+                  onChange={(e) => {
+                    setCodeInput(e.target.value);
+                    setCodeMessage(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyCode();
+                    }
+                  }}
+                  onBlur={applyCode}
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  placeholder="WELCOME5"
+                  aria-describedby="discount-note"
+                  className={`${inputClass} uppercase ${codeMessage ? "!border-rose-500" : ""}`}
+                />
+                <Button type="button" variant="quiet" onClick={applyCode} className="shrink-0 px-4">
+                  Apply
+                </Button>
+              </div>
+              <p id="discount-note" className={`mt-1 text-xs ${codeMessage ? "font-bold text-rose-700" : "text-ink-600"}`} role={codeMessage ? "alert" : undefined}>
+                {codeMessage ?? (appliedCode ? `${WELCOME_PERCENT}% off applied.` : "Got a welcome code? Pop it in here.")}
+              </p>
+            </div>
             <dl className="mt-3 space-y-2 font-sans text-[0.95rem]">
               <div className="flex justify-between">
                 <dt className="text-ink-600">Subtotal</dt>
                 <dd className="font-bold">{formatMoney(subtotal)}</dd>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sage-700">
+                  <dt>Welcome discount ({appliedCode})</dt>
+                  <dd className="font-bold">−{formatMoney(discount)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-ink-600">Shipping</dt>
                 <dd className="font-bold">
@@ -233,7 +315,7 @@ export default function CheckoutPage() {
               )}
               <div className="flex justify-between border-t border-brown-500/15 pt-2 text-[1.05rem]">
                 <dt className="font-display font-bold">Total</dt>
-                <dd className="font-display font-bold">{formatMoney(subtotal + shipping)}</dd>
+                <dd className="font-display font-bold">{formatMoney(subtotal - discount + shipping)}</dd>
               </div>
             </dl>
 

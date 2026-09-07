@@ -488,6 +488,8 @@ export interface MiniShelfProps {
   accent?: boolean;
   className?: string;
   animate?: boolean;
+  /** with `animate`, only slots at or past this index slide in; the rest sit still */
+  animateFrom?: number;
   label?: string;
 }
 
@@ -640,6 +642,7 @@ export function MiniShelf({
   accent = true,
   className = "",
   animate = false,
+  animateFrom = 0,
   label,
 }: MiniShelfProps) {
   const clipId = useId();
@@ -737,7 +740,7 @@ export function MiniShelf({
       const fi = cubeFeatureCubbies.indexOf(ci);
       if (fi >= 0 && fi < 6) {
         const featX = cx0 + 2 + rnd(seed0 + ci * 13) * 6;
-        books.push(<CoverCard key={`f${ci}`} x={featX} base={base} slot={fi} title={slots[fi]} animate={animate} />);
+        books.push(<CoverCard key={`f${ci}`} x={featX} base={base} slot={fi} title={slots[fi]} animate={animate && fi >= animateFrom} />);
         for (const f of fillStretch(featX + COVER_W + 2, cx1, seed0 + ci * 61 + 5, false))
           books.push(<FillerArt key={`c${ci}-${f.x}`} f={f} base={base} />);
       } else {
@@ -753,7 +756,7 @@ export function MiniShelf({
       sorted.forEach((f, k) => {
         for (const fl of fillStretch(segStart, f.x - 2, seed0 + ti * 101 + k * 43, ti === 0 && k === 0 && shape !== "arched"))
           books.push(<FillerArt key={`t${ti}-${fl.x}`} f={fl} base={base} />);
-        books.push(<CoverCard key={`s${f.slot}`} x={f.x} base={base} slot={f.slot} title={slots[f.slot]} animate={animate} />);
+        books.push(<CoverCard key={`s${f.slot}`} x={f.x} base={base} slot={f.slot} title={slots[f.slot]} animate={animate && f.slot >= animateFrom} />);
         segStart = f.x + COVER_W + 2;
       });
       for (const fl of fillStretch(segStart, inX + inW - 5, seed0 + ti * 101 + 77, false))

@@ -6,6 +6,8 @@ import "@fontsource/lora/500-italic.css";
 import "./globals.css";
 import { CartProvider } from "@/components/cart-context";
 import { CartDrawer } from "@/components/cart-ui";
+import { WelcomePopup } from "@/components/welcome-popup";
+import { CookieBar } from "@/components/cookie-bar";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { SplashScreen } from "@/components/splash-screen";
 import { SiteHeader } from "@/components/site-header";
@@ -60,6 +62,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <SiteFooter />
           <BottomNav />
           <CartDrawer />
+          <WelcomePopup />
+          <CookieBar />
         </CartProvider>
       </body>
     </html>

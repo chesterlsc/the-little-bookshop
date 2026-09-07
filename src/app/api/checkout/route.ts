@@ -62,7 +62,12 @@ function remember(key: string, number: string) {
  * a screenshot on Instagram, so this endpoint never moves money.
  */
 export async function POST(request: Request) {
-  let body: { cart?: Cart; customer?: Partial<CustomerInfo>; idempotencyKey?: string };
+  let body: {
+    cart?: Cart;
+    customer?: Partial<CustomerInfo>;
+    idempotencyKey?: string;
+    discountCode?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -90,7 +95,9 @@ export async function POST(request: Request) {
   };
   customer.instagram = normalizeInstagram(customer.instagram);
 
-  const { snapshot, issues } = buildSnapshot({ lines: cart.lines }, customer);
+  // The code only names a discount; the amount is computed here, never trusted.
+  const discountCode = typeof body.discountCode === "string" ? body.discountCode : undefined;
+  const { snapshot, issues } = buildSnapshot({ lines: cart.lines }, customer, discountCode);
   if (!snapshot) {
     return NextResponse.json({ error: "cart", issues }, { status: 422 });
   }

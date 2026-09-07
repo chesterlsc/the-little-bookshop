@@ -18,7 +18,13 @@ const check = (name, ok) => {
 
 const exePath = fs.existsSync("/opt/pw-browsers/chromium") ? "/opt/pw-browsers/chromium" : undefined;
 const browser = await chromium.launch({ executablePath: exePath });
-const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+const shopping = await browser.newContext({ viewport: { width: 390, height: 844 } });
+// the welcome popup and cookie bar get their own scenario below; keep them out of this one
+await shopping.addInitScript(() => {
+  localStorage.setItem("tlb-welcome-v1", JSON.stringify({ status: "dismissed", at: "smoke" }));
+  localStorage.setItem("tlb-cookies-v1", JSON.stringify({ at: "smoke" }));
+});
+const page = await shopping.newPage();
 const pageErrors = [];
 page.on("pageerror", (e) => pageErrors.push(String(e)));
 
@@ -104,8 +110,57 @@ check("invalid customer rejected with friendly errors", bad.status === 422 && !!
 const badCart = await post({ cart: { lines: [{ type: "product", key: "z", slug: "nope", variantId: "default", qty: 1 }] }, customer });
 check("invalid cart rejected with 422", badCart.status === 422);
 
+/* ── welcome discount ───────────────────────────────────────────────────── */
+const disc = await (await post({ cart, customer, discountCode: " welcome 5 " })).json();
+check("welcome code: 5% off, normalized, shipping untouched",
+  disc.pay?.discountCode === "WELCOME5" && disc.pay?.discount === Math.floor(disc.pay.subtotal * 0.05)
+  && disc.pay?.total === disc.pay.subtotal - disc.pay.discount + disc.pay.shipping);
+const fake = await (await post({ cart, customer, discountCode: "HACK99" })).json();
+check("made-up code buys nothing", fake.pay?.discount === 0 && !fake.pay?.discountCode);
+
+// own throttle bucket, so a developer's earlier signups cannot fail this run
+const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}` }, body: JSON.stringify(payload) });
+const joined = await (await sub({ email: `smoke-${Date.now()}@example.com`, source: "instagram" })).json();
+check("signup returns the welcome code", joined.ok === true && joined.code === "WELCOME5");
+check("signup rejects a bad address", (await sub({ email: "nope", source: "tiktok" })).status === 422);
+const bot = await (await sub({ email: "bot@example.com", source: "instagram", website: "spam" })).json();
+check("honeypot looks like success to the bot", bot.ok === true);
+
 const gone = await fetch(`${BASE}/api/payments/verify?order=LB1001`);
 check("old payment gateway routes are gone", gone.status === 404);
+
+/* ── welcome popup + cookie bar, in a fresh browser ─────────────────────── */
+{
+  const fresh = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const pp = await fresh.newPage();
+  const perr = [];
+  pp.on("pageerror", (e) => perr.push(String(e)));
+  await pp.goto(BASE + "/", { waitUntil: "networkidle" });
+  const dialog = pp.locator('[role="dialog"][aria-labelledby]');
+  check("popup waits for the splash", (await dialog.count()) === 0);
+  await pp.waitForTimeout(5200);
+  check("popup appears once the splash is done", (await dialog.count()) === 1);
+  check("cookie bar present", (await pp.locator('aside[aria-label="Cookies"]').count()) === 1);
+  await pp.locator('[role="dialog"] input[type="email"]').fill(`smoke-popup-${Date.now()}@example.com`);
+  await pp.locator('[role="dialog"] label:has-text("Instagram")').click();
+  await pp.locator('[role="dialog"] button[type="submit"]').click();
+  await pp.waitForTimeout(1800);
+  const revealed = await dialog.textContent();
+  check("popup reveals the code after signup", /WELCOME5/.test(revealed) && /There it is/.test(revealed));
+  const remembered = await pp.evaluate(() => JSON.parse(localStorage.getItem("tlb-welcome-v1") || "null"));
+  check("popup remembers the signup with its code", remembered?.status === "joined" && remembered?.code === "WELCOME5");
+  await pp.keyboard.press("Escape");
+  await pp.waitForTimeout(400);
+  check("Escape closes the popup", (await dialog.count()) === 0);
+  await pp.reload({ waitUntil: "networkidle" });
+  await pp.waitForTimeout(5200);
+  check("popup never returns after signup", (await dialog.count()) === 0);
+  await pp.locator('aside[aria-label="Cookies"] button:has-text("Okay")').click();
+  await pp.waitForTimeout(200);
+  check("cookie bar dismisses", (await pp.locator('aside[aria-label="Cookies"]').count()) === 0);
+  check("popup scenario has no page errors", perr.length === 0, perr.join(" | "));
+  await fresh.close();
+}
 
 check("no page errors during run", pageErrors.length === 0, pageErrors.join(" | "));
 

@@ -1,6 +1,7 @@
 import type { OrderSnapshot } from "../checkout";
 import { formatMoney } from "../money";
 import { INSTAGRAM_HANDLE, PAYMENT_METHODS, SITE } from "@/content/site";
+import { WELCOME_CODE, WELCOME_PERCENT } from "../discount";
 import type { Mail } from "./types";
 
 /**
@@ -54,6 +55,7 @@ function itemsHtml(snapshot: OrderSnapshot): string {
 function totalsHtml(snapshot: OrderSnapshot): string {
   return `<table style="width:100%;margin-top:6px;border-top:1.5px solid #e2d5bf;padding-top:8px;">
     ${row("Subtotal", formatMoney(snapshot.subtotal))}
+    ${snapshot.discount > 0 ? row(`Discount${snapshot.discountCode ? ` (${esc(snapshot.discountCode)})` : ""}`, `−${formatMoney(snapshot.discount)}`) : ""}
     ${row("Shipping", formatMoney(snapshot.shipping))}
     ${row("<strong>Total</strong>", `<strong>${formatMoney(snapshot.total)}</strong> ${snapshot.currency}`)}
   </table>`;
@@ -149,5 +151,61 @@ export function contactEmail(to: string | string[], name: string, fromEmail: str
        <p style="font-size:13px;white-space:pre-wrap;">${esc(message)}</p>`,
     ),
     text: `From ${name} <${fromEmail}>: ${message}`,
+  };
+}
+
+/* ─── Welcome signup ─────────────────────────────────────────────────────── */
+
+export const SUBSCRIBE_SOURCES = ["instagram", "facebook", "tiktok", "friend", "other"] as const;
+export type SubscribeSource = (typeof SUBSCRIBE_SOURCES)[number];
+
+const SOURCE_LABEL: Record<SubscribeSource, string> = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  friend: "A friend",
+  other: "Somewhere else",
+};
+
+/** The customer's copy: their code, and where to use it. */
+export function welcomeCodeEmail(to: string): Mail {
+  const body = `
+    <p style="font-size:13px;margin:0 0 14px;">Thank you for joining the little shelf. Here is ${WELCOME_PERCENT}% off your first order, for whenever you are ready.</p>
+    <div style="text-align:center;margin:0 0 16px;">
+      <div style="display:inline-block;border:2px dashed #b7a183;border-radius:14px;padding:12px 26px;background:#fbf6eb;">
+        <p style="margin:0;font-size:11px;letter-spacing:2px;color:#93826d;">YOUR CODE</p>
+        <p style="margin:2px 0 0;font-size:24px;font-weight:800;letter-spacing:2px;">${WELCOME_CODE}</p>
+      </div>
+    </div>
+    <p style="font-size:13px;margin:0 0 6px;">Type it into the discount box at checkout. It takes ${WELCOME_PERCENT}% off the items, and free shipping still applies from ₱999.</p>
+    <p style="text-align:center;margin:18px 0 0;"><a href="${SITE.url}/build" style="color:#75845c;font-weight:800;">Build your little shelf</a></p>
+    <p style="font-size:12px;color:#6a5a48;margin-top:16px;">We only email about your orders and the occasional new tiny thing. Reply to this email if you would rather not hear from us.</p>`;
+  return {
+    to,
+    subject: `Your ${WELCOME_PERCENT}% off code from The Little Bookshop 📚`,
+    html: wrap("A little something for your first shelf", body),
+    text: [
+      `Thank you for joining The Little Bookshop.`,
+      `Your code: ${WELCOME_CODE} (${WELCOME_PERCENT}% off your first order)`,
+      `Use it in the discount box at checkout: ${SITE.url}/build`,
+    ].join("\n"),
+  };
+}
+
+/** The shop's copy: one line per signup, so the inbox is the mailing list. */
+export function subscriberNoticeEmail(to: string | string[], email: string, source: SubscribeSource): Mail {
+  return {
+    to,
+    subject: `🌱 New subscriber · ${email} · via ${SOURCE_LABEL[source]}`,
+    html: wrap(
+      "Someone joined the little shelf",
+      `<table style="width:100%;">
+        ${row("Email", esc(email))}
+        ${row("Found us via", SOURCE_LABEL[source])}
+        ${row("Code sent", WELCOME_CODE)}
+      </table>
+      <p style="font-size:12px;color:#6a5a48;margin-top:12px;">Search your inbox for "New subscriber" to see the whole list.</p>`,
+    ),
+    text: `New subscriber: ${email} (found us via ${SOURCE_LABEL[source]}). Code sent: ${WELCOME_CODE}.`,
   };
 }

@@ -20,6 +20,8 @@ export interface PaySnapshot {
     notes?: string;
   }[];
   subtotal: Cents;
+  discount: Cents;
+  discountCode?: string;
   shipping: Cents;
   total: Cents;
 }
@@ -38,6 +40,8 @@ export function toPaySnapshot(number: string, snapshot: OrderSnapshot): PaySnaps
       notes: i.notes,
     })),
     subtotal: snapshot.subtotal,
+    discount: snapshot.discount,
+    discountCode: snapshot.discountCode,
     shipping: snapshot.shipping,
     total: snapshot.total,
   };

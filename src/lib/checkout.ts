@@ -1,6 +1,7 @@
 import { getProduct, getVariant, SHELF_THEMES } from "./catalog";
 import { cartSubtotal, lineUnitPrice, shippingFor, validateCart, type Cart, type CartLine } from "./cart";
 import type { Cents } from "./money";
+import { discountFor, isValidCode, normalizeCode } from "./discount";
 
 /**
  * Customer details collected at checkout; only what the order needs to be
@@ -94,6 +95,9 @@ export interface OrderSnapshot {
   items: SnapshotItem[];
   customer: CustomerInfo;
   subtotal: Cents;
+  /** taken off the subtotal; zero when no valid code was given */
+  discount: Cents;
+  discountCode?: string;
   shipping: Cents;
   total: Cents;
   currency: string;
@@ -145,6 +149,7 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
 export function buildSnapshot(
   cart: Cart,
   customer: CustomerInfo,
+  discountCode?: string,
 ): { snapshot?: OrderSnapshot; issues: { key: string; message: string }[] } {
   const issues = validateCart(cart);
   if (issues.length) return { issues };
@@ -164,14 +169,17 @@ export function buildSnapshot(
   });
   const subtotal = cartSubtotal(cart);
   const shipping = shippingFor(subtotal);
+  const discount = discountFor(discountCode, subtotal);
   return {
     issues: [],
     snapshot: {
       items,
       customer,
       subtotal,
+      discount,
+      ...(isValidCode(discountCode) ? { discountCode: normalizeCode(discountCode) } : {}),
       shipping,
-      total: subtotal + shipping,
+      total: subtotal - discount + shipping,
       currency: "PHP",
     },
   };
