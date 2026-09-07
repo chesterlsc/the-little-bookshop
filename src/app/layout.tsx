@@ -53,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             Skip to content
           </a>
+          <div className="safe-top-fill" aria-hidden />
           <SplashScreen />
           <AnnouncementBar />
           <SiteHeader />

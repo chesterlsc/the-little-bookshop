@@ -691,9 +691,39 @@ a, button {
 .drawn-edge--rise { transform: scaleY(-1); }
 
 /* the sticky header trades its ruler-straight hairline for a pencil line */
+/* ─── The notch, the Dynamic Island, and the top safe area ─────────────────
+   The viewport is declared `viewport-fit: cover`, so on an iPhone the page
+   really does extend under the status bar. Every inset handled here until now
+   was the bottom one, so once Safari's toolbar collapsed on scroll the ribbon
+   and then the stuck header slid beneath the clock and the Island.
+
+   All three rules resolve to zero on anything without an inset, so desktop,
+   Android and iPhones in portrait with the toolbar showing are untouched. */
+
+.announcement {
+  /* the ribbon's own colour fills the Island's strip rather than a bare gap */
+  padding-top: calc(0.42rem + env(safe-area-inset-top, 0px));
+  /* above .safe-top-fill, so the green owns that strip until it scrolls away */
+  position: relative;
+  z-index: 50;
+}
+
 .site-header {
   border: 0;
   box-shadow: 0 16px 20px -22px rgba(94, 73, 52, 0.55);
+  /* stick below the inset, not under it */
+  top: env(safe-area-inset-top, 0px);
+}
+
+/* Behind the stuck header the strip would otherwise be see-through, and the
+   page would scroll past under the clock. This fills it. */
+.safe-top-fill {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 49; /* under the header at 50, over everything that scrolls */
+  background: var(--color-cream-50);
+  pointer-events: none;
 }
 .site-header::after {
   content: "";
