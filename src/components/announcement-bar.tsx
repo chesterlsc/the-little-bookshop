@@ -24,7 +24,7 @@ function Sprig({ flip = false }: { flip?: boolean }) {
 /** Thin ribbon above the header. Sits outside the sticky nav, so it scrolls away. */
 export function AnnouncementBar() {
   return (
-    <p className="announcement flex items-center justify-center gap-2 bg-gradient-to-b from-sage-700 to-sage-800 px-4 pb-[0.42rem] text-center font-sans text-[0.76rem] font-bold tracking-[0.04em] text-cream-50 sm:text-[0.83rem]">
+    <p className="announcement flex items-center justify-center gap-2 px-4 pb-[0.42rem] text-center font-sans text-[0.76rem] font-bold tracking-[0.04em] text-cream-50 sm:text-[0.83rem]">
       <Sprig />
       <span>Free shipping on orders over {formatMoney(FREE_SHIPPING_MINIMUM).replace(/\.00$/, "")}</span>
       <Sprig flip />

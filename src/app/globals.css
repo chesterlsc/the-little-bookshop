@@ -701,28 +701,58 @@ a, button {
    Android and iPhones in portrait with the toolbar showing are untouched. */
 
 .announcement {
-  /* the ribbon's own colour fills the Island's strip rather than a bare gap */
-  padding-top: calc(0.42rem + env(safe-area-inset-top, 0px));
-  /* above .safe-top-fill, so the green owns that strip until it scrolls away */
+  /* The ribbon carries its colour up behind the Island, so the top of the
+     screen is one green band rather than a gap above a green band. The inset
+     already supplies the breathing room the padding was there for, so it is
+     not added twice. */
+  padding-top: max(0.42rem, calc(env(safe-area-inset-top, 0px) + 0.16rem));
+  /* above .safe-top-fill, so the green owns the strip until it scrolls away */
   position: relative;
   z-index: 50;
+  /* Two bands, not one slab: the strip behind the status bar takes the deeper
+     sage, and the ribbon proper keeps its lighter gradient below it. Without
+     this the inset reads as dead space above the message; with it the darker
+     tint looks like a status area the ribbon hangs from. Both stops collapse
+     to nothing where there is no inset, leaving the original gradient. */
+  background:
+    linear-gradient(
+      180deg,
+      var(--color-sage-800) 0 env(safe-area-inset-top, 0px),
+      var(--color-sage-700) env(safe-area-inset-top, 0px),
+      var(--color-sage-800) 100%
+    );
+}
+
+/* Once the ribbon has scrolled away the header owns the top of the screen, and
+   it should read as one piece of frosted paper running from the very top edge
+   down to the drawn rule, the way a native bar carries its material up behind
+   the status bar. So the strip and the bar are the same surface: same tint,
+   same blur, no border or shadow between them to draw a seam.
+
+   The tint is heavier than the site's other glass on purpose. The header
+   passes over photographs, and at the shared 0.78 the wordmark had to compete
+   with whatever was behind it. */
+.site-header,
+.safe-top-fill {
+  background: color-mix(in srgb, var(--color-cream-50) 90%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
+  backdrop-filter: blur(18px) saturate(1.18);
 }
 
 .site-header {
   border: 0;
   box-shadow: 0 16px 20px -22px rgba(94, 73, 52, 0.55);
-  /* stick below the inset, not under it */
+  /* sits below the inset; .safe-top-fill covers the strip above it */
   top: env(safe-area-inset-top, 0px);
 }
 
-/* Behind the stuck header the strip would otherwise be see-through, and the
-   page would scroll past under the clock. This fills it. */
 .safe-top-fill {
   position: fixed;
   inset: 0 0 auto 0;
   height: env(safe-area-inset-top, 0px);
   z-index: 49; /* under the header at 50, over everything that scrolls */
-  background: var(--color-cream-50);
+  border: 0;
+  box-shadow: none;
   pointer-events: none;
 }
 .site-header::after {
