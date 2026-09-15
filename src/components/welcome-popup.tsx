@@ -17,8 +17,9 @@ import { dismissWelcome, joinWelcome, readWelcome } from "@/lib/welcome";
  * onto the shelf with the code on its cover.
  *
  * Shows once per browser, after the entry splash has finished, and never over
- * checkout or an order page. Declining is a real choice with a real label; the
- * code is fixed and public, so a slow or failed email never hides it.
+ * checkout or an order page. Declining is a real choice with a real label.
+ * Nothing is emailed: once the signup is saved the code shows here, and
+ * checkout fills it in on this device. A save that fails asks to try again.
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -46,7 +47,6 @@ export function WelcomePopup() {
   const [error, setError] = useState<string | null>(null);
   const [surveyError, setSurveyError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mailFailed, setMailFailed] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -149,25 +149,24 @@ export function WelcomePopup() {
     }
     setSurveyError(null);
     setBusy(true);
+    const fail = (message = "That didn't send. Try once more?") => {
+      setError(message);
+      setBusy(false);
+      emailRef.current?.focus();
+    };
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: addr, source, website }),
-        signal: AbortSignal.timeout(6000),
+        signal: AbortSignal.timeout(8000),
       });
-      if (res.status === 422 || res.status === 429) {
-        const json = (await res.json().catch(() => ({}))) as { message?: string };
-        setError(json.message ?? "That didn't send. Try once more?");
-        setBusy(false);
-        emailRef.current?.focus();
-        return;
-      }
-      setMailFailed(!res.ok);
+      // the saved row is the only record of a signup, so an unsaved one is retried,
+      // never shown as done (a repeat is harmless: the list is keyed on the address)
+      if (!res.ok) return fail(((await res.json().catch(() => ({}))) as { message?: string }).message);
     } catch {
-      setMailFailed(true);
+      return fail();
     }
-    // the code is fixed and public: a slow mailer must never hide it
     joinWelcome(WELCOME_CODE);
     setBusy(false);
     setStage("reveal");
@@ -289,7 +288,7 @@ export function WelcomePopup() {
               <svg viewBox="0 0 14 14" className="h-3.5 w-3.5 shrink-0" aria-hidden>
                 <FolkFlower x={7} y={7} r={4.2} />
               </svg>
-              {revealed ? "Sent with love (and a code)" : "One book short"}
+              {revealed ? "With love (and a code)" : "One book short"}
             </p>
             <h2
               id={h2Id}
@@ -307,9 +306,7 @@ export function WelcomePopup() {
         {revealed ? (
           <>
             <p className="mx-auto mt-2 max-w-[34ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
-              {mailFailed
-                ? `Use ${WELCOME_CODE} at checkout. We could not email it just now, so here it is anyway.`
-                : `Use ${WELCOME_CODE} at checkout. It is in your inbox too.`}
+              Use {WELCOME_CODE} at checkout. We will fill it in for you on this device.
             </p>
             <div
               className="stitch animate-pop mt-4 flex items-center justify-between gap-3 bg-cream-50 px-4 py-3"
@@ -335,7 +332,7 @@ export function WelcomePopup() {
         ) : (
           <>
             <p className="mx-auto mt-2 max-w-[34ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
-              Leave your email and we will slide it in. The code lands here and in your inbox.
+              Leave your email and we will slide it in. The code lands right here.
             </p>
             <form className="mt-4 text-left" noValidate onSubmit={submit}>
               <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
@@ -403,7 +400,7 @@ export function WelcomePopup() {
                 No thanks, full price is fine
               </button>
               <p className="mt-2 text-center text-xs text-ink-400">
-                Your code by email, plus the occasional new tiny thing. Reply to be removed.
+                We may email the occasional new tiny thing. Message us any time to be removed.
               </p>
             </form>
           </>

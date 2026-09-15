@@ -207,12 +207,17 @@ serverless host it fails and the shop is never told about the order.
 ## The database
 
 Two tables, both in one Postgres. `DATABASE_URL` turns them on; without it the
-site still works and still emails, but nothing is kept.
+site still works and still emails orders, but nothing is kept, and signups,
+which are not emailed, are lost.
 
 | Table | Holds | Written by |
 | --- | --- | --- |
 | `orders` | the order, the customer, what they paid, and where the parcel is | checkout |
 | `subscribers` | who joined the welcome list and where they found the shop | the welcome popup |
+
+Signing up sends no email. The popup shows the code, and `subscribers` is the
+mailing list: two emails a signup used to exhaust Resend's daily quota, and a
+checkout whose order email cannot send is refused, so mail is kept for orders.
 
 Order numbers come from a Postgres sequence, so they never repeat or restart.
 Subscribers are keyed on the address: signing up twice keeps the original date,

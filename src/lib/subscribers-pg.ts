@@ -7,9 +7,8 @@ import { getPool } from "./orders-pg";
  * Shares the orders pool and the same `Queryable` seam, so the SQL that will
  * run on Neon is exercised by scripts/verify-pg.mjs without a live database.
  *
- * The signup emails remain the backstop: a write that fails here is logged and
- * swallowed by the route, because losing a row is survivable when the shop
- * still has the notice in its inbox.
+ * This table is the only record of a signup (no email goes out), so a write
+ * that fails here fails the request and the popup asks them to try again.
  */
 
 export interface SubscriberRecord {
@@ -46,7 +45,12 @@ export function migrate(q?: Queryable): Promise<void> {
         created_at      TEXT NOT NULL,
         unsubscribed_at TEXT
       )`);
-  })();
+  })().catch((err) => {
+    // Neon waking up or a dropped connection must not stick for the life of
+    // the instance: forget the failure so the next signup tries again.
+    ready = null;
+    throw err;
+  });
   return ready;
 }
 

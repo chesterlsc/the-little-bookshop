@@ -176,7 +176,7 @@ export const POLICIES: Record<
     updated: "⟨date⟩",
     body: [
       "We collect only what an order needs: your name, email address, phone number, shipping address, and the order details you give us (including custom book titles and notes).",
-      "If you join our list for a welcome discount, we keep the email address you give us and the one answer to where you found us. We use it to send your code and, now and then, news of new tiny things. Reply to any email to be removed.",
+      `If you join our list for a welcome discount, we keep the email address you give us and the one answer to where you found us. Your code is shown on screen straight away; now and then we may email you news of new tiny things. Email ${SITE.contactEmail} to be removed.`,
       "The site stores your basket and a few preferences (such as whether you have seen the welcome offer) in your own browser. We set no advertising or tracking cookies.",
       "We never collect card numbers, PINs, OTPs or banking passwords. Payment happens entirely in your own banking or e-wallet app, and you send us a screenshot of the completed transfer.",
       "We use your details to make and deliver your order, to email you about it, and for nothing else. We don't sell or share your information for marketing.",

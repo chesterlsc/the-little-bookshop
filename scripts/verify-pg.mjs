@@ -121,6 +121,14 @@ const bulk = await Promise.all(
 check("20 concurrent signups all saved", new Set(bulk.map((r) => r.email)).size === 20);
 check("list caps at the requested limit", (await list.listSubscribers(5)).length === 5);
 
+// the list is the only record of a signup, so one failed connection must not stick
+let flakes = 1;
+list.__setQueryable({ query: (text, params) => (flakes-- > 0 ? Promise.reject(new Error("Neon waking up")) : q.query(text, params)) });
+const outcome = (p) => p.then(() => "saved", () => "failed");
+const firstTry = await outcome(list.addSubscriber("flaky@example.com", "tiktok", "WELCOME5"));
+const nextTry = await outcome(list.addSubscriber("flaky@example.com", "tiktok", "WELCOME5"));
+check("a failed first connection is retried by the next signup", firstTry === "failed" && nextTry === "saved", `${firstTry} then ${nextTry}`);
+
 await db.close();
 const failed = results.filter(([, ok]) => !ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);

@@ -130,8 +130,11 @@ check("made-up code buys nothing", fake.pay?.discount === 0 && !fake.pay?.discou
 
 // own throttle bucket, so a developer's earlier signups cannot fail this run
 const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}` }, body: JSON.stringify(payload) });
-const joined = await (await sub({ email: `smoke-${Date.now()}@example.com`, source: "instagram" })).json();
+const subEmail = `smoke-${Date.now()}@example.com`;
+const joined = await (await sub({ email: subEmail, source: "instagram" })).json();
 check("signup returns the welcome code", joined.ok === true && joined.code === "WELCOME5");
+check("signup sends no email, so orders keep the mail quota",
+  !fs.existsSync("var/outbox") || !fs.readdirSync("var/outbox").some((f) => f.endsWith(".eml") && fs.readFileSync(`var/outbox/${f}`, "utf8").includes(subEmail)));
 check("signup rejects a bad address", (await sub({ email: "nope", source: "tiktok" })).status === 422);
 check("signup rejects a missing survey answer", (await sub({ email: "no-survey@example.com" })).status === 422);
 check("non-JSON posts are refused", (await fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ email: "x@example.com", source: "instagram" }) })).status === 415);

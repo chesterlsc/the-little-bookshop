@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEmailProvider } from "@/lib/email";
-import {
-  SUBSCRIBE_SOURCES,
-  subscriberNoticeEmail,
-  welcomeCodeEmail,
-  type SubscribeSource,
-} from "@/lib/email/templates";
-import { ordersAddress } from "@/lib/email/types";
+import { SUBSCRIBE_SOURCES, type SubscribeSource } from "@/lib/email/templates";
 import { WELCOME_CODE } from "@/lib/discount";
 import { addSubscriber } from "@/lib/subscribers";
 
@@ -15,9 +8,9 @@ export const runtime = "nodejs";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
- * Recent signups per address, so one person cannot burn the mail quota or
- * fill the shop inbox by leaning on the button. In-memory and per instance,
- * which is enough to blunt a casual loop.
+ * Recent signups per address, so one person cannot fill the list by leaning
+ * on the button. In-memory and per instance, which is enough to blunt a
+ * casual loop.
  * ponytail: promote to a shared store if this ever sees real abuse.
  */
 const recent = new Map<string, number[]>();
@@ -36,11 +29,11 @@ function throttled(ip: string): boolean {
 /**
  * POST /api/subscribe
  * The welcome popup: an email address and where they found us, in exchange
- * for the welcome code. The code is fixed and public, so the only thing this
- * endpoint guards is the shop's mail quota.
+ * for the welcome code, which the popup shows on screen.
  *
- * Two emails go out: the code to the customer, which also proves the address
- * is real, and a one-line notice to the shop, whose inbox is the mailing list.
+ * No email goes out. The subscribers table is the mailing list (`npm run shop
+ * subscribers`), and Resend's daily quota is kept for orders: two emails per
+ * signup used to exhaust it, and checkout refuses an order it cannot email.
  */
 export async function POST(request: Request) {
   // application/json forces a CORS preflight, which this route does not answer,
@@ -82,32 +75,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const mailer = getEmailProvider();
-  try {
-    // The customer's copy first: if their address bounces, the shop should
-    // not be told about a subscriber who cannot be reached.
-    await mailer.send(welcomeCodeEmail(email));
-  } catch (err) {
-    console.error("[subscribe] could not send the code:", err);
-    return NextResponse.json(
-      { error: "send", message: "We couldn't send your code just now. Please try again in a moment." },
-      { status: 502 },
-    );
-  }
-  // Saved only once the address has proved deliverable, so the list does not
-  // fill with typos. A failure here is not worth failing the signup for: the
-  // shop's notice below is still the record it had before this table existed.
   try {
     await addSubscriber(email, source, WELCOME_CODE);
   } catch (err) {
+    // The table is the only record, so say so: the popup asks them to try again.
     console.error("[subscribe] could not save to the list:", err);
-  }
-
-  try {
-    await mailer.send(subscriberNoticeEmail(ordersAddress(), email, source));
-  } catch (err) {
-    // They have their code; the shop missing one notice is not worth failing them for.
-    console.error("[subscribe] shop notice failed:", err);
+    return NextResponse.json(
+      { error: "save", message: "We couldn't save your signup just now. Please try again in a moment." },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({ ok: true, code: WELCOME_CODE });

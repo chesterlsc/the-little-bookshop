@@ -11,8 +11,8 @@ export type { SubscriberRecord } from "./subscribers-pg";
  * serverless hosts give every request a fresh read-only filesystem. SQLite
  * otherwise, so a laptop records signups with no configuration at all.
  *
- * The signup emails remain the record either way: a write that fails here is
- * logged by the route rather than failing the customer.
+ * No signup email is sent, so this is the only record: a write that fails here
+ * fails the signup, and the popup asks the customer to try again.
  */
 const usePg = Boolean(process.env.DATABASE_URL);
 
