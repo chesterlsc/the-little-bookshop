@@ -157,3 +157,58 @@ export function contactEmail(to: string | string[], name: string, fromEmail: str
 
 export const SUBSCRIBE_SOURCES = ["instagram", "facebook", "tiktok", "friend", "other"] as const;
 export type SubscribeSource = (typeof SUBSCRIBE_SOURCES)[number];
+
+const SOURCE_LABEL: Record<string, string> = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  friend: "A friend",
+  other: "Somewhere else",
+};
+
+/**
+ * The shop's news of new signups: one email per batch instead of one per
+ * signup, so the list costs the order mail almost none of Resend's quota.
+ */
+export function subscriberDigestEmail(
+  to: string[],
+  subs: { email: string; source: string; code: string; created_at: string }[],
+): Mail {
+  const label = (source: string) => SOURCE_LABEL[source] ?? source;
+  const when = (iso: string) =>
+    new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" });
+  const tally = new Map<string, number>();
+  for (const s of subs) tally.set(label(s.source), (tally.get(label(s.source)) ?? 0) + 1);
+  const answers = [...tally].sort((a, b) => b[1] - a[1]).map(([name, n]) => `${name} ${n}`).join(" · ");
+  const codes = [...new Set(subs.map((s) => s.code))].join(", ");
+  const cell = "padding:5px 8px;border-top:1px solid #e2d5bf;font-size:12px;vertical-align:top;";
+  return {
+    to,
+    subject: `🌱 ${subs.length} new subscribers · ${answers}`,
+    html: wrap(
+      `${subs.length} new readers joined the little shelf`,
+      `<table style="width:100%;">
+        ${row("Joined", `${esc(when(subs[0].created_at))} to ${esc(when(subs[subs.length - 1].created_at))}`)}
+        ${row("Where did you find us?", esc(answers))}
+        ${row("Code shown", esc(codes))}
+      </table>
+      <table style="width:100%;border-collapse:collapse;margin-top:14px;">
+        <tr style="text-align:left;font-size:11px;color:#93826d;">
+          <th style="padding:5px 8px;">#</th><th style="padding:5px 8px;">Email</th><th style="padding:5px 8px;">Found us via</th><th style="padding:5px 8px;">Joined</th>
+        </tr>
+        ${subs
+          .map(
+            (s, i) =>
+              `<tr><td style="${cell}color:#93826d;">${i + 1}</td><td style="${cell}">${esc(s.email)}</td><td style="${cell}">${esc(label(s.source))}</td><td style="${cell}white-space:nowrap;">${esc(when(s.created_at))}</td></tr>`,
+          )
+          .join("")}
+      </table>
+      <p style="font-size:12px;color:#6a5a48;margin-top:12px;">The whole list is in the database: npm run shop subscribers, or npm run shop export for a CSV.</p>`,
+    ),
+    text: [
+      `${subs.length} new subscribers (${answers})`,
+      "",
+      ...subs.map((s, i) => `${i + 1}. ${s.email} · ${label(s.source)} · ${when(s.created_at)}`),
+    ].join("\n"),
+  };
+}

@@ -215,9 +215,12 @@ which are not emailed, are lost.
 | `orders` | the order, the customer, what they paid, and where the parcel is | checkout |
 | `subscribers` | who joined the welcome list and where they found the shop | the welcome popup |
 
-Signing up sends no email. The popup shows the code, and `subscribers` is the
-mailing list: two emails a signup used to exhaust Resend's daily quota, and a
-checkout whose order email cannot send is refused, so mail is kept for orders.
+Signing up sends the subscriber no email. The popup shows the code, and
+`subscribers` is the mailing list: two emails a signup used to exhaust Resend's
+daily quota, and a checkout whose order email cannot send is refused, so mail
+is kept for orders. The shop hears about signups in one digest per 25 (email,
+where they found us, when), sent to the order inboxes; `notified_at` marks who
+has been in one, and a failed send leaves them waiting for the next signup.
 
 Order numbers come from a Postgres sequence, so they never repeat or restart.
 Subscribers are keyed on the address: signing up twice keeps the original date,

@@ -1,11 +1,35 @@
-import { NextResponse } from "next/server";
-import { SUBSCRIBE_SOURCES, type SubscribeSource } from "@/lib/email/templates";
+import { after, NextResponse } from "next/server";
+import { getEmailProvider } from "@/lib/email";
+import { SUBSCRIBE_SOURCES, subscriberDigestEmail, type SubscribeSource } from "@/lib/email/templates";
+import { ordersAddress } from "@/lib/email/types";
 import { WELCOME_CODE } from "@/lib/discount";
-import { addSubscriber } from "@/lib/subscribers";
+import { addSubscriber, claimDigest, releaseDigest } from "@/lib/subscribers";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/** The shop hears about new signups in one email per this many, never one each. */
+const DIGEST_EVERY = 25;
+
+/**
+ * Sends the shop a digest once enough signups are waiting. A send that fails
+ * puts the batch back, so the next signup tries again; it never fails a signup.
+ */
+async function sendDigest() {
+  try {
+    const batch = await claimDigest(DIGEST_EVERY);
+    if (!batch.length) return;
+    try {
+      await getEmailProvider().send(subscriberDigestEmail(ordersAddress(), batch));
+    } catch (err) {
+      await releaseDigest(batch.map((s) => s.id));
+      throw err;
+    }
+  } catch (err) {
+    console.error("[subscribe] new-subscriber digest not sent:", err);
+  }
+}
 
 /**
  * Recent signups per address, so one person cannot fill the list by leaning
@@ -31,9 +55,10 @@ function throttled(ip: string): boolean {
  * The welcome popup: an email address and where they found us, in exchange
  * for the welcome code, which the popup shows on screen.
  *
- * No email goes out. The subscribers table is the mailing list (`npm run shop
- * subscribers`), and Resend's daily quota is kept for orders: two emails per
- * signup used to exhaust it, and checkout refuses an order it cannot email.
+ * The subscriber is never emailed, and the shop gets one email per 25 signups.
+ * The subscribers table is the mailing list (`npm run shop subscribers`), and
+ * Resend's daily quota is kept for orders: two emails per signup used to
+ * exhaust it, and checkout refuses an order it cannot email.
  */
 export async function POST(request: Request) {
   // application/json forces a CORS preflight, which this route does not answer,
@@ -86,5 +111,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // after the response, so the signup that completes a batch never waits on Resend
+  after(sendDigest);
   return NextResponse.json({ ok: true, code: WELCOME_CODE });
 }

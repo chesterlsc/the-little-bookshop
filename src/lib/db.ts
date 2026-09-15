@@ -63,9 +63,15 @@ export function getDb(): Database.Database {
     );
   `);
   // Match the Postgres schema so local development sees the same columns.
-  for (const col of ["courier TEXT", "tracking_number TEXT", "tracking_url TEXT", "shipped_at TEXT"]) {
+  for (const col of [
+    "orders ADD COLUMN courier TEXT",
+    "orders ADD COLUMN tracking_number TEXT",
+    "orders ADD COLUMN tracking_url TEXT",
+    "orders ADD COLUMN shipped_at TEXT",
+    "subscribers ADD COLUMN notified_at TEXT",
+  ]) {
     try {
-      db.exec(`ALTER TABLE orders ADD COLUMN ${col}`);
+      db.exec(`ALTER TABLE ${col}`);
     } catch {
       /* already there */
     }

@@ -39,6 +39,15 @@ export async function removeSubscriber(email: string): Promise<void> {
   return usePg ? (await pg()).removeSubscriber(email) : sqlite.removeSubscriber(email);
 }
 
+/** Every signup the shop has not heard about, once at least `min` are waiting. */
+export async function claimDigest(min: number): Promise<SubscriberRecord[]> {
+  return usePg ? (await pg()).claimDigest(min) : sqlite.claimDigest(min);
+}
+
+export async function releaseDigest(ids: number[]): Promise<void> {
+  return usePg ? (await pg()).releaseDigest(ids) : sqlite.releaseDigest(ids);
+}
+
 export async function countSubscribers(): Promise<number> {
   return usePg ? (await pg()).countSubscribers() : sqlite.countSubscribers();
 }

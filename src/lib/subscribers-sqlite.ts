@@ -33,6 +33,27 @@ export function removeSubscriber(email: string): void {
     .run(new Date().toISOString(), email.trim().toLowerCase());
 }
 
+/** See subscribers-pg. One process holds this file, so a transaction is the whole claim. */
+export function claimDigest(min: number): SubscriberRecord[] {
+  const db = getDb();
+  return db.transaction(() => {
+    const rows = db
+      .prepare("SELECT * FROM subscribers WHERE notified_at IS NULL AND unsubscribed_at IS NULL ORDER BY id")
+      .all() as SubscriberRecord[];
+    if (rows.length < min) return [];
+    const mark = db.prepare("UPDATE subscribers SET notified_at = ? WHERE id = ?");
+    const stamp = new Date().toISOString();
+    for (const r of rows) mark.run(stamp, r.id);
+    return rows;
+  })();
+}
+
+export function releaseDigest(ids: number[]): void {
+  const db = getDb();
+  const clear = db.prepare("UPDATE subscribers SET notified_at = NULL WHERE id = ?");
+  db.transaction(() => ids.forEach((id) => clear.run(id)))();
+}
+
 export function countSubscribers(): number {
   const row = getDb()
     .prepare("SELECT COUNT(*) AS n FROM subscribers WHERE unsubscribed_at IS NULL")

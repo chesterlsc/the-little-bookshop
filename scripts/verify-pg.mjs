@@ -129,6 +129,30 @@ const firstTry = await outcome(list.addSubscriber("flaky@example.com", "tiktok",
 const nextTry = await outcome(list.addSubscriber("flaky@example.com", "tiktok", "WELCOME5"));
 check("a failed first connection is retried by the next signup", firstTry === "failed" && nextTry === "saved", `${firstTry} then ${nextTry}`);
 
+/* ── the shop's digest of new signups ── */
+// upgrade a table made before the column existed, holding a signup from before digests
+await q.query("ALTER TABLE subscribers DROP COLUMN notified_at");
+await q.query("INSERT INTO subscribers (email, source, code, created_at) VALUES ('early@example.com', 'instagram', 'WELCOME5', '2026-09-01T00:00:00.000Z')");
+list.__setQueryable(q);
+await list.migrate(q);
+const waiting = async () => Number((await q.query("SELECT COUNT(*)::int AS n FROM subscribers WHERE notified_at IS NULL AND unsubscribed_at IS NULL")).rows[0].n);
+check("signups from before digests count as already announced",
+  (await q.query("SELECT notified_at FROM subscribers WHERE email = 'early@example.com'")).rows[0].notified_at !== null);
+await list.removeSubscriber("bulk0@example.com");
+const n = await waiting();
+check("newer signups wait for the digest", n > 0, String(n));
+check("fewer than a batch claims nothing", (await list.claimDigest(n + 1)).length === 0);
+const digest = await list.claimDigest(n);
+check("a full batch claims every waiting signup, oldest first",
+  digest.length === n && digest.every((r, i) => i === 0 || digest[i - 1].id < r.id), `${digest.length}/${n}`);
+check("the batch leaves out removed and already-announced addresses",
+  digest.every((r) => r.email !== "bulk0@example.com" && r.email !== "early@example.com"));
+check("a claimed batch is not claimed again", (await list.claimDigest(1)).length === 0);
+await list.releaseDigest(digest.map((r) => r.id));
+check("a failed send puts the batch back", (await waiting()) === n);
+const racing = await Promise.all([list.claimDigest(n), list.claimDigest(n)]);
+check("two signups finishing a batch together send it once", racing.map((r) => r.length).sort().join() === `0,${n}`, racing.map((r) => r.length).join());
+
 await db.close();
 const failed = results.filter(([, ok]) => !ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);

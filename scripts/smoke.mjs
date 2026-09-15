@@ -129,12 +129,27 @@ const fake = await (await post({ cart, customer, discountCode: "HACK99" })).json
 check("made-up code buys nothing", fake.pay?.discount === 0 && !fake.pay?.discountCode);
 
 // own throttle bucket, so a developer's earlier signups cannot fail this run
-const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}` }, body: JSON.stringify(payload) });
+let subs = 0;
+const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}-${subs++}` }, body: JSON.stringify(payload) });
 const subEmail = `smoke-${Date.now()}@example.com`;
 const joined = await (await sub({ email: subEmail, source: "instagram" })).json();
 check("signup returns the welcome code", joined.ok === true && joined.code === "WELCOME5");
-check("signup sends no email, so orders keep the mail quota",
-  !fs.existsSync("var/outbox") || !fs.readdirSync("var/outbox").some((f) => f.endsWith(".eml") && fs.readFileSync(`var/outbox/${f}`, "utf8").includes(subEmail)));
+// the dev mailer names each file after its recipients
+check("the subscriber is never emailed, so orders keep the mail quota",
+  !fs.existsSync("var/outbox") || !fs.readdirSync("var/outbox").some((f) => f.includes(subEmail)));
+
+// 25 more signups cross a batch exactly once, whatever was already waiting locally,
+// so exactly one digest can list any of them
+const batchTag = `digest-${Date.now()}-`;
+for (let i = 0; i < 25; i++) await sub({ email: `${batchTag}${i}@example.com`, source: "tiktok" });
+await new Promise((r) => setTimeout(r, 2000)); // the digest is sent after the response
+const digests = fs.readdirSync("var/outbox")
+  .filter((f) => f.endsWith(".eml"))
+  .map((f) => fs.readFileSync(`var/outbox/${f}`, "utf8"))
+  .filter((m) => /^Subject: .* new subscribers/m.test(m) && m.includes(batchTag));
+check("every 25 signups send the shop one digest with each email and survey answer",
+  digests.length === 1 && /^To: .*thelittlebookshop/m.test(digests[0]) && /TikTok/.test(digests[0]),
+  `${digests.length} digests`);
 check("signup rejects a bad address", (await sub({ email: "nope", source: "tiktok" })).status === 422);
 check("signup rejects a missing survey answer", (await sub({ email: "no-survey@example.com" })).status === 422);
 check("non-JSON posts are refused", (await fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ email: "x@example.com", source: "instagram" }) })).status === 415);

@@ -7,8 +7,9 @@ import { getPool } from "./orders-pg";
  * Shares the orders pool and the same `Queryable` seam, so the SQL that will
  * run on Neon is exercised by scripts/verify-pg.mjs without a live database.
  *
- * This table is the only record of a signup (no email goes out), so a write
- * that fails here fails the request and the popup asks them to try again.
+ * This table is the only record of a signup (the subscriber is never emailed,
+ * and the shop hears about signups in batches), so a write that fails here
+ * fails the request and the popup asks them to try again.
  */
 
 export interface SubscriberRecord {
@@ -20,7 +21,16 @@ export interface SubscriberRecord {
   created_at: string;
   /** set when they ask to be removed; kept so the address is not re-added */
   unsubscribed_at: string | null;
+  /** set once the shop has been emailed about them, in a digest */
+  notified_at: string | null;
 }
+
+/**
+ * When signups stopped emailing the shop one notice each (the deploy of
+ * 7ce53d0). Everyone who joined before it was already announced that way, so
+ * only later signups wait for a digest.
+ */
+const DIGEST_START = "2026-09-15T16:43:55.000Z";
 
 let seam: Queryable | null = null;
 let ready: Promise<void> | null = null;
@@ -43,8 +53,14 @@ export function migrate(q?: Queryable): Promise<void> {
         source          TEXT NOT NULL,
         code            TEXT NOT NULL,
         created_at      TEXT NOT NULL,
-        unsubscribed_at TEXT
+        unsubscribed_at TEXT,
+        notified_at     TEXT
       )`);
+    await c.query("ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS notified_at TEXT");
+    await c.query(
+      "UPDATE subscribers SET notified_at = created_at WHERE notified_at IS NULL AND created_at < $1",
+      [DIGEST_START],
+    );
   })().catch((err) => {
     // Neon waking up or a dropped connection must not stick for the life of
     // the instance: forget the failure so the next signup tries again.
@@ -103,6 +119,37 @@ export async function removeSubscriber(email: string): Promise<void> {
     new Date().toISOString(),
     email.trim().toLowerCase(),
   ]);
+}
+
+/**
+ * Marks every signup the shop has not heard about as sent and returns them,
+ * oldest first, but only once at least `min` are waiting; otherwise nothing.
+ * SKIP LOCKED makes it one claim per batch: a signup arriving mid-claim sees
+ * the batch as taken rather than sending it a second time.
+ */
+export async function claimDigest(min: number): Promise<SubscriberRecord[]> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query(
+    `WITH pending AS (
+       SELECT id FROM subscribers
+        WHERE notified_at IS NULL AND unsubscribed_at IS NULL
+        FOR UPDATE SKIP LOCKED
+     )
+     UPDATE subscribers SET notified_at = $1
+      WHERE id IN (SELECT id FROM pending)
+        AND (SELECT COUNT(*) FROM pending) >= $2
+     RETURNING *`,
+    [new Date().toISOString(), min],
+  );
+  return rows.map(toRecord).sort((a, b) => a.id - b.id);
+}
+
+/** Puts a batch back when its email could not be sent, so the next signup retries it. */
+export async function releaseDigest(ids: number[]): Promise<void> {
+  const c = await db();
+  await migrate(c);
+  await c.query("UPDATE subscribers SET notified_at = NULL WHERE id = ANY($1::bigint[])", [ids]);
 }
 
 export async function countSubscribers(): Promise<number> {
