@@ -118,7 +118,7 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
               .map((a) => {
                 const p = getProduct(a.slug);
                 const v = p && getVariant(p, a.variantId);
-                const opt = v && Object.values(v.options)[0];
+                const opt = v && Object.values(v.options).join(", ");
                 return p ? `${p.name}${opt ? ` (${opt})` : ""}` : "";
               })
               .filter(Boolean)

@@ -83,7 +83,12 @@ export function validateCart(cart: Cart): LineIssue[] {
       const product = getProduct(line.slug);
       const variant = product && getVariant(product, line.variantId);
       if (!product || !variant) {
-        issues.push({ key: line.key, message: "This item is no longer in the catalog." });
+        issues.push({
+          key: line.key,
+          message: product
+            ? `${product.name} has new options. Please remove it and add it again.`
+            : "This item is no longer in the catalog.",
+        });
         continue;
       }
       if (!variant.available) {
@@ -132,7 +137,13 @@ export function validateCart(cart: Cart): LineIssue[] {
         const a = getProduct(acc.slug);
         const av = a && getVariant(a, acc.variantId);
         if (!a || !av || a.category !== "accessories") {
-          issues.push({ key: line.key, message: "An accessory in this bundle is unavailable." });
+          issues.push({
+            key: line.key,
+            message:
+              a && !av
+                ? `${a.name} in this bundle has new options. Please remove the bundle and build it again.`
+                : "An accessory in this bundle is unavailable.",
+          });
         }
       }
       if (line.themeId && !SHELF_THEMES.some((t) => t.id === line.themeId)) {
@@ -188,13 +199,27 @@ export function shippingFor(subtotal: Cents): Cents {
   return flat;
 }
 
+/** Named with their options in the checkout summary; everything else shows its name only. */
+const SUMMARY_WITH_OPTIONS = ["mini-shelf-letters", "mini-plant"];
+
+function nameWithOptions(slug: string, variantId: string): string {
+  const product = getProduct(slug);
+  const variant = product && getVariant(product, variantId);
+  const opts = variant ? Object.values(variant.options).join(", ") : "";
+  return `${product?.name ?? slug}${opts ? ` (${opts})` : ""}`;
+}
+
 export function describeLine(line: CartLine): string {
   if (line.type === "product") {
-    const product = getProduct(line.slug);
-    return product?.name ?? line.slug;
+    return SUMMARY_WITH_OPTIONS.includes(line.slug)
+      ? nameWithOptions(line.slug, line.variantId)
+      : (getProduct(line.slug)?.name ?? line.slug);
   }
   const shelf = getProduct(line.shelf.slug);
-  return `Little Shelf Bundle: ${shelf?.name ?? "shelf"}`;
+  const extras = line.accessories
+    .filter((a) => SUMMARY_WITH_OPTIONS.includes(a.slug))
+    .map((a) => `, ${nameWithOptions(a.slug, a.variantId)}`);
+  return `Little Shelf Bundle: ${shelf?.name ?? "shelf"}${extras.join("")}`;
 }
 
 let counter = 0;

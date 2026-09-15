@@ -30,8 +30,8 @@ interface BuilderState {
   setSlug: string | null;
   coverStyle: string;
   titles: CustomTitle[];
-  /** accessory slug -> chosen option value ("" when the accessory has no options) */
-  accessories: Record<string, string>;
+  /** accessory slug -> chosen value per option axis ({} until one is picked) */
+  accessories: Record<string, Record<string, string>>;
   themeId: ShelfThemeId | null;
   notes: string;
   step: number;
@@ -66,6 +66,17 @@ function loadState(): BuilderState {
 function resolveVariant(product: Product, wanted: Record<string, string>) {
   return product.variants.find((v) =>
     product.options.every((axis) => v.options[axis.name] === wanted[axis.name]),
+  );
+}
+
+/**
+ * A valid value for every axis of an accessory, defaulting what is missing or
+ * stale. Builds saved before letters gained a color stored one plain string.
+ */
+function accessoryOptions(product: Product, saved: unknown): Record<string, string> {
+  const o = (typeof saved === "string" ? { [product.options[0]?.name]: saved } : Object(saved)) as Record<string, string>;
+  return Object.fromEntries(
+    product.options.map((a) => [a.name, a.values.includes(o[a.name]) ? o[a.name] : a.values[0]]),
   );
 }
 
@@ -127,13 +138,10 @@ export function ShelfBuilder() {
     : undefined;
 
   const accessoryEntries = Object.entries(state.accessories)
-    .map(([slug, option]) => {
+    .map(([slug, saved]) => {
       const product = getProduct(slug);
-      if (!product) return null;
-      const variant = product.options.length
-        ? product.variants.find((v) => Object.values(v.options)[0] === option)
-        : product.variants[0];
-      return variant ? { product, variant } : null;
+      const variant = product && resolveVariant(product, accessoryOptions(product, saved));
+      return product && variant ? { product, variant } : null;
     })
     .filter((e): e is { product: Product; variant: Product["variants"][number] } => Boolean(e));
 
@@ -288,16 +296,16 @@ export function ShelfBuilder() {
           {state.step === 3 && (
             <StepExtras
               chosen={state.accessories}
-              onToggle={(slug, option) =>
+              onToggle={(slug) =>
                 setState((s) => {
                   const acc = { ...s.accessories };
-                  if (slug in acc && acc[slug] === option) delete acc[slug];
-                  else acc[slug] = option;
+                  if (slug in acc) delete acc[slug];
+                  else acc[slug] = {};
                   return { ...s, accessories: acc };
                 })
               }
-              onOption={(slug, option) =>
-                setState((s) => ({ ...s, accessories: { ...s.accessories, [slug]: option } }))
+              onOption={(slug, options) =>
+                setState((s) => ({ ...s, accessories: { ...s.accessories, [slug]: options } }))
               }
             />
           )}
@@ -681,9 +689,9 @@ function StepExtras({
   onToggle,
   onOption,
 }: {
-  chosen: Record<string, string>;
-  onToggle: (slug: string, option: string) => void;
-  onOption: (slug: string, option: string) => void;
+  chosen: Record<string, Record<string, string>>;
+  onToggle: (slug: string) => void;
+  onOption: (slug: string, options: Record<string, string>) => void;
 }) {
   return (
     <div>
@@ -694,7 +702,7 @@ function StepExtras({
       <div className="grid gap-2 sm:grid-cols-2">
         {ACCESSORY_PRODUCTS().map((p) => {
           const inBundle = p.slug in chosen;
-          const axis = p.options[0];
+          const opts = accessoryOptions(p, chosen[p.slug]);
           return (
             <div
               key={p.slug}
@@ -702,7 +710,7 @@ function StepExtras({
             >
               <button
                 type="button"
-                onClick={() => onToggle(p.slug, axis ? (chosen[p.slug] ?? axis.values[0]) : "")}
+                onClick={() => onToggle(p.slug)}
                 aria-pressed={inBundle}
                 className="flex w-full items-center gap-3 text-left"
               >
@@ -720,21 +728,31 @@ function StepExtras({
                   {inBundle ? "✓" : "+"}
                 </span>
               </button>
-              {inBundle && axis && (
-                <div className="mt-2 border-t border-brown-500/10 pt-2">
-                  <label htmlFor={`acc-${p.slug}`} className="mr-2 font-sans text-xs font-bold text-ink-600">
-                    {axis.name}:
-                  </label>
-                  <select
-                    id={`acc-${p.slug}`}
-                    value={chosen[p.slug]}
-                    onChange={(e) => onOption(p.slug, e.target.value)}
-                    className="rounded-xl border-[1.5px] border-taupe-300 bg-white/70 px-2.5 py-1.5 font-sans text-sm"
-                  >
-                    {axis.values.map((v) => (
-                      <option key={v}>{v}</option>
-                    ))}
-                  </select>
+              {inBundle && p.options.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 border-t border-brown-500/10 pt-2">
+                  {p.options.map((axis, i) =>
+                    axis.values.length === 1 ? (
+                      <p key={axis.name} className="font-sans text-xs font-bold text-ink-600">
+                        {axis.name}: <span className="text-sm font-normal">{axis.values[0]}</span>
+                      </p>
+                    ) : (
+                      <div key={axis.name}>
+                        <label htmlFor={`acc-${p.slug}-${i}`} className="mr-2 font-sans text-xs font-bold text-ink-600">
+                          {axis.name}:
+                        </label>
+                        <select
+                          id={`acc-${p.slug}-${i}`}
+                          value={opts[axis.name]}
+                          onChange={(e) => onOption(p.slug, { ...opts, [axis.name]: e.target.value })}
+                          className="rounded-xl border-[1.5px] border-taupe-300 bg-white/70 px-2.5 py-1.5 font-sans text-sm"
+                        >
+                          {axis.values.map((v) => (
+                            <option key={v}>{v}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
             </div>
@@ -915,8 +933,8 @@ function StepReview(props: {
                 {accessories.map((e) => (
                   <li key={e.product.slug}>
                     {e.product.name}
-                    {Object.values(e.variant.options)[0] && (
-                      <span className="text-ink-600">, {Object.values(e.variant.options)[0]}</span>
+                    {Object.values(e.variant.options).length > 0 && (
+                      <span className="text-ink-600">, {Object.values(e.variant.options).join(" · ")}</span>
                     )}
                   </li>
                 ))}

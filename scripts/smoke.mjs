@@ -91,7 +91,7 @@ await page.goto(`${BASE}/order/${orderNumber}`, { waitUntil: "networkidle" });
 check("order page shows awaiting payment", (await page.textContent("body")).includes("Awaiting payment"));
 
 /* ── API-level edge cases ───────────────────────────────────────────────── */
-const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plant", variantId: "blush-pink", qty: 1 }] };
+const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plant", variantId: "white", qty: 1 }] };
 const customer = { fullName: "A", phone: "09171234567", email: "a@example.com", instagram: "@someone", address1: "x", barangay: "b", city: "y", province: "p", postalCode: "1000", addressNotes: "", orderNotes: "" };
 const post = (payload) => fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
 
@@ -109,6 +109,16 @@ check("invalid customer rejected with friendly errors", bad.status === 422 && !!
 
 const badCart = await post({ cart: { lines: [{ type: "product", key: "z", slug: "nope", variantId: "default", qty: 1 }] }, customer });
 check("invalid cart rejected with 422", badCart.status === 422);
+
+const lettersCart = { lines: [
+  { type: "product", key: "l1", slug: "mini-shelf-letters", variantId: "faves|navy-blue", qty: 1 },
+  { type: "product", key: "p1", slug: "mini-plant", variantId: "bone-white", qty: 1 },
+] };
+const lettersDetails = ((await (await post({ cart: lettersCart, customer })).json()).pay?.items ?? []).flatMap((i) => i.details);
+check("letters keep word and color; an old plant color id is White",
+  ["Word: FAVES", "Color: Navy Blue", "Color: White"].every((d) => lettersDetails.includes(d)));
+const oldLetters = await post({ cart: { lines: [{ type: "product", key: "o1", slug: "mini-shelf-letters", variantId: "faves", qty: 1 }] }, customer });
+check("letters saved before colors must be chosen again", oldLetters.status === 422);
 
 /* ── welcome discount ───────────────────────────────────────────────────── */
 const disc = await (await post({ cart, customer, discountCode: " welcome 5 " })).json();

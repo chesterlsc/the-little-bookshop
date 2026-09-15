@@ -128,7 +128,7 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
     ...line.accessories.map((a) => {
       const p = getProduct(a.slug)!;
       const v = getVariant(p, a.variantId)!;
-      const opt = Object.values(v.options)[0];
+      const opt = Object.values(v.options).join(", ");
       return `Extra: ${p.name}${opt ? ` (${opt})` : ""}`;
     }),
   ];

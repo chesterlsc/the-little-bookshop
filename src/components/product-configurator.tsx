@@ -79,6 +79,13 @@ export function ProductConfigurator({ product }: { product: Product }) {
       {/* option axes */}
       {product.options.map((axis) => {
         const isColor = axis.name === "Color" || axis.name === "Fish Color";
+        // one value is a fact about the product, not a choice
+        if (axis.values.length === 1)
+          return (
+            <p key={axis.name} className="font-sans text-sm font-bold text-ink-800">
+              {axis.name}: <span className="font-normal text-ink-600">{axis.values[0]}</span>
+            </p>
+          );
         return (
           <fieldset key={axis.name}>
             <legend className="mb-2 font-sans text-sm font-bold text-ink-800">

@@ -160,6 +160,8 @@ export const SHELF_COLORS: { name: string; hex: string }[] = [
 
 export const COVER_STYLES = ["Front, Back & Spine", "Double-Sided, No Spine"];
 
+const LETTER_WORDS = ["TBR", "READ", "FAVES", "5 Stars", "Literature"];
+
 export const SHELF_THEMES = [
   { id: "tbr", name: "My TBR", line: "The ones waiting patiently." },
   { id: "five-star", name: "Five-Star Reads", line: "Only the very best." },
@@ -575,14 +577,14 @@ export const PRODUCTS: Product[] = [
     blurb: "Every good shelf has a plant. This one never needs water.",
     description: [
       "The fastest way to make a shelf look lived-in. A tiny potted plant that sits on a top tier or beside a row of spines.",
-      "Printed in the shelf colour of your choice, so it either disappears into the shelf or stands out against it.",
+      "It comes in white, which sits happily on any of the nine shelf colours.",
     ],
     art: "plant",
     images: shots(
       "accessories/01|Miniature plants in the accessory tray, alongside the letter blocks and star bars",
       "arched-shelf/13|A miniature plant on the top shelf of a styled Arched bookshelf",
     ),
-    ...simpleVariants(5000, { name: "Color", values: SHELF_COLORS.map((c) => c.name) }),
+    ...simpleVariants(5000, { name: "Color", values: ["White"] }),
     priceStatus: "confirmed",
     details: {
       materials: MADE_BY_HAND,
@@ -603,10 +605,18 @@ export const PRODUCTS: Product[] = [
     images: shots(
       "accessories/01|A tray of miniature shelf accessories: TBR, READ, FAVES and LITERATURE letter blocks in choco brown and bone white, with star bars and mini plants",
     ),
-    ...simpleVariants(5000, {
-      name: "Word",
-      values: ["TBR", "READ", "FAVES", "5 Stars", "Literature"],
-    }),
+    options: [
+      { name: "Word", values: LETTER_WORDS },
+      { name: "Color", values: SHELF_COLORS.map((c) => c.name) },
+    ],
+    variants: LETTER_WORDS.flatMap((word) =>
+      SHELF_COLORS.map(({ name: color }) => ({
+        id: `${vid(word)}|${vid(color)}`,
+        options: { Word: word, Color: color },
+        price: 5000,
+        available: true,
+      })),
+    ),
     priceStatus: "confirmed",
     badges: ["Pick your word"],
     details: {
@@ -649,7 +659,12 @@ export function getProduct(slug: string): Product | undefined {
 }
 
 export function getVariant(product: Product, variantId: string): Variant | undefined {
-  return product.variants.find((v) => v.id === variantId);
+  return (
+    product.variants.find((v) => v.id === variantId) ??
+    // one variant leaves nothing to choose: baskets saved when the plant still
+    // came in nine colors carry an old color id, and they still mean this one
+    (product.variants.length === 1 ? product.variants[0] : undefined)
+  );
 }
 
 export function productsInCategory(category: Category): Product[] {
