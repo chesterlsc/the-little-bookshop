@@ -400,7 +400,7 @@ export const PRODUCTS: Product[] = [
     customSet: true,
     includedTitles: null,
     details: {
-      included: ["Six custom mini books, made from your list"],
+      included: ["Six custom mini books per set, made from your list"],
       packaging: SET_PACKAGING,
       dimensions: [BOOK_SIZE],
       materials: BOOK_MATERIALS,
@@ -691,3 +691,6 @@ export function defaultVariant(product: Product): Variant {
 }
 
 export const SET_SIZE = 6;
+
+/** A custom set can be six books over again, up to this many books in one line. */
+export const MAX_TITLES = SET_SIZE * 5;

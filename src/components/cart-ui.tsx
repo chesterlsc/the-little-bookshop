@@ -59,7 +59,7 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
         {line.titles && (
           <details className="mt-1">
             <summary className="cursor-pointer text-xs font-bold text-sage-700">
-              Six custom titles
+              {line.titles.length} custom titles
             </summary>
             <ol className="mt-1 list-decimal pl-4 text-xs text-ink-600">
               {line.titles.map((t, i) => (
@@ -99,7 +99,7 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
         {line.set.titles && (
           <details className="mt-1">
             <summary className="cursor-pointer text-xs font-bold text-sage-700">
-              Six custom titles
+              {line.set.titles.length} custom titles
             </summary>
             <ol className="mt-1 list-decimal pl-4 text-xs text-ink-600">
               {line.set.titles.map((t, i) => (

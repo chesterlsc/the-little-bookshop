@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { Product } from "@/lib/catalog";
-import { colorHex, SET_SIZE } from "@/lib/catalog";
-import { validTitles, type CustomTitle } from "@/lib/cart";
+import { colorHex } from "@/lib/catalog";
+import { setsOf, validTitles, type CustomTitle } from "@/lib/cart";
 import { useCart } from "./cart-context";
 import { Button, Field, inputClass, QuantityStepper } from "./ui";
 import { SixTitlesForm, emptyTitles } from "./six-titles-form";
@@ -33,7 +33,8 @@ export function ProductConfigurator({ product }: { product: Product }) {
     [product.variants, selection],
   );
 
-  const price = variant?.price ?? product.minPrice;
+  const sets = product.customSet ? setsOf(titles) : 1;
+  const price = (variant?.price ?? product.minPrice) * sets;
   const canBuy = product.available && variant?.available;
 
   const needsTitles = product.customSet;
@@ -71,7 +72,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
         {formatMoney(price)}
         {product.setOfSix && (
           <span className="ml-2 align-middle font-sans text-sm font-bold text-ink-600">
-            for the set of six
+            {sets > 1 ? `for ${sets} sets of six` : "for the set of six"}
           </span>
         )}
       </p>
@@ -205,7 +206,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
       )}
       {needsTitles && !titlesOk && showErrors && (
         <p className="font-sans text-sm font-bold text-rose-600" role="alert">
-          A custom set needs all {SET_SIZE} titles before it can join your basket.
+          A custom set needs a title in all {titles.length} slots before it can join your basket.
         </p>
       )}
     </div>

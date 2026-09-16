@@ -129,7 +129,7 @@ export function customerOrderEmail(
   return {
     to: snapshot.customer.email,
     subject: `Your Little Bookshop order ${orderNumber} — how to pay 📚`,
-    html: wrap("Your little order is almost ours", body),
+    html: wrap("Your little order has been submitted", body),
     text: [
       `Thanks for your order ${orderNumber}!`,
       `Total to send: ${formatMoney(snapshot.total)}`,

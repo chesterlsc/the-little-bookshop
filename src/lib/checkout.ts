@@ -1,5 +1,5 @@
 import { getProduct, getVariant, SHELF_THEMES } from "./catalog";
-import { cartSubtotal, lineUnitPrice, shippingFor, validateCart, type Cart, type CartLine } from "./cart";
+import { cartSubtotal, lineUnitPrice, setsOf, shippingFor, validateCart, type Cart, type CartLine } from "./cart";
 import type { Cents } from "./money";
 import { discountFor, isValidCode, normalizeCode } from "./discount";
 
@@ -108,7 +108,9 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
     const product = getProduct(line.slug)!;
     const variant = getVariant(product, line.variantId)!;
     const details = Object.entries(variant.options).map(([k, v]) => `${k}: ${v}`);
-    if (product.setOfSix) details.push("Sold as a set of six");
+    const sets = product.customSet ? setsOf(line.titles) : 1;
+    if (product.setOfSix)
+      details.push(sets > 1 ? `Sold as ${sets} sets of six (${line.titles!.length} books)` : "Sold as a set of six");
     if (line.singleTitle) details.push(`Personalized title: ${line.singleTitle}`);
     return {
       name: product.name,
@@ -124,7 +126,9 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
   const theme = SHELF_THEMES.find((t) => t.id === line.themeId);
   const details = [
     `Shelf: ${shelf.name} (${Object.values(shelfVar.options).join(", ")})`,
-    `Book set: ${set.name}${setVar.options["Cover Style"] ? ` (${setVar.options["Cover Style"]})` : ""}`,
+    `Book set: ${set.name}${setVar.options["Cover Style"] ? ` (${setVar.options["Cover Style"]})` : ""}${
+      set.customSet && setsOf(line.set.titles) > 1 ? ` · ${line.set.titles!.length} books` : ""
+    }`,
     ...line.accessories.map((a) => {
       const p = getProduct(a.slug)!;
       const v = getVariant(p, a.variantId)!;

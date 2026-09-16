@@ -52,7 +52,7 @@ check("custom set blocks without six titles", (await page.textContent("body")).i
 for (let i = 0; i < 6; i++) await page.fill(`#set-title-${i}`, `Tiny Book ${i + 1}`);
 await page.getByRole("button", { name: /Add to basket/ }).click();
 await page.waitForTimeout(500);
-check("custom set adds with six titles", (await page.textContent("body")).includes("Six custom titles"));
+check("custom set adds with six titles", (await page.textContent("body")).includes("6 custom titles"));
 await page.keyboard.press("Escape");
 
 await page.reload({ waitUntil: "networkidle" });
@@ -78,7 +78,7 @@ await page.getByRole("button", { name: /Place order/ }).click();
 await page.waitForURL(/\/order\/LB[\w-]+\/pay/, { timeout: 20000 });
 check("place order redirects to payment instructions", true);
 // client-side nav: wait for the screen itself, not just the URL
-await page.getByRole("heading", { name: /almost ours/ }).waitFor({ timeout: 20000 });
+await page.getByRole("heading", { name: /has been submitted/ }).waitFor({ timeout: 20000 });
 const body = await page.textContent("body");
 check("payment screen shows awaiting payment", body.includes("Awaiting payment"));
 check("payment screen shows GCash + MariBank", body.includes("09614863499") && body.includes("MariBank"));
@@ -115,6 +115,14 @@ check("invalid customer rejected with friendly errors", bad.status === 422 && !!
 
 const badCart = await post({ cart: { lines: [{ type: "product", key: "z", slug: "nope", variantId: "default", qty: 1 }] }, customer });
 check("invalid cart rejected with 422", badCart.status === 422);
+
+const titles = (n) => Array.from({ length: n }, (_, i) => ({ title: `Book ${i + 1}`, author: "" }));
+const setCart = (n) => ({ lines: [{ type: "product", key: "s1", slug: "custom-mini-book-set", variantId: "front-back-spine", qty: 1, titles: titles(n) }] });
+const six = await (await post({ cart: setCart(6), customer })).json();
+const twelve = await (await post({ cart: setCart(12), customer })).json();
+check("a second six costs another set", twelve.pay?.subtotal === six.pay?.subtotal * 2, `${six.pay?.subtotal} then ${twelve.pay?.subtotal}`);
+check("books can only be ordered six at a time", (await post({ cart: setCart(7), customer })).status === 422);
+check("more than five sets is refused", (await post({ cart: setCart(36), customer })).status === 422);
 
 const lettersCart = { lines: [
   { type: "product", key: "l1", slug: "mini-shelf-letters", variantId: "faves|navy-blue", qty: 1 },

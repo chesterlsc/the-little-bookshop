@@ -81,11 +81,15 @@ export function PayScreen({
         {/* ── order received ── */}
         <div className="text-center">
           <h1 className="hero-h1 text-balance font-display font-bold text-ink-900">
-            Your little order is almost ours ♡
+            Your little order has been submitted ♡
           </h1>
           <p className="story-line mx-auto mt-3 max-w-[42ch] text-pretty text-[1.08rem] leading-relaxed text-ink-600">
-            Complete your payment using GCash or MariBank, then send us your payment screenshot on
-            Instagram so we can confirm your order.
+            Complete your payment and send us your payment screenshot on Instagram so we can
+            confirm your order and begin processing it.
+          </p>
+          <p className="mx-auto mt-2 max-w-[44ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
+            Submitting it does not confirm it yet. We only start making your order once we have
+            received and checked your payment screenshot.
           </p>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  SET_SIZE,
   SHELF_THEMES,
   colorHex,
   getProduct,
@@ -9,7 +10,7 @@ import {
   type Product,
   type ShelfThemeId,
 } from "@/lib/catalog";
-import { validTitles, type BundleLine, type CustomTitle } from "@/lib/cart";
+import { setsOf, validTitles, type BundleLine, type CustomTitle } from "@/lib/cart";
 import { useCart } from "./cart-context";
 import { MiniShelf, shelfShapeFromArt } from "./illustrations";
 import { ProductThumb } from "./product-thumb";
@@ -56,7 +57,9 @@ function loadState(): BuilderState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return INITIAL;
     const parsed = { ...INITIAL, ...(JSON.parse(raw) as Partial<BuilderState>) };
-    if (!Array.isArray(parsed.titles) || parsed.titles.length !== 6) parsed.titles = emptyTitles();
+    // six, twelve, eighteen…: anything else is a save from before extra sets, or junk
+    if (!Array.isArray(parsed.titles) || !parsed.titles.length || parsed.titles.length % SET_SIZE)
+      parsed.titles = emptyTitles();
     return parsed;
   } catch {
     return INITIAL;
@@ -145,9 +148,10 @@ export function ShelfBuilder() {
     })
     .filter((e): e is { product: Product; variant: Product["variants"][number] } => Boolean(e));
 
+  const setPrice = (setVariant?.price ?? 0) * (isCustom ? setsOf(state.titles) : 1);
   const total =
     (shelfVariant?.price ?? 0) +
-    (setVariant?.price ?? 0) +
+    setPrice +
     accessoryEntries.reduce((s, e) => s + e.variant.price, 0);
 
   const titlesOk = !isCustom || validTitles(state.titles);
@@ -323,6 +327,7 @@ export function ShelfBuilder() {
               shelfVariant={shelfVariant}
               set={set}
               setVariant={setVariant}
+              setPrice={setPrice}
               titles={isCustom ? state.titles : undefined}
               accessories={accessoryEntries}
               themeId={state.themeId}
@@ -374,7 +379,7 @@ export function ShelfBuilder() {
             <PreviewRow label="Color" value={state.shelfOptions["Color"] ?? "—"} swatch={shelf ? shelfHex : undefined} />
             <PreviewRow
               label="Books"
-              value={set ? (isCustom ? `Custom set · ${filledCount(state.titles)}/6 titles` : set.name) : "—"}
+              value={set ? (isCustom ? `Custom set · ${filledCount(state.titles)}/${state.titles.length} titles` : set.name) : "—"}
             />
             <PreviewRow
               label="Extras"
@@ -830,6 +835,7 @@ function StepReview(props: {
   shelfVariant?: Product["variants"][number];
   set?: Product;
   setVariant?: Product["variants"][number];
+  setPrice: number;
   titles?: CustomTitle[];
   accessories: { product: Product; variant: Product["variants"][number] }[];
   themeId: ShelfThemeId | null;
@@ -841,7 +847,7 @@ function StepReview(props: {
   onAdd: () => void;
   onStartOver: () => void;
 }) {
-  const { shelf, shelfVariant, set, setVariant, titles, accessories, themeId, notes, total, ok, justAdded, onEdit, onAdd, onStartOver } = props;
+  const { shelf, shelfVariant, set, setVariant, setPrice, titles, accessories, themeId, notes, total, ok, justAdded, onEdit, onAdd, onStartOver } = props;
   const theme = SHELF_THEMES.find((t) => t.id === themeId);
 
   if (justAdded) {
@@ -898,7 +904,7 @@ function StepReview(props: {
           onEdit={onEdit}
           label="Six books"
           step={2}
-          price={setVariant?.price}
+          price={setPrice}
           value={
             set ? (
               <>

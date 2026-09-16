@@ -1,6 +1,6 @@
 "use client";
 
-import { SET_SIZE } from "@/lib/catalog";
+import { MAX_TITLES, SET_SIZE } from "@/lib/catalog";
 import type { CustomTitle } from "@/lib/cart";
 import { inputClass } from "./ui";
 import { IconCheck } from "./icons";
@@ -14,7 +14,8 @@ export function filledCount(titles: CustomTitle[]): number {
 }
 
 /**
- * Exactly six numbered title fields, the heart of the custom set.
+ * The numbered title fields, the heart of the custom set: six of them, and
+ * six more for every extra set the customer adds.
  * `showErrors` highlights the empty slots after a failed submit.
  */
 export function SixTitlesForm({
@@ -37,22 +38,25 @@ export function SixTitlesForm({
   return (
     <fieldset>
       <legend className="mb-1 flex w-full items-center justify-between gap-3">
-        <span className="font-display text-[1.02rem] font-bold">Your six books</span>
+        <span className="font-display text-[1.02rem] font-bold">
+          {titles.length === SET_SIZE ? "Your six books" : `Your ${titles.length} books`}
+        </span>
         <span
-          className={`font-sans text-xs font-bold ${done === SET_SIZE ? "text-sage-700" : "text-ink-600"}`}
+          className={`font-sans text-xs font-bold ${done === titles.length ? "text-sage-700" : "text-ink-600"}`}
           aria-live="polite"
         >
-          {done === SET_SIZE ? (
+          {done === titles.length ? (
             <span className="inline-flex items-center gap-1">
-              <IconCheck className="h-3.5 w-3.5" /> all six chosen
+              <IconCheck className="h-3.5 w-3.5" /> all {titles.length} chosen
             </span>
           ) : (
-            `${done} of ${SET_SIZE} chosen`
+            `${done} of ${titles.length} chosen`
           )}
         </span>
       </legend>
       <p className="mb-3 font-sans text-xs text-ink-600">
-        Every set is exactly six. Authors are optional but help us find the right covers.
+        Books are made six at a time, so add them a set at a time. Authors are optional but help us
+        find the right covers.
       </p>
       <ol className="space-y-2.5">
         {titles.map((t, i) => {
@@ -110,6 +114,26 @@ export function SixTitlesForm({
           );
         })}
       </ol>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {titles.length + SET_SIZE <= MAX_TITLES && (
+          <button
+            type="button"
+            onClick={() => onChange([...titles, ...emptyTitles()])}
+            className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-dashed border-taupe-300 bg-cream-50 px-3.5 py-1.5 font-display text-[0.9rem] font-semibold text-ink-600 transition hover:border-brown-500 hover:text-ink-800"
+          >
+            <span aria-hidden className="font-bold">+</span> Add six more books
+          </button>
+        )}
+        {titles.length > SET_SIZE && (
+          <button
+            type="button"
+            onClick={() => onChange(titles.slice(0, -SET_SIZE))}
+            className="btn-link py-1.5 text-sm"
+          >
+            Remove the last six
+          </button>
+        )}
+      </div>
     </fieldset>
   );
 }

@@ -1,4 +1,4 @@
-import { SET_SIZE, getProduct, getVariant, SHELF_THEMES, type ShelfThemeId } from "./catalog";
+import { MAX_TITLES, SET_SIZE, getProduct, getVariant, SHELF_THEMES, type ShelfThemeId } from "./catalog";
 import type { Cents } from "./money";
 
 /** One custom mini-book request. Title required; author helps us find the right cover. */
@@ -51,12 +51,24 @@ export const EMPTY_CART: Cart = { lines: [] };
 
 /* ─── Validation ───────────────────────────────────────────────────────────── */
 
+/** Books are made six at a time, so a custom line is six, twelve, eighteen… */
 export function validTitles(titles: CustomTitle[] | undefined): boolean {
   return (
     Array.isArray(titles) &&
-    titles.length === SET_SIZE &&
+    titles.length >= SET_SIZE &&
+    titles.length <= MAX_TITLES &&
+    titles.length % SET_SIZE === 0 &&
     titles.every((t) => typeof t?.title === "string" && t.title.trim().length > 0)
   );
+}
+
+/**
+ * How many sets of six a line of titles is, and so how many times its price
+ * counts. Rounds up, so a length validation would reject can never be cheaper
+ * than the books it asks for.
+ */
+export function setsOf(titles: CustomTitle[] | undefined): number {
+  return Math.max(1, Math.ceil((titles?.length ?? 0) / SET_SIZE));
 }
 
 export interface LineIssue {
@@ -97,7 +109,7 @@ export function validateCart(cart: Cart): LineIssue[] {
       if (product.customSet && !validTitles(line.titles)) {
         issues.push({
           key: line.key,
-          message: `${product.name} needs exactly ${SET_SIZE} book titles before checkout.`,
+          message: `${product.name} needs a title in every slot, in sets of ${SET_SIZE}.`,
         });
       }
       if (product.customSingle && !line.singleTitle?.trim()) {
@@ -130,7 +142,7 @@ export function validateCart(cart: Cart): LineIssue[] {
       if (set.customSet && !validTitles(line.set.titles)) {
         issues.push({
           key: line.key,
-          message: `This bundle's custom set needs exactly ${SET_SIZE} book titles.`,
+          message: `This bundle's custom set needs a title in every slot, in sets of ${SET_SIZE}.`,
         });
       }
       for (const acc of line.accessories) {
@@ -160,13 +172,15 @@ export function lineUnitPrice(line: CartLine): Cents {
   if (line.type === "product") {
     const product = getProduct(line.slug);
     const variant = product && getVariant(product, line.variantId);
-    return variant?.price ?? 0;
+    // every six books is another set, at the set's price
+    return (variant?.price ?? 0) * (product?.customSet ? setsOf(line.titles) : 1);
   }
   const shelf = getProduct(line.shelf.slug);
   const shelfVar = shelf && getVariant(shelf, line.shelf.variantId);
   const set = getProduct(line.set.slug);
   const setVar = set && getVariant(set, line.set.variantId);
-  let total = (shelfVar?.price ?? 0) + (setVar?.price ?? 0);
+  let total =
+    (shelfVar?.price ?? 0) + (setVar?.price ?? 0) * (set?.customSet ? setsOf(line.set.titles) : 1);
   for (const acc of line.accessories) {
     const a = getProduct(acc.slug);
     const av = a && getVariant(a, acc.variantId);
