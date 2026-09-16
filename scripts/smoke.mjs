@@ -1,10 +1,16 @@
 /**
  * End-to-end smoke test for the core shopping + order pipeline.
  *
- *   1. start the site (npm run dev  or  npm run build && npm run start)
+ *   1. npm run dev
  *   2. node scripts/smoke.mjs [baseUrl]
  *
  * Requires PAYMENT_PROVIDER=dev and EMAIL_PROVIDER=dev (the defaults).
+ *
+ * Run it against `npm run dev`, never `npm run start`: only dev applies
+ * .env.development.local, which blanks DATABASE_URL. Against a server holding
+ * the real one, this suite writes test orders and signups into the shop's
+ * database, and its signups would claim real subscribers into a digest that
+ * only ever reaches var/outbox.
  */
 import { chromium } from "playwright";
 import fs from "node:fs";

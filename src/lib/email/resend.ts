@@ -8,6 +8,10 @@ export const resendEmail: EmailProvider = {
     if (!key) throw new Error("RESEND_API_KEY is not set");
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      // A send that hangs must fail while our own code is still running: an
+      // order can then say so, and a claimed subscriber digest is put back
+      // instead of the platform killing us mid-send and keeping it claimed.
+      signal: AbortSignal.timeout(10_000),
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: fromAddress(),

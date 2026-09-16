@@ -270,7 +270,8 @@ npm run verify:pg   # runs the real SQL against Postgres-in-WASM, no database ne
 ```bash
 npm run typecheck   # TypeScript
 npm run lint        # ESLint
-npm run smoke       # 15-check e2e: cart, six-title rule, builder→checkout,
+npm run smoke       # against `npm run dev` only, see the note in the script:
+                    # e2e: cart, six-title rule, builder→checkout,
                     # simulated payment, verification, idempotent emails,
                     # tampered/incomplete carts rejected (needs the site running)
 npm run audit       # screenshots every page at 320/390/1024/1440 into shots/audit

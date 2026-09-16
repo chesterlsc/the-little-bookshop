@@ -20,6 +20,8 @@ async function sendDigest() {
   try {
     const batch = await claimDigest(DIGEST_EVERY);
     if (!batch.length) return;
+    // the ids are the only trace if this instance dies between claiming and sending
+    console.log(`[subscribe] sending a digest of ${batch.length}: ids ${batch[0].id}-${batch[batch.length - 1].id}`);
     try {
       await getEmailProvider().send(subscriberDigestEmail(ordersAddress(), batch));
     } catch (err) {
