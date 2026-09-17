@@ -212,3 +212,48 @@ export function subscriberDigestEmail(
     ].join("\n"),
   };
 }
+
+/**
+ * The customer's payment screenshot, on its way to the shop. Short on purpose:
+ * the full order email went out when the order was placed. The image rides
+ * along as an attachment so the shop can check the transfer in one place.
+ */
+export function paymentProofEmail(
+  to: string | string[],
+  orderNumber: string,
+  snapshot: OrderSnapshot,
+  method: string,
+  orderUrl: string,
+  base64: string,
+): Mail {
+  const when = new Date().toLocaleString("en-PH", {
+    timeZone: "Asia/Manila",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return {
+    to,
+    subject: `📸 Payment screenshot · ${orderNumber} · ${formatMoney(snapshot.total)}`,
+    html: wrap(
+      "A payment screenshot just came in",
+      `<table style="width:100%;">
+        ${row("Order", `<strong>${orderNumber}</strong>`)}
+        ${row("Customer", esc(snapshot.customer.fullName))}
+        ${row("Amount due", `<strong>${formatMoney(snapshot.total)}</strong>`)}
+        ${row("They paid by", esc(method))}
+        ${row("Sent", esc(when))}
+        ${row("Order page", `<a href="${orderUrl}" style="color:#75845c;">${orderUrl}</a>`)}
+      </table>
+      <p style="font-size:13px;margin:14px 0 0;">The screenshot is attached. The transfer still needs checking by hand: mark the order confirmed once the money is really there.</p>`,
+    ),
+    text: [
+      `Payment screenshot for ${orderNumber}.`,
+      `${snapshot.customer.fullName} · ${formatMoney(snapshot.total)} · paid by ${method}`,
+      `Sent ${when}. The screenshot is attached; check the transfer before confirming.`,
+      orderUrl,
+    ].join("\n"),
+    attachments: [
+      { filename: `payment-${orderNumber}.jpg`, contentType: "image/jpeg", base64 },
+    ],
+  };
+}

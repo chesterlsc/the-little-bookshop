@@ -84,8 +84,8 @@ export function PayScreen({
             Your little order has been submitted ♡
           </h1>
           <p className="story-line mx-auto mt-3 max-w-[42ch] text-pretty text-[1.08rem] leading-relaxed text-ink-600">
-            Complete your payment and send us your payment screenshot on Instagram so we can
-            confirm your order and begin processing it.
+            Complete your payment, then send us your payment screenshot below (or on Instagram) so
+            we can confirm your order and begin processing it.
           </p>
           <p className="mx-auto mt-2 max-w-[44ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
             Submitting it does not confirm it yet. We only start making your order once we have

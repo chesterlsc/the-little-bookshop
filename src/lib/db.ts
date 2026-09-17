@@ -68,6 +68,7 @@ export function getDb(): Database.Database {
     "orders ADD COLUMN tracking_number TEXT",
     "orders ADD COLUMN tracking_url TEXT",
     "orders ADD COLUMN shipped_at TEXT",
+    "orders ADD COLUMN proofs_sent INTEGER NOT NULL DEFAULT 0",
     "subscribers ADD COLUMN notified_at TEXT",
   ]) {
     try {

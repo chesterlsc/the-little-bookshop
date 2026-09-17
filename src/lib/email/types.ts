@@ -6,6 +6,8 @@ export interface Mail {
   subject: string;
   html: string;
   text: string;
+  /** base64 already: that is what the browser sends and what Resend takes */
+  attachments?: { filename: string; contentType: string; base64: string }[];
 }
 
 export interface EmailProvider {

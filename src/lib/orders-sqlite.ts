@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { getDb } from "./db";
 import type { OrderSnapshot } from "./checkout";
 import type { OrderRecord, OrderStatus } from "./orders-types";
-import { NUMBER_OFFSET, orderSuffix } from "./orders-types";
+import { MAX_PROOFS, NUMBER_OFFSET, orderSuffix } from "./orders-types";
 
 /**
  * Order numbers are short and sequential (LB1001, LB1002, …) because customers
@@ -89,6 +89,35 @@ export function markShipped(
               shipped_at = COALESCE(shipped_at, ?) WHERE number = ?`,
     )
     .run(courier, trackingNumber, trackingUrl ?? null, new Date().toISOString(), number);
+}
+
+/** The customer's payment screenshot. See the Postgres store for the contract. */
+export function claimPaymentProof(number: string, method?: string): boolean {
+  const res = getDb()
+    .prepare(
+      `UPDATE orders
+          SET status = 'payment_submitted',
+              provider_ref = COALESCE(provider_ref, ?),
+              proofs_sent = COALESCE(proofs_sent, 0) + 1
+        WHERE number = ?
+          AND status IN ('awaiting_payment', 'payment_submitted')
+          AND COALESCE(proofs_sent, 0) < ?`,
+    )
+    .run(method ?? null, number, MAX_PROOFS);
+  return res.changes > 0;
+}
+
+/** Undo a claim whose email failed; the first one puts the order back to unpaid. */
+export function releasePaymentProof(number: string): void {
+  getDb()
+    .prepare(
+      `UPDATE orders
+          SET proofs_sent = MAX(COALESCE(proofs_sent, 0) - 1, 0),
+              status = CASE WHEN COALESCE(proofs_sent, 0) <= 1 AND status = 'payment_submitted'
+                            THEN 'awaiting_payment' ELSE status END
+        WHERE number = ?`,
+    )
+    .run(number);
 }
 
 /** Claim the right to send the order emails exactly once. */

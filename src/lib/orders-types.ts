@@ -40,6 +40,8 @@ export interface OrderRecord {
   total: number;
   currency: string;
   emails_sent: number;
+  /** how many payment screenshots the customer has sent us, capped */
+  proofs_sent?: number;
   created_at: string;
   paid_at: string | null;
   /** filled once the shop hands the parcel to a courier */
@@ -48,6 +50,9 @@ export interface OrderRecord {
   tracking_url?: string | null;
   shipped_at?: string | null;
 }
+
+/** How many payment screenshots one order may send us, corrections included. */
+export const MAX_PROOFS = 3;
 
 /** Human half of the order number: LB1024-… starts the sequence at 1001. */
 export const NUMBER_OFFSET = 1000;

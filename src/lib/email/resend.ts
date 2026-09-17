@@ -19,6 +19,12 @@ export const resendEmail: EmailProvider = {
         subject: mail.subject,
         html: mail.html,
         text: mail.text,
+        // snake_case: this is the raw HTTP API, not the SDK
+        attachments: mail.attachments?.map((a) => ({
+          filename: a.filename,
+          content: a.base64,
+          content_type: a.contentType,
+        })),
       }),
     });
     if (!res.ok) {

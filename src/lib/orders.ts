@@ -72,6 +72,19 @@ export async function markShipped(
     : sqlite.markShipped(number, courier, trackingNumber, trackingUrl);
 }
 
+/**
+ * The customer's payment screenshot: moves the order to `payment_submitted`
+ * and claims the right to email it, up to MAX_PROOFS times per order.
+ */
+export async function claimPaymentProof(number: string, method?: string): Promise<boolean> {
+  return usePg ? (await pg()).claimPaymentProof(number, method) : sqlite.claimPaymentProof(number, method);
+}
+
+/** Hand a screenshot claim back when its email failed. */
+export async function releasePaymentProof(number: string): Promise<void> {
+  return usePg ? (await pg()).releasePaymentProof(number) : sqlite.releasePaymentProof(number);
+}
+
 /** Claim the right to send the order emails exactly once. */
 export async function claimEmailSend(number: string): Promise<boolean> {
   return usePg ? (await pg()).claimEmailSend(number) : sqlite.claimEmailSend(number);

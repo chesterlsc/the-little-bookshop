@@ -22,6 +22,12 @@ export const smtpEmail: EmailProvider = {
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
+      attachments: mail.attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.base64,
+        encoding: "base64",
+        contentType: a.contentType,
+      })),
     });
   },
 };

@@ -109,9 +109,16 @@ is ever collected.
    titles, theme, notes, totals) and the customer (their number + a link to the
    payment screen). `claimEmailSend` makes that exactly-once.
 3. The customer is redirected to `/order/<number>/pay`: the amount, the two
-   account numbers with one-tap copy, per-method instructions, and a
-   copyable Instagram message. Only then is the basket cleared.
-4. The shop verifies the screenshot and moves the order along by hand.
+   account numbers with one-tap copy, per-method instructions, a drop zone for
+   the payment screenshot, and a copyable Instagram message as the fallback.
+   Only then is the basket cleared.
+4. They drop the screenshot in. The browser shrinks it (the host refuses a body
+   over 4.5MB before our code runs), `POST /api/orders/<number>/payment-proof`
+   takes it as a JSON data URL — JSON, so the same preflight that guards every
+   other route guards this one — and emails it to the shop, attached. The
+   customer gets no email: the quota is for orders.
+5. The shop verifies the transfer and moves the order along by hand. Nothing a
+   customer can do confirms an order.
 
 A repeated `idempotencyKey` within ten minutes returns the order that already
 exists, so a double-click cannot create two orders.
@@ -136,6 +143,14 @@ Postgres-in-WASM, so the exact SQL is exercised without a database or a network.
 `awaiting_payment` → `payment_submitted` → `confirmed` → `preparing` →
 `shipped` → `completed`, plus `cancelled`. Only the first two are reachable
 from the storefront; everything past `payment_submitted` is set by the shop.
+
+`payment_submitted` is set by the screenshot upload, and that one statement is
+also the permission to send its email: `claimPaymentProof` only moves an order
+that is still `awaiting_payment` or `payment_submitted` and has sent fewer than
+`MAX_PROOFS` (3), so an order can never cost more than three emails however
+often the button is pressed, and a stale tab cannot knock a confirmed order
+backwards. A send that fails hands the claim back, exactly as the order emails
+do.
 There is no admin UI yet — `markStatus(number, status)` in `src/lib/orders.ts`
 is the single place to add one.
 

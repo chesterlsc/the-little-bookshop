@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { OrderSnapshot } from "./checkout";
 import type { OrderRecord, OrderStatus } from "./orders-types";
-import { orderSuffix } from "./orders-types";
+import { MAX_PROOFS, orderSuffix } from "./orders-types";
 
 /**
  * Postgres order store, used whenever DATABASE_URL is set (i.e. in production).
@@ -80,7 +80,14 @@ export function migrate(q?: Queryable): Promise<void> {
     await c.query(`CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1001`);
     // Where the parcel is, for the customer's own tracking page. Added
     // separately so a database created before this still gains them.
-    for (const col of ["courier TEXT", "tracking_number TEXT", "tracking_url TEXT", "shipped_at TEXT"]) {
+    for (const col of [
+      "courier TEXT",
+      "tracking_number TEXT",
+      "tracking_url TEXT",
+      "shipped_at TEXT",
+      // how many payment screenshots the customer has sent, see claimPaymentProof
+      "proofs_sent INTEGER NOT NULL DEFAULT 0",
+    ]) {
       await c.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS ${col}`);
     }
   })();
@@ -190,6 +197,46 @@ export async function markShipped(
             shipped_at = COALESCE(shipped_at, $4)
       WHERE number = $5`,
     [courier, trackingNumber, trackingUrl ?? null, new Date().toISOString(), number],
+  );
+}
+
+/**
+ * The customer sends their payment screenshot. One statement is both the
+ * status change and the permission to email it, so an order can never cost
+ * more than MAX_PROOFS sends however often the button is pressed, and a
+ * stale tab cannot knock an order the shop has already confirmed backwards.
+ *
+ * `emails_sent` could not be reused: it is one flag already owned by the
+ * order emails, and releasing it would un-send those.
+ */
+export async function claimPaymentProof(number: string, method?: string): Promise<boolean> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query(
+    `UPDATE orders
+        SET status = 'payment_submitted',
+            provider_ref = COALESCE(provider_ref, $1),
+            proofs_sent = COALESCE(proofs_sent, 0) + 1
+      WHERE number = $2
+        AND status IN ('awaiting_payment', 'payment_submitted')
+        AND COALESCE(proofs_sent, 0) < $3
+      RETURNING id`,
+    [method ?? null, number, MAX_PROOFS],
+  );
+  return rows.length > 0;
+}
+
+/** Undo a claim whose email failed; the first one puts the order back to unpaid. */
+export async function releasePaymentProof(number: string): Promise<void> {
+  const c = await db();
+  await migrate(c);
+  await c.query(
+    `UPDATE orders
+        SET proofs_sent = GREATEST(COALESCE(proofs_sent, 0) - 1, 0),
+            status = CASE WHEN COALESCE(proofs_sent, 0) <= 1 AND status = 'payment_submitted'
+                          THEN 'awaiting_payment' ELSE status END
+      WHERE number = $1`,
+    [number],
   );
 }
 

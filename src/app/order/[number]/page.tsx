@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { getOrder, parseSnapshot } from "@/lib/orders";
+import { MAX_PROOFS } from "@/lib/orders-types";
+import { PaymentProof } from "@/components/payment-proof";
 import { Badge, ButtonLink, Eyebrow, Section } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { FolkDivider } from "@/components/illustrations";
@@ -166,6 +168,17 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
               <ButtonLink href={`/order/${order.number}/pay`} className="btn-lg">
                 View payment instructions
               </ButtonLink>
+            </div>
+          )}
+          {order.status === "payment_submitted" && (order.proofs_sent ?? 0) < MAX_PROOFS && (
+            <div className="clay mt-5 p-5">
+              <h2 className="font-display text-lg font-bold">Sent the wrong screenshot?</h2>
+              <p className="mt-1 font-sans text-[0.95rem] leading-relaxed text-ink-600">
+                Send us another one and we&apos;ll use the latest, or message us on Instagram.
+              </p>
+              <div className="mt-4">
+                <PaymentProof orderNumber={order.number} method={order.provider_ref ?? undefined} />
+              </div>
             </div>
           )}
           {order.status === "cancelled" && (

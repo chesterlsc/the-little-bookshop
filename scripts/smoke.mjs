@@ -116,6 +116,51 @@ check("invalid customer rejected with friendly errors", bad.status === 422 && !!
 const badCart = await post({ cart: { lines: [{ type: "product", key: "z", slug: "nope", variantId: "default", qty: 1 }] }, customer });
 check("invalid cart rejected with 422", badCart.status === 422);
 
+/* ── the payment screenshot ─────────────────────────────────────────────── */
+// the smallest valid JPEG: a 1x1 white pixel, which is all the sniff needs
+const TINY_JPEG =
+  "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==";
+let proofN = 0;
+const proofPost = (number, payload, contentType = "application/json", ip = `smoke-proof-${Date.now()}-${proofN++}`) =>
+  fetch(`${BASE}/api/orders/${encodeURIComponent(number)}/payment-proof`, {
+    method: "POST",
+    headers: { "Content-Type": contentType, "x-forwarded-for": ip },
+    body: JSON.stringify(payload),
+  });
+const proofOrder = (await (await post({ cart, customer })).json()).orderNumber;
+
+const sent = await proofPost(proofOrder, { image: `data:image/jpeg;base64,${TINY_JPEG}`, method: "GCash" });
+check("a payment screenshot is accepted", sent.status === 200, String(sent.status));
+const proofMail = fs.readdirSync("var/outbox")
+  .filter((f) => f.endsWith(".eml"))
+  .map((f) => fs.readFileSync(`var/outbox/${f}`, "utf8"))
+  .filter((m) => m.includes(`Payment screenshot · ${proofOrder}`));
+check("the shop is emailed the screenshot as a real attachment",
+  proofMail.length === 1
+  && /^Content-Type: multipart\/mixed/m.test(proofMail[0])
+  && /^Content-Disposition: attachment; filename="payment-LB[\w-]+\.jpg"/m.test(proofMail[0])
+  && proofMail[0].includes(TINY_JPEG.slice(0, 40)),
+  `${proofMail.length} mails`);
+check("the order says the payment was submitted",
+  (await (await fetch(`${BASE}/order/${proofOrder}`)).text()).includes("Payment submitted"));
+check("a corrected screenshot is allowed, a fourth is not",
+  (await proofPost(proofOrder, { image: `data:image/jpeg;base64,${TINY_JPEG}` })).status === 200
+  && (await proofPost(proofOrder, { image: `data:image/jpeg;base64,${TINY_JPEG}` })).status === 200
+  && (await proofPost(proofOrder, { image: `data:image/jpeg;base64,${TINY_JPEG}` })).status === 409);
+check("a PNG is refused: the browser sends JPEG",
+  (await proofPost(proofOrder, { image: "data:image/png;base64,iVBORw0KGgo=" })).status === 400);
+check("text pretending to be a JPEG is refused",
+  (await proofPost(proofOrder, { image: `data:image/jpeg;base64,${Buffer.from("not an image").toString("base64")}` })).status === 400);
+check("a non-JSON post is refused", (await proofPost(proofOrder, { image: "x" }, "text/plain")).status === 415);
+check("an unknown order number is refused",
+  (await proofPost("LB9999-ZZZZZZ", { image: `data:image/jpeg;base64,${TINY_JPEG}` })).status === 404);
+// this run's own order email: everything without an attachment stays single-part
+check("emails without an attachment are still written the old way",
+  fs.readdirSync("var/outbox").filter((f) => f.endsWith(".eml"))
+    .map((f) => fs.readFileSync(`var/outbox/${f}`, "utf8"))
+    .filter((m) => m.includes(`New order ${proofOrder}`))
+    .every((m) => /^Content-Type: text\/html/m.test(m) && !/multipart/.test(m)));
+
 const titles = (n) => Array.from({ length: n }, (_, i) => ({ title: `Book ${i + 1}`, author: "" }));
 const setCart = (n) => ({ lines: [{ type: "product", key: "s1", slug: "custom-mini-book-set", variantId: "front-back-spine", qty: 1, titles: titles(n) }] });
 const six = await (await post({ cart: setCart(6), customer })).json();

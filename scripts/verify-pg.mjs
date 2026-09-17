@@ -64,6 +64,32 @@ check("paid_at stamped on confirm", !!conf.paid_at);
 await store.setPaymentMethod(a.number, "MariBank");
 check("method not overwritten once past awaiting", (await store.getOrder(a.number)).provider_ref === "GCash");
 
+/* ── the payment screenshot claim: at most three per order, and never backwards ── */
+const proof = await store.createOrder(snapshot(39900));
+check("the first screenshot claims the order", (await store.claimPaymentProof(proof.number, "GCash")) === true);
+const submitted = await store.getOrder(proof.number);
+check("it moves the order to payment_submitted", submitted.status === "payment_submitted", submitted.status);
+check("and records how they paid", submitted.provider_ref === "GCash");
+check("a second and third screenshot are allowed",
+  (await store.claimPaymentProof(proof.number, "MariBank")) === true && (await store.claimPaymentProof(proof.number)) === true);
+check("a fourth is refused, so one order cannot spend the mail quota",
+  (await store.claimPaymentProof(proof.number)) === false);
+check("the method of the first send is kept", (await store.getOrder(proof.number)).provider_ref === "GCash");
+
+const retried = await store.createOrder(snapshot(39900));
+await store.claimPaymentProof(retried.number, "GCash");
+await store.releasePaymentProof(retried.number);
+const undone = await store.getOrder(retried.number);
+check("a screenshot whose email failed leaves the order unpaid again",
+  undone.status === "awaiting_payment" && Number(undone.proofs_sent) === 0, `${undone.status}/${undone.proofs_sent}`);
+check("and can be sent again", (await store.claimPaymentProof(retried.number)) === true);
+
+const shopMoved = await store.createOrder(snapshot(39900));
+await store.markStatus(shopMoved.number, "confirmed");
+check("a stale tab cannot knock a confirmed order back to payment_submitted",
+  (await store.claimPaymentProof(shopMoved.number)) === false &&
+    (await store.getOrder(shopMoved.number)).status === "confirmed");
+
 /* ── concurrency: 25 orders at once must all be unique ── */
 const many = await Promise.all(Array.from({ length: 25 }, () => store.createOrder(snapshot(39900))));
 const numbers = many.map((o) => o.number);

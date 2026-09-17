@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CopyButton } from "./copy-button";
+import { PaymentProof } from "./payment-proof";
 import { Badge } from "./ui";
 import { IconCheck } from "./icons";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PAYMENT_METHODS } from "@/content/site";
@@ -135,9 +136,13 @@ export function PaymentInstructions({
           Paid already?
         </h2>
         <p className="mt-1 font-sans text-[0.95rem] leading-relaxed text-ink-600">
-          Send us your payment screenshot on Instagram so we can verify your order.
+          Drop your payment screenshot here so we can verify your order, or send it on Instagram.
         </p>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-[1.3fr_1fr]">
+        <div className="mt-4">
+          <PaymentProof orderNumber={orderNumber} method={chosen?.name} />
+        </div>
+        <p className="mt-4 font-sans text-[0.82rem] font-bold text-ink-600">Rather use Instagram?</p>
+        <div className="mt-2 grid gap-2.5 sm:grid-cols-[1.3fr_1fr]">
           <a
             href={INSTAGRAM_URL}
             target="_blank"
