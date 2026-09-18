@@ -1040,3 +1040,38 @@ a, button {
   .cta-halo, .cta-nudge { animation: none; }
   .cta-halo { display: none; }
 }
+
+/* ─── The Style step's colour view ─────────────────────────────────────────── */
+
+/* The colour line-up as a reel. The box keeps a fixed aspect, so the numbers
+   the component hands over (--reel-*) are percentages that hold at any width;
+   squarer on a phone, where the chosen shelf gets the height, and wide on a
+   big screen, where more of the line-up is in view. */
+.shelf-reel {
+  aspect-ratio: 1.15;
+  /* the photograph on top; under it, its own wall carried on past each edge */
+  background-image: var(--reel-img), var(--reel-wall-l), var(--reel-wall-r);
+  background-repeat: no-repeat;
+  background-size: var(--reel-size), 50% 100%, 50% 100%;
+  background-position: var(--reel-x) var(--reel-y), left top, right top;
+  /* the neighbours fade toward the edges; the chosen shelf stays full */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  transition: background-position 0.62s cubic-bezier(0.32, 0.72, 0.28, 1);
+}
+@media (min-width: 640px) {
+  .shelf-reel {
+    aspect-ratio: 2.3;
+    background-size: var(--reel-size-wide), 50% 100%, 50% 100%;
+    background-position: var(--reel-x-wide) var(--reel-y), left top, right top;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  }
+}
+/* the same box, for the two colours drawn instead of photographed */
+.shelf-reel-drawn { aspect-ratio: 1.15; }
+@media (min-width: 640px) { .shelf-reel-drawn { aspect-ratio: 2.3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-reel { transition: none; }
+}

@@ -60,6 +60,22 @@ const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem("tlb-bu
 check("next carries the shelf into the builder, at the colour step",
   seeded.shelfSlug === "mini-scalloped-bookshelf" && seeded.step === 1);
 
+/* ── the Style step: the chosen colour, photographed ── */
+// seeded here rather than reached through the fold, so it does not hang on the hero
+await page.evaluate(() => localStorage.setItem("tlb-builder-v1", JSON.stringify({ shelfSlug: "mini-arched-bookshelf", step: 1 })));
+await page.goto(BASE + "/build", { waitUntil: "networkidle" });
+await page.waitForSelector(".shelf-reel", { timeout: 15000 });
+const reelX = () => page.evaluate(() => document.querySelector(".shelf-reel")?.style.getPropertyValue("--reel-x"));
+const reelBefore = await reelX();
+await page.getByRole("radio", { name: "Navy Blue" }).click();
+await page.waitForTimeout(300);
+check("choosing a colour slides the photographed line-up to that shelf",
+  !!reelBefore && reelBefore !== (await reelX()) && (await page.textContent("main")).includes("Navy Blue"));
+await page.getByRole("radio", { name: "Midnight Black" }).click();
+await page.waitForTimeout(300);
+check("a colour never photographed is drawn instead, and says so",
+  (await page.locator(".shelf-reel").count()) === 0 && (await page.textContent("main")).includes("haven't photographed Midnight Black"));
+
 await page.goto(BASE + "/products/mini-scalloped-bookshelf", { waitUntil: "networkidle" });
 await page.getByRole("radio", { name: "Blush Pink" }).click();
 await page.getByRole("button", { name: /Add to basket/ }).click();

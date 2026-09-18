@@ -733,3 +733,123 @@ export interface ShelfShot {
 export function shelfShot(slug: string): ShelfShot | undefined {
   return SHELF_SHOTS[slug];
 }
+
+/* ─── The studio colour chart, sliced ──────────────────────────────────────── */
+
+/**
+ * Where each colour sits inside the shop's own colour line-up photographs.
+ *
+ * The line-ups (public/marketing/multiple-shelves) are one wide photograph of
+ * seven shelves in a row with their colour names printed underneath, and they
+ * are already the `|chart` image on each shelf's product page. Rather than ask
+ * for twenty-one new photographs, the builder shows a window onto one shelf in
+ * that same picture: a real photograph of the real colour, no tinting.
+ *
+ * `x` is the centre of each shelf in image pixels, `half` how far to cut either
+ * side of it, and `top`/`bottom` the rows to keep — above the printed labels,
+ * below the ceiling, with the feet still in frame. Measured off the files.
+ *
+ * Banana Yellow and Midnight Black are in no line-up, so they have no entry and
+ * the builder falls back to the drawn shelf rather than showing a colour that
+ * is not theirs. The scalloped line-up's order differs from the other two.
+ */
+interface ColorChart {
+  src: string;
+  imageWidth: number;
+  imageHeight: number;
+  top: number;
+  bottom: number;
+  half: number;
+  x: Record<string, number>;
+  /** the wall down the photograph's left and right edges, top to bottom */
+  wall: { left: string[]; right: string[] };
+}
+
+const CHART_ORDER = ["Choco Brown", "Navy Blue", "Camel Tan", "Sage Green", "Blush Pink", "Lilac", "Bone White"];
+
+const chart = (
+  src: string,
+  imageHeight: number,
+  top: number,
+  bottom: number,
+  half: number,
+  centres: number[],
+  wall: ColorChart["wall"],
+  order: string[] = CHART_ORDER,
+): ColorChart => ({
+  src,
+  imageWidth: 1400,
+  imageHeight,
+  top,
+  bottom,
+  half,
+  wall,
+  x: Object.fromEntries(order.map((name, i) => [name, centres[i]])),
+});
+
+const SHELF_COLOR_CHARTS: Record<string, ColorChart> = {
+  "mini-classic-bookshelf": chart("/marketing/multiple-shelves/01.webp", 700, 214, 583, 84,
+    [137, 328, 518, 708, 897, 1086, 1276], {
+      left: ["#edd9c9", "#ead5c5", "#ebd7c7", "#ebd6c4", "#e8d6c8"],
+      right: ["#c2aa94", "#cab3a0", "#ceb8a4", "#ceb8a4", "#d8c4b3"],
+    }),
+  "mini-arched-bookshelf": chart("/marketing/multiple-shelves/02.webp", 700, 203, 597, 84,
+    [139, 330, 520, 710, 899, 1088, 1278], {
+      left: ["#e4cebf", "#e7d3c3", "#e6d2c2", "#efded0", "#e6d5c9"],
+      right: ["#c4ac99", "#c5ad9a", "#c9b19e", "#d5beaf", "#d7c2b2"],
+    }),
+  "mini-scalloped-bookshelf": chart("/marketing/multiple-shelves/03.webp", 788, 218, 604, 88,
+    [127, 320, 512, 700, 889, 1080, 1267], {
+      left: ["#b99b80", "#bea089", "#c0a48c", "#bca28e", "#dec9bd"],
+      right: ["#cdb29e", "#ccb4a1", "#d1b8a8", "#d2b9a9", "#d5c0b3"],
+    },
+    ["Choco Brown", "Navy Blue", "Camel Tan", "Sage Green", "Blush Pink", "Bone White", "Lilac"]),
+};
+
+/**
+ * The colour chart as a reel: the whole line-up drawn at one height, slid so the
+ * chosen shelf sits dead centre with its real neighbours either side. Returned
+ * as CSS percentages for a box of a given aspect (width over height), because
+ * with the aspect fixed every number here is independent of the box's size —
+ * the same values hold on a phone and a desktop, and sliding `positionX` from
+ * one colour to the next is a CSS transition, not a computation.
+ */
+export interface ColorReel {
+  src: string;
+  size: string;
+  positionX: string;
+  positionY: string;
+  /**
+   * The wall, continued past the photograph's edges. Centring the first or last
+   * shelf of a line-up leaves the box wider than the picture on one side; these
+   * gradients are the photograph's own edge column, top to bottom, so the wall
+   * simply carries on instead of stopping at a seam.
+   */
+  wallLeft: string;
+  wallRight: string;
+}
+
+export function shelfColorReel(slug: string, color: string, aspect: number): ColorReel | undefined {
+  const c = SHELF_COLOR_CHARTS[slug];
+  const centre = c?.x[color];
+  if (!c || centre === undefined) return undefined;
+  // the rows kept: shelf tops to feet, above the printed labels
+  const h = c.bottom - c.top;
+  // drawn image width, as a fraction of the box width
+  const drawn = c.imageWidth / (h * aspect);
+  // centre the shelf: offset = P × (box − drawn), wanted = box/2 − centre × scale
+  const x = (aspect / 2 - centre / h) / (aspect - c.imageWidth / h);
+  return {
+    src: c.src,
+    size: `${drawn * 100}% auto`,
+    positionX: `${x * 100}%`,
+    positionY: `${(c.top / (c.imageHeight - h)) * 100}%`,
+    wallLeft: `linear-gradient(180deg, ${c.wall.left.join(", ")})`,
+    wallRight: `linear-gradient(180deg, ${c.wall.right.join(", ")})`,
+  };
+}
+
+/** The colours this shelf has been photographed in, for copy that must be honest. */
+export function chartedColors(slug: string): string[] {
+  return Object.keys(SHELF_COLOR_CHARTS[slug]?.x ?? {});
+}

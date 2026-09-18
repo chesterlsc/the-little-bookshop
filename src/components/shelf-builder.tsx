@@ -15,6 +15,7 @@ import { BUILDER_STORAGE_KEY } from "@/lib/builder-handoff";
 import { useCart } from "./cart-context";
 import { MiniShelf, shelfShapeFromArt } from "./illustrations";
 import { ProductThumb } from "./product-thumb";
+import { ShelfColorView } from "./shelf-color-view";
 import { SixTitlesForm, emptyTitles, filledCount } from "./six-titles-form";
 import { Badge, Button, Field, inputClass } from "./ui";
 import { formatMoney } from "@/lib/money";
@@ -213,7 +214,7 @@ export function ShelfBuilder() {
   };
 
   const shelfHex = colorHex(state.shelfOptions["Color"] ?? "") ?? "#eebbaa";
-  const shelfSize = state.shelfOptions["Size"] === "Miniature" ? ("miniature" as const) : ("regular" as const);
+  const shelfSize = state.shelfOptions["Size"] === "Mini" ? ("miniature" as const) : ("regular" as const);
   const previewTitles = isCustom
     ? state.titles.map((t) => t.title)
     : set
@@ -498,6 +499,7 @@ function StepStyle({
     <div>
       <StepHeading title={`Style your ${shelf.name.toLowerCase()}`} lede="Every color is mixed in the studio; every size is desk-friendly." />
       <div className="space-y-5">
+        <ShelfColorView shelf={shelf} color={options["Color"] ?? ""} size={options["Size"] ?? ""} />
         {shelf.options.map((axis) => {
           const isColor = axis.name === "Color";
           return (
