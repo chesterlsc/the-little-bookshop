@@ -610,14 +610,14 @@ a, button {
    height, not the width, because the picture is shown whole: the card keeps the
    photograph's own 3:4, so its height decides everything. Short phones get a
    smaller share, since the choices below it must stay above the floating nav. */
-.picker-photo { height: clamp(15rem, 44svh, 30rem); }
+.picker-photo { height: clamp(14rem, 42svh, 30rem); }
 @media (max-height: 700px) {
-  .picker-photo { height: 30svh; }
+  .picker-photo { height: 28svh; }
 }
 /* the oldest small phones: the photograph gives up what it must so the three
    shapes and the button still land above the nav */
 @media (max-height: 600px) {
-  .picker-photo { height: 22svh; }
+  .picker-photo { height: 19svh; }
 }
 @media (min-width: 1024px) {
   .picker-photo { height: auto; }

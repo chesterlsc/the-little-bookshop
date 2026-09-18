@@ -40,13 +40,21 @@ check("home renders", (await page.textContent("body")).includes("Build your litt
 
 /* ── the fold's shelf picker ── */
 await page.waitForTimeout(2600); // the entry splash owns the screen until it finishes
-const firstShot = await page.locator("figure img").first().getAttribute("src");
+// all three shots stay mounted and cross-fade, so read whichever is opaque
+const shownPhoto = () => page.evaluate(() => {
+  const img = [...document.querySelectorAll(".pop-card img")].find((i) => Number(getComputedStyle(i).opacity) > 0.9);
+  return img ? decodeURIComponent(img.getAttribute("src")) : null;
+});
+check("all three photographs are kept ready, so changing shape cannot flash",
+  (await page.locator(".pop-card img").count()) === 3
+  && (await page.evaluate(() => [...document.querySelectorAll(".pop-card img")].every((i) => i.complete && i.naturalWidth > 0))));
+const firstShot = await shownPhoto();
 await page.getByRole("radio", { name: "Scalloped" }).click();
-await page.waitForTimeout(500);
-const secondShot = await page.locator("figure img").first().getAttribute("src");
-check("picking a shape shows that shelf's own photograph", firstShot !== secondShot && /shelf-mains/.test(secondShot));
+await page.waitForTimeout(700);
+const secondShot = await shownPhoto();
+check("picking a shape shows that shelf's own photograph", firstShot !== secondShot && /shelf-mains/.test(secondShot ?? ""));
 check("the picture says which colour it is showing", (await page.textContent("figure")).includes("shown in Blush Pink"));
-await page.getByRole("button", { name: /Next — pick your colour/ }).click();
+await page.getByRole("button", { name: /Next — build your shelf/ }).click();
 await page.waitForURL(/\/build/, { timeout: 15000 });
 const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem("tlb-builder-v1") || "{}"));
 check("next carries the shelf into the builder, at the colour step",

@@ -54,7 +54,7 @@ export function ShelfPicker() {
            with nothing cropped and no empty matte: the frame is the picture's
            own shape. ── */}
       <figure className="picker-photo order-2 relative m-0 flex w-full items-center justify-center lg:order-1 lg:w-1/2">
-        <div key={slug} className="pop-card relative aspect-[3/4] h-full max-w-full lg:h-auto lg:w-full">
+        <div className="pop-card relative aspect-[3/4] h-full max-w-full lg:h-auto lg:w-full">
           {/* the light it sits in */}
           <span
             aria-hidden
@@ -67,18 +67,34 @@ export function ShelfPicker() {
           />
           <div className="clay-sm absolute inset-0 rotate-[0.7deg] overflow-hidden bg-cream-50 p-1.5 shadow-[0_26px_40px_-20px_rgba(94,73,52,0.55)]">
             <div className="relative h-full w-full overflow-hidden rounded-[0.9rem] bg-cream-200">
-              <Image
-                key={shot.src}
-                src={shot.src}
-                alt={shot.alt}
-                fill
-                priority
-                sizes="(min-width:1024px) 44vw, 86vw"
-                className="fade-swap object-cover object-center"
-              />
+              {/* There are three photographs in all, so all three stay mounted and
+                  only their opacity changes: the next shelf is already decoded
+                  when it is asked for, so choosing one is a dissolve rather than
+                  a load. */}
+              {SHAPES.map((s) => {
+                const photo = shelfShot(s.slug)!;
+                const active = s.slug === slug;
+                return (
+                  <Image
+                    key={s.slug}
+                    src={photo.src}
+                    alt={active ? photo.alt : ""}
+                    aria-hidden={!active}
+                    fill
+                    priority={s.slug === SHAPES[0].slug}
+                    sizes="(min-width:1024px) 44vw, 86vw"
+                    className={`object-cover object-center transition-opacity duration-[450ms] ease-out motion-reduce:transition-none ${
+                      active ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                );
+              })}
             </div>
             <figcaption className="absolute bottom-3 left-3 right-3">
-              <span className="story-line inline-flex max-w-full items-center gap-1.5 rounded-full bg-ink-900/62 px-3 py-1 text-[0.72rem] leading-tight text-cream-50 backdrop-blur-[2px]">
+              <span
+                key={shot.shownIn}
+                className="fade-swap story-line inline-flex max-w-full items-center gap-1.5 rounded-full bg-ink-900/62 px-3 py-1 text-[0.72rem] leading-tight text-cream-50 backdrop-blur-[2px]"
+              >
                 <span
                   aria-hidden
                   className="h-2.5 w-2.5 shrink-0 rounded-full border border-cream-50/70"
@@ -149,7 +165,7 @@ export function ShelfPicker() {
             })}
           </div>
 
-          <p className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:justify-start lg:text-left">
+          <p key={slug} className="fade-swap flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:justify-start lg:text-left">
             <span className="font-display text-[1.05rem] font-bold text-ink-900">{product.name}</span>
             <span className="font-sans text-[0.85rem] font-bold text-sage-700">{priceLine(product)}</span>
           </p>
@@ -159,9 +175,14 @@ export function ShelfPicker() {
           <button
             type="button"
             onClick={start}
-            className="btn btn-primary group w-full justify-center !py-3 text-[1.02rem]"
+            className="btn btn-primary group w-full justify-center !py-2.5 text-[1.02rem]"
           >
-            Next — pick your colour
+            <span className="flex flex-col items-center leading-tight">
+              <span>Next — build your shelf</span>
+              <span className="font-sans text-[0.72rem] font-bold tracking-[0.02em] opacity-75">
+                › pick your colour
+              </span>
+            </span>
             <IconArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
         </div>
