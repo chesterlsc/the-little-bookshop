@@ -7,19 +7,20 @@ import { colorHex, getProduct, shelfShot, type Product } from "@/lib/catalog";
 import { seedBuilderShelf } from "@/lib/builder-handoff";
 import { formatMoney } from "@/lib/money";
 import { IconArrowRight } from "./icons";
-import { FolkFlower, Leaf, Sparkle } from "./illustrations";
 
 /**
- * The first fold: choose a shape, see that shelf, carry it into the builder.
+ * The first fold: the shelf itself, full width, with the words laid over it.
  *
- * One question only. The shop photographed each shape in one colour, so a
- * colour picker here could only ever show the same three pictures back — the
- * swatches live in the builder, where they are drawn rather than photographed
- * and can be honest about all nine. The caption names the colour on show.
+ * The photograph is the page. The step, the heading and the line under it sit
+ * on the picture behind two soft scrims — one from the top for the step, one
+ * from the bottom for the words — so the shelf keeps the whole middle to
+ * itself. Below it, the one question (which shape) and the one way on.
  *
- * The picture is never cropped on a phone: it sits whole inside a portrait
- * card, which is why the card is sized from the viewport height rather than
- * the width.
+ * All three hero shots are 3:4 and so is the frame, so the photograph is never
+ * cropped. The frame is as wide as the column allows until the viewport runs
+ * short, then narrows instead, so the choices and the button always land above
+ * the floating nav. Changing shape dissolves between the three photographs,
+ * which stay mounted so nothing loads at the moment of the tap.
  */
 
 const SHAPES = [
@@ -48,130 +49,126 @@ export function ShelfPicker() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 sm:gap-4 lg:flex-row lg:items-center lg:gap-14">
-      {/* ── the picture ── the whole point of the fold, so it gets the room.
-           All three shots are 3:4, so a 3:4 card shows the photograph entire
-           with nothing cropped and no empty matte: the frame is the picture's
-           own shape. ── */}
-      <figure className="picker-photo order-2 relative m-0 flex w-full items-center justify-center lg:order-1 lg:w-1/2">
-        <div className="pop-card relative aspect-[3/4] h-full max-w-full lg:h-auto lg:w-full">
-          {/* the light it sits in */}
+    <div className="flex min-h-0 flex-1 flex-col items-center gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-center lg:gap-12">
+      {/* ── the photograph, and the words on it ── */}
+      <figure className="hero-photo pop-card relative m-0 shrink-0 overflow-hidden rounded-[1.4rem] bg-cream-200 shadow-[0_24px_40px_-22px_rgba(67,54,42,0.7),0_0_0_1px_rgba(67,54,42,0.08)]">
+        {SHAPES.map((s) => {
+          const photo = shelfShot(s.slug)!;
+          const active = s.slug === slug;
+          return (
+            <Image
+              key={s.slug}
+              src={photo.src}
+              alt={active ? photo.alt : ""}
+              aria-hidden={!active}
+              fill
+              priority={s.slug === SHAPES[0].slug}
+              sizes="(min-width:1024px) 46vw, 94vw"
+              className={`object-cover object-center transition-opacity duration-[450ms] ease-out motion-reduce:transition-none ${
+                active ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          );
+        })}
+
+        {/* two scrims, so cream type reads on a pale wall and a dark table alike */}
+        <span aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-ink-900/55 via-ink-900/18 to-transparent" />
+        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-ink-900/85 via-ink-900/45 to-transparent" />
+
+        {/* where you are */}
+        <div className="absolute inset-x-4 top-4 flex items-center gap-3 sm:inset-x-5 sm:top-5">
+          <span className="shrink-0 font-sans text-[0.7rem] font-black tracking-[0.2em] text-cream-50 sm:text-[0.76rem]">
+            STEP 1 OF 3
+          </span>
+          <span aria-hidden className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-cream-50/30">
+            <span className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-cream-50" />
+          </span>
+        </div>
+
+        {/* which colour this photograph is */}
+        <figcaption className="absolute right-3 top-11 max-w-[70%] sm:right-4 sm:top-12">
           <span
-            aria-hidden
-            className="absolute -inset-5 -z-10 rounded-[46%] bg-[radial-gradient(60%_55%_at_50%_45%,var(--color-sun-200)_0%,color-mix(in_srgb,var(--color-blush-200)_70%,transparent)_45%,transparent_72%)] opacity-70 blur-xl"
-          />
-          {/* the pencil under-drawing, still showing under the finished thing */}
-          <span
-            aria-hidden
-            className="clay-sm absolute inset-0 rotate-[-2.2deg] border-[1.5px] border-dashed border-taupe-300 bg-transparent"
-          />
-          <div className="clay-sm absolute inset-0 rotate-[0.7deg] overflow-hidden bg-cream-50 p-1.5 shadow-[0_26px_40px_-20px_rgba(94,73,52,0.55)]">
-            <div className="relative h-full w-full overflow-hidden rounded-[0.9rem] bg-cream-200">
-              {/* There are three photographs in all, so all three stay mounted and
-                  only their opacity changes: the next shelf is already decoded
-                  when it is asked for, so choosing one is a dissolve rather than
-                  a load. */}
-              {SHAPES.map((s) => {
-                const photo = shelfShot(s.slug)!;
-                const active = s.slug === slug;
-                return (
-                  <Image
-                    key={s.slug}
-                    src={photo.src}
-                    alt={active ? photo.alt : ""}
-                    aria-hidden={!active}
-                    fill
-                    priority={s.slug === SHAPES[0].slug}
-                    sizes="(min-width:1024px) 44vw, 86vw"
-                    className={`object-cover object-center transition-opacity duration-[450ms] ease-out motion-reduce:transition-none ${
-                      active ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                );
-              })}
-            </div>
-            <figcaption className="absolute bottom-3 left-3 right-3">
-              <span
-                key={shot.shownIn}
-                className="fade-swap story-line inline-flex max-w-full items-center gap-1.5 rounded-full bg-ink-900/62 px-3 py-1 text-[0.72rem] leading-tight text-cream-50 backdrop-blur-[2px]"
-              >
-                <span
-                  aria-hidden
-                  className="h-2.5 w-2.5 shrink-0 rounded-full border border-cream-50/70"
-                  style={{ background: colorHex(shot.shownIn) }}
-                />
-                shown in {shot.shownIn}
-              </span>
-            </figcaption>
-          </div>
-          {/* a strip of tape and a sprig, the way the rest of the shop is dressed */}
-          <span
-            aria-hidden
-            className="absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-[5deg] rounded-[2px] bg-blush-200/85 shadow-[inset_0_0_0_1px_rgba(214,138,120,0.35)]"
-          />
-          <svg
-            viewBox="0 0 34 26"
-            className="soft-in absolute -right-3 -top-5 w-9 sm:w-11"
-            style={{ animationDelay: "700ms" }}
-            aria-hidden
-            role="presentation"
+            key={shot.shownIn}
+            className="fade-swap story-line inline-flex items-center gap-1.5 rounded-full bg-ink-900/62 px-3 py-1 text-[0.72rem] leading-tight text-cream-50 backdrop-blur-[2px]"
           >
-            <Leaf x={2} y={16} s={6} angle={-28} />
-            <FolkFlower x={24} y={9} r={5} />
-            <Sparkle x={31} y={22} s={3} />
-          </svg>
+            <span
+              aria-hidden
+              className="h-2.5 w-2.5 shrink-0 rounded-full border border-cream-50/70"
+              style={{ background: colorHex(shot.shownIn) }}
+            />
+            shown in {shot.shownIn}
+          </span>
+        </figcaption>
+
+        {/* the words, on the picture */}
+        <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6">
+          <h1 className="text-balance font-display text-[clamp(1.75rem,1.1rem+3.6vw,3rem)] font-bold leading-[1.02] text-cream-50 [text-shadow:0_2px_14px_rgba(35,25,15,0.35)]">
+            Start with a{" "}
+            <span className="relative inline-block whitespace-nowrap">
+              shelf.
+              <svg viewBox="0 0 200 16" preserveAspectRatio="none" className="hero-accent-line" aria-hidden role="presentation">
+                <path
+                  d="M4 8.5 C 34 3.5 66 12.5 100 7.5 S 168 3.5 196 9"
+                  pathLength={300}
+                  className="sketch-once"
+                  style={{ animationDelay: "520ms" }}
+                  fill="none"
+                  stroke="var(--color-sun-200)"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M9 12.8 C 42 8.2 72 16.4 108 11.4 S 170 8.6 192 13.2"
+                  pathLength={300}
+                  className="sketch-once"
+                  style={{ animationDelay: "740ms" }}
+                  fill="none"
+                  stroke="var(--color-blush-200)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+          </h1>
+          <p className="story-line mt-2.5 max-w-[34ch] text-pretty text-[0.95rem] leading-snug text-cream-50/92 sm:text-[1.05rem] [@media(max-height:700px)]:hidden lg:!block">
+            Three silhouettes, nine colours — then you name the books.
+          </p>
         </div>
       </figure>
 
-      {/* ── the words and the one question ── */}
-      <div className="contents lg:order-2 lg:flex lg:w-1/2 lg:max-w-[32rem] lg:flex-col lg:gap-5">
-        <header className="order-1 text-center lg:text-left">
-          <p className="eyebrow inline-flex items-center gap-2">
-            Step 1 of 3
-            <span aria-hidden className="flex items-center gap-1">
-              <span className="h-[3px] w-6 rounded-full bg-sage-600" />
-              <span className="h-[3px] w-3 rounded-full bg-taupe-300" />
-              <span className="h-[3px] w-3 rounded-full bg-taupe-300" />
-            </span>
-          </p>
-          <h1 className="hero-h1 mt-1 text-balance font-display font-bold text-ink-900">
-            Start with a shelf.
-          </h1>
-          <p className="story-line mx-auto mt-1 max-w-[32ch] text-pretty text-[0.93rem] leading-snug text-ink-600 [@media(max-height:700px)]:hidden sm:text-[1.08rem] lg:mx-0 lg:!block">
-            Three silhouettes, nine colours — then you name the books.
-          </p>
-        </header>
-
-        <div className="order-3 space-y-1.5 sm:space-y-2">
-          <div className="flex flex-wrap justify-center gap-2 lg:justify-start" role="radiogroup" aria-label="Shelf shape">
-            {SHAPES.map((s) => {
-              const active = s.slug === slug;
-              return (
-                <button
-                  key={s.slug}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setSlug(s.slug)}
-                  className={`min-h-[42px] flex-1 rounded-full border-[1.5px] px-4 py-1.5 font-display text-[0.96rem] font-semibold transition sm:flex-none sm:px-6 ${
-                    active
-                      ? "border-sage-800 bg-sage-600 text-cream-50 shadow-[0_2px_0_var(--color-sage-800)]"
-                      : "border-taupe-300 bg-cream-50 text-ink-600 hover:border-brown-500 hover:text-ink-800"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <p key={slug} className="fade-swap flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center lg:justify-start lg:text-left">
-            <span className="font-display text-[1.05rem] font-bold text-ink-900">{product.name}</span>
-            <span className="font-sans text-[0.85rem] font-bold text-sage-700">{priceLine(product)}</span>
-          </p>
+      {/* ── the one question, and the way on ── */}
+      <div className="flex w-full flex-col gap-2.5 sm:gap-3 lg:w-[40%] lg:max-w-[30rem] lg:gap-5">
+        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Shelf shape">
+          {SHAPES.map((s) => {
+            const active = s.slug === slug;
+            return (
+              <button
+                key={s.slug}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setSlug(s.slug)}
+                className={`min-h-[44px] rounded-[1.1rem] px-3 py-2 font-display text-[0.98rem] font-semibold transition ${
+                  active
+                    ? "border-2 border-sage-800 bg-cream-50 text-ink-900 shadow-[0_0_0_3px_var(--color-cream-50),0_0_0_4.5px_var(--color-sage-700)]"
+                    : "border-[1.5px] border-taupe-300 bg-cream-50 text-ink-600 hover:border-brown-500 hover:text-ink-800"
+                }`}
+              >
+                {s.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="order-4 relative">
+        <p
+          key={slug}
+          className="fade-swap flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
+        >
+          <span className="font-display text-[1.06rem] font-bold text-ink-900">{product.name}</span>
+          <span className="font-sans text-[0.86rem] font-bold text-sage-700">{priceLine(product)}</span>
+        </p>
+
+        <div className="relative">
           {/* the rings live outside the button so they can grow past its edge */}
           <span aria-hidden className="cta-halo" />
           <span aria-hidden className="cta-halo cta-halo-2" />

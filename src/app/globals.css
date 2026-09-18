@@ -198,9 +198,14 @@ body {
   color: var(--color-ink-900);
 }
 
-h1, h2, h3, h4 {
-  @apply font-display text-ink-800;
-  letter-spacing: 0.005em;
+/* In the base layer, so a heading that asks for its own colour gets it:
+   unlayered, this outranked every text-* utility and quietly turned a cream
+   heading on a photograph back to ink. */
+@layer base {
+  h1, h2, h3, h4 {
+    @apply font-display text-ink-800;
+    letter-spacing: 0.005em;
+  }
 }
 
 a, button {
@@ -606,21 +611,22 @@ a, button {
 }
 .fade-swap { animation: fade-swap 0.42s ease-out both; }
 
-/* How much of the fold the photograph takes. It is sized from the viewport
-   height, not the width, because the picture is shown whole: the card keeps the
-   photograph's own 3:4, so its height decides everything. Short phones get a
-   smaller share, since the choices below it must stay above the floating nav. */
-.picker-photo { height: clamp(14rem, 42svh, 30rem); }
-@media (max-height: 700px) {
-  .picker-photo { height: 28svh; }
-}
-/* the oldest small phones: the photograph gives up what it must so the three
-   shapes and the button still land above the nav */
-@media (max-height: 600px) {
-  .picker-photo { height: 19svh; }
+/* The hero photograph. It keeps the shots' own 3:4, so it is sized by one
+   number: as wide as the column (100vw less the section's padding) while the
+   viewport can afford it, and narrower as soon as it cannot — the height it
+   may take is the viewport, less the header, less the floating nav, less the
+   shape chips, the price line and the button under it. Whichever is smaller
+   wins, so the photograph is never cropped and nothing lands behind the nav. */
+.hero-photo {
+  aspect-ratio: 3 / 4;
+  height: min(calc((100vw - 2rem) * 4 / 3), calc(100svh - 96px - 104px - 12.75rem - env(safe-area-inset-bottom)));
+  width: auto;
+  max-width: 100%;
 }
 @media (min-width: 1024px) {
-  .picker-photo { height: auto; }
+  .hero-photo {
+    height: min(calc(100svh - 12rem), 44rem);
+  }
 }
 
 /* The picker's card arriving: a small lift and settle, so changing shape feels
@@ -675,6 +681,9 @@ a, button {
   position: absolute;
   left: -0.08em;
   right: -0.08em;
+  /* an svg takes its width from its aspect, not from left/right: without this
+     the stroke is 4.25em long whatever word it sits under */
+  width: calc(100% + 0.16em);
   top: calc(100% + 0.04em);
   height: 0.34em;
   overflow: visible;
