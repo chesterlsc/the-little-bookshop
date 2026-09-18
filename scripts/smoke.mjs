@@ -54,7 +54,7 @@ await page.waitForTimeout(700);
 const secondShot = await shownPhoto();
 check("picking a shape shows that shelf's own photograph", firstShot !== secondShot && /shelf-mains/.test(secondShot ?? ""));
 check("the picture says which colour it is showing", (await page.textContent("figure")).includes("shown in Blush Pink"));
-await page.getByRole("button", { name: /Next — build your shelf/ }).click();
+await page.getByRole("button", { name: /Build my shelf/ }).click();
 await page.waitForURL(/\/build/, { timeout: 15000 });
 const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem("tlb-builder-v1") || "{}"));
 check("next carries the shelf into the builder, at the colour step",

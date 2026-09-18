@@ -171,19 +171,22 @@ export function ShelfPicker() {
           </p>
         </div>
 
-        <div className="order-4">
+        <div className="order-4 relative">
+          {/* the rings live outside the button so they can grow past its edge */}
+          <span aria-hidden className="cta-halo" />
+          <span aria-hidden className="cta-halo cta-halo-2" />
           <button
             type="button"
             onClick={start}
-            className="btn btn-primary group w-full justify-center !py-2.5 text-[1.02rem]"
+            className="cta-beacon group relative flex w-full items-center justify-center gap-3 py-3"
           >
-            <span className="flex flex-col items-center leading-tight">
-              <span>Next — build your shelf</span>
-              <span className="font-sans text-[0.72rem] font-bold tracking-[0.02em] opacity-75">
-                › pick your colour
+            <span className="flex flex-col items-center leading-none">
+              <span className="font-display text-[1.24rem] font-bold text-ink-900">Build my shelf</span>
+              <span className="mt-1 font-sans text-[0.71rem] font-bold uppercase tracking-[0.12em] text-brown-600">
+                pick your colour next
               </span>
             </span>
-            <IconArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+            <IconArrowRight className="cta-nudge h-6 w-6 text-ink-900" />
           </button>
         </div>
       </div>
