@@ -745,9 +745,9 @@ export function shelfShot(slug: string): ShelfShot | undefined {
  * for twenty-one new photographs, the builder shows a window onto one shelf in
  * that same picture: a real photograph of the real colour, no tinting.
  *
- * `x` is the centre of each shelf in image pixels, `half` how far to cut either
- * side of it, and `top`/`bottom` the rows to keep — above the printed labels,
- * below the ceiling, with the feet still in frame. Measured off the files.
+ * `x` is the centre of each shelf in image pixels, midway between its outer
+ * edges, and `top`/`bottom` the rows to keep — above the printed labels, below
+ * the ceiling, with the feet still in frame. Measured off the files.
  *
  * Banana Yellow and Midnight Black are in no line-up, so they have no entry and
  * the builder falls back to the drawn shelf rather than showing a colour that
@@ -759,7 +759,6 @@ interface ColorChart {
   imageHeight: number;
   top: number;
   bottom: number;
-  half: number;
   x: Record<string, number>;
   /** the wall down the photograph's left and right edges, top to bottom */
   wall: { left: string[]; right: string[] };
@@ -772,7 +771,6 @@ const chart = (
   imageHeight: number,
   top: number,
   bottom: number,
-  half: number,
   centres: number[],
   wall: ColorChart["wall"],
   order: string[] = CHART_ORDER,
@@ -782,24 +780,23 @@ const chart = (
   imageHeight,
   top,
   bottom,
-  half,
   wall,
   x: Object.fromEntries(order.map((name, i) => [name, centres[i]])),
 });
 
 const SHELF_COLOR_CHARTS: Record<string, ColorChart> = {
-  "mini-classic-bookshelf": chart("/marketing/multiple-shelves/01.webp", 700, 214, 583, 84,
-    [137, 328, 518, 708, 897, 1086, 1276], {
+  "mini-classic-bookshelf": chart("/marketing/multiple-shelves/01.webp", 700, 214, 583,
+    [120, 311, 503, 699, 897, 1086, 1278], {
       left: ["#edd9c9", "#ead5c5", "#ebd7c7", "#ebd6c4", "#e8d6c8"],
       right: ["#c2aa94", "#cab3a0", "#ceb8a4", "#ceb8a4", "#d8c4b3"],
     }),
-  "mini-arched-bookshelf": chart("/marketing/multiple-shelves/02.webp", 700, 203, 597, 84,
-    [139, 330, 520, 710, 899, 1088, 1278], {
+  "mini-arched-bookshelf": chart("/marketing/multiple-shelves/02.webp", 700, 203, 597,
+    [115, 307, 499, 695, 891, 1082, 1278], {
       left: ["#e4cebf", "#e7d3c3", "#e6d2c2", "#efded0", "#e6d5c9"],
       right: ["#c4ac99", "#c5ad9a", "#c9b19e", "#d5beaf", "#d7c2b2"],
     }),
-  "mini-scalloped-bookshelf": chart("/marketing/multiple-shelves/03.webp", 788, 218, 604, 88,
-    [127, 320, 512, 700, 889, 1080, 1267], {
+  "mini-scalloped-bookshelf": chart("/marketing/multiple-shelves/03.webp", 788, 218, 604,
+    [130, 320, 512, 700, 889, 1080, 1267], {
       left: ["#b99b80", "#bea089", "#c0a48c", "#bca28e", "#dec9bd"],
       right: ["#cdb29e", "#ccb4a1", "#d1b8a8", "#d2b9a9", "#d5c0b3"],
     },
