@@ -38,6 +38,20 @@ page.on("pageerror", (e) => pageErrors.push(String(e)));
 await page.goto(BASE + "/", { waitUntil: "networkidle" });
 check("home renders", (await page.textContent("body")).includes("Build your little shelf"));
 
+/* ── the fold's shelf picker ── */
+await page.waitForTimeout(2600); // the entry splash owns the screen until it finishes
+const firstShot = await page.locator("figure img").first().getAttribute("src");
+await page.getByRole("radio", { name: "Scalloped" }).click();
+await page.waitForTimeout(500);
+const secondShot = await page.locator("figure img").first().getAttribute("src");
+check("picking a shape shows that shelf's own photograph", firstShot !== secondShot && /shelf-mains/.test(secondShot));
+check("the picture says which colour it is showing", (await page.textContent("figure")).includes("shown in Blush Pink"));
+await page.getByRole("button", { name: /Next — pick your colour/ }).click();
+await page.waitForURL(/\/build/, { timeout: 15000 });
+const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem("tlb-builder-v1") || "{}"));
+check("next carries the shelf into the builder, at the colour step",
+  seeded.shelfSlug === "mini-scalloped-bookshelf" && seeded.step === 1);
+
 await page.goto(BASE + "/products/mini-scalloped-bookshelf", { waitUntil: "networkidle" });
 await page.getByRole("radio", { name: "Blush Pink" }).click();
 await page.getByRole("button", { name: /Add to basket/ }).click();

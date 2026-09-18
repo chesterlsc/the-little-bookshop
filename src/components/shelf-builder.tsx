@@ -11,6 +11,7 @@ import {
   type ShelfThemeId,
 } from "@/lib/catalog";
 import { setsOf, validTitles, type BundleLine, type CustomTitle } from "@/lib/cart";
+import { BUILDER_STORAGE_KEY } from "@/lib/builder-handoff";
 import { useCart } from "./cart-context";
 import { MiniShelf, shelfShapeFromArt } from "./illustrations";
 import { ProductThumb } from "./product-thumb";
@@ -20,7 +21,7 @@ import { formatMoney } from "@/lib/money";
 import { IconArrowRight, IconBasket, IconCheck, IconPencil } from "./icons";
 import Link from "next/link";
 
-const STORAGE_KEY = "tlb-builder-v1";
+const STORAGE_KEY = BUILDER_STORAGE_KEY;
 const SET_PRODUCTS = () => productsInCategory("mini-books");
 const SHELF_PRODUCTS = () => productsInCategory("bookshelves");
 const ACCESSORY_PRODUCTS = () => productsInCategory("accessories");

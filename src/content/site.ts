@@ -1,3 +1,9 @@
+import { FREE_SHIPPING_MINIMUM } from "@/lib/cart";
+import { formatMoney } from "@/lib/money";
+
+/** The free-shipping figure as the shop writes it, from the one place it is set. */
+const freeShippingFrom = () => formatMoney(FREE_SHIPPING_MINIMUM).replace(/\.00$/, "");
+
 /**
  * Business information and long-form content.
  * Values in EDITABLE (marked ⟨ ⟩ in copy) are placeholders awaiting real
@@ -157,7 +163,7 @@ export const POLICIES: Record<
     updated: "⟨date⟩",
     body: [
       `Every piece is made to order in our little studio. Current production time before dispatch is ${SITE.productionTime}.`,
-      "Shipping is free on orders of ₱999 and over. Below that, a flat rate is shown at checkout before you place your order. ⟨Carrier names and delivery estimates by region to be confirmed by the shop.⟩",
+      `Shipping is free on orders of ${freeShippingFrom()} and over. Below that, a flat rate is shown at checkout before you place your order. ⟨Carrier names and delivery estimates by region to be confirmed by the shop.⟩`,
       "You'll receive an email confirmation when your order is placed and ⟨tracking details, if offered⟩ when it ships.",
       "Orders ship from ⟨shipping origin⟩. Customs fees or import taxes, where they apply, are the recipient's responsibility.",
     ],

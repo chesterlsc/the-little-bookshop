@@ -694,3 +694,42 @@ export const SET_SIZE = 6;
 
 /** A custom set can be six books over again, up to this many books in one line. */
 export const MAX_TITLES = SET_SIZE * 5;
+
+/* ─── Shelf photographs ────────────────────────────────────────────────────── */
+
+/**
+ * The one styled photograph of each shelf, for the picker on the home page.
+ *
+ * Each shape was shot in a single colour, so the picture names the colour it is
+ * showing and the picker offers no colour of its own: colours are chosen in the
+ * builder, against the swatches, rather than promised by a photograph that
+ * cannot keep up with them.
+ */
+const SHELF_SHOTS: Record<string, ShelfShot> = {
+  "mini-classic-bookshelf": {
+    src: "/marketing/shelf-mains/03.webp",
+    alt: "The Choco Brown Classic bookshelf styled with a LITERATURE topper, tulips and candlelight",
+    shownIn: "Choco Brown",
+  },
+  "mini-scalloped-bookshelf": {
+    src: "/marketing/shelf-mains/04.webp",
+    alt: "The Blush Pink Scalloped bookshelf styled with a FAVES topper, candles and tulips",
+    shownIn: "Blush Pink",
+  },
+  "mini-arched-bookshelf": {
+    src: "/marketing/shelf-mains/02.webp",
+    alt: "The Bone White Arched bookshelf styled with a TBR topper and three shelves of tiny books",
+    shownIn: "Bone White",
+  },
+};
+
+export interface ShelfShot {
+  src: string;
+  alt: string;
+  /** the colour this photograph shows */
+  shownIn: string;
+}
+
+export function shelfShot(slug: string): ShelfShot | undefined {
+  return SHELF_SHOTS[slug];
+}

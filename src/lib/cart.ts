@@ -197,10 +197,18 @@ export function cartCount(cart: Cart): number {
   return cart.lines.reduce((sum, line) => sum + line.qty, 0);
 }
 
-/** Orders at or above this subtotal ship free. */
-export const FREE_SHIPPING_MINIMUM: Cents = Number(
-  process.env.NEXT_PUBLIC_FREE_SHIPPING_MINIMUM_CENTS ?? 99900,
-);
+/**
+ * Orders at or above this subtotal ship free. Set where the shop can still
+ * carry the cost: a good share of orders go to the provinces, where the courier
+ * charges more than it does across the city.
+ *
+ * A flat number rather than an env var on purpose: NEXT_PUBLIC_ values are
+ * baked in at build time, so a stale one set on the host would quietly outrank
+ * this file and keep quoting the old threshold to customers. The shop's own
+ * figure belongs with the prices it is measured against, and the ribbon, the
+ * basket and the shipping policy all read it from here.
+ */
+export const FREE_SHIPPING_MINIMUM: Cents = 199900;
 
 /**
  * Flat shipping, configurable via env. Real carrier rates are a business
