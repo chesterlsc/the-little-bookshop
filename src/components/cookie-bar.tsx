@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "./ui";
 import { acceptCookies, cookiesAccepted } from "@/lib/welcome";
 
@@ -18,6 +19,9 @@ import { acceptCookies, cookiesAccepted } from "@/lib/welcome";
  */
 export function CookieBar() {
   const [show, setShow] = useState(false);
+  // bottom-left on a desktop, clear of checkout's sticky button — except on the
+  // home page, where the fold's button sits bottom-centre and the right is free
+  const home = usePathname() === "/";
 
   // decided after mount so server and client markup match
   useEffect(() => {
@@ -34,7 +38,7 @@ export function CookieBar() {
   return (
     <aside
       aria-label="Cookies"
-      className="glass animate-fade-up fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[65] rounded-[20px] px-4 py-3 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-sm"
+      className={`glass animate-fade-up fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[65] rounded-[20px] px-4 py-3 lg:bottom-4 lg:max-w-sm ${home ? "lg:left-auto lg:right-4" : "lg:left-4 lg:right-auto"}`}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p className="flex-1 font-sans text-xs leading-snug text-ink-800 sm:text-sm">

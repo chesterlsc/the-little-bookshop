@@ -150,7 +150,6 @@
   .pop-card { animation: none; }
   .soft-in { animation: none; }
   .animate-drift, .animate-drift-slow { animation: none; }
-  .cue-bob { animation: none; }
   .splash { display: none; }
 }
 
@@ -623,11 +622,6 @@ a, button {
   width: auto;
   max-width: 100%;
 }
-@media (min-width: 1024px) {
-  .hero-photo {
-    height: min(calc(100svh - 12rem), 44rem);
-  }
-}
 
 /* The picker's card arriving: a small lift and settle, so changing shape feels
    like putting a new photograph down rather than swapping a src. */
@@ -638,19 +632,6 @@ a, button {
 }
 .pop-card { animation: pop-card 0.52s cubic-bezier(0.22, 0.9, 0.3, 1.1) both; }
 
-/* the drawn scroll cue at the foot of the fold */
-@keyframes cue-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
-}
-.cue-bob {
-  animation: cue-bob 2.4s ease-in-out infinite;
-}
-/* On a phone the floating nav is chrome like the header is, so the fold ends
-   above it: a call to action sitting behind the basket button is not one. The
-   same clearance .pb-nav gives the page, so the two agree. The cue goes too —
-   the picker's own button is the fold's pointer now, and every pixel it frees
-   goes to the photograph. */
 /* On a phone the photograph is shown whole rather than cropped to the screen,
    so the fold is allowed to be taller than the viewport and scroll: a picture
    of the thing being bought is worth more than fitting the chrome exactly. The
@@ -660,7 +641,93 @@ a, button {
     min-height: 0;
     padding-bottom: calc(104px + env(safe-area-inset-bottom));
   }
-  .hero-cue { display: none; }
+}
+
+/* ─── The fold on a desktop: three shelves side by side ────────────────────
+   Every photograph is 3:4 and shown whole. Its height is what the viewport has
+   left once the header and everything stacked around the cards are paid for:
+   the step, heading, lede, captions, drawn shelf and button, whose type and
+   gaps shrink with the viewport's height, come to about 29% of it plus 342px
+   (measured from 768 to 1080px tall, captions on two lines). Its width is that,
+   unless a third of the column is narrower. So the question and the button fit
+   one screen at any height: on a short one the drawn shelf gives way first, then
+   the lede, before the photographs get small. */
+.pick-row {
+  --pick-h: clamp(16rem, calc(71svh - 342px), 34rem);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2.5rem;
+  width: 100%;
+}
+.pick-card {
+  flex: none;
+  width: min(calc(var(--pick-h) * 3 / 4 + 1.25rem), calc((100% - 5rem) / 3));
+  text-align: left;
+  border-radius: 1.15rem;
+  transition: transform 0.38s cubic-bezier(0.22, 0.9, 0.3, 1.15);
+}
+.pick-mat {
+  position: relative;
+  display: block;
+  padding: 0.625rem;
+  border-radius: 1.15rem;
+  background: var(--color-cream-50);
+  border: 1.5px solid var(--color-taupe-200);
+  box-shadow: 0 16px 28px -20px rgba(67, 54, 42, 0.5);
+  transition: box-shadow 0.3s ease, border-color 0.2s ease;
+}
+.pick-photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  background: var(--color-cream-200);
+}
+@media (hover: hover) {
+  .pick-card[aria-checked="false"]:hover { transform: translateY(-5px); }
+  .pick-card[aria-checked="false"]:hover .pick-mat { border-color: var(--color-taupe-400); }
+}
+/* the picked one stands up out of the row, ringed in ink on a hard shadow —
+   the same ink and shadow as the button it leads to */
+.pick-card[aria-checked="true"] { transform: translateY(-14px); }
+.pick-card[aria-checked="true"] .pick-mat {
+  border-color: var(--color-ink-800);
+  box-shadow: 0 0 0 1.5px var(--color-ink-800), 0 7px 0 1.5px var(--color-ink-800),
+    0 30px 38px -22px rgba(67, 54, 42, 0.6);
+}
+.pick-badge {
+  position: absolute;
+  z-index: 1;
+  top: -0.95rem;
+  right: -0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.8rem 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: var(--color-rose-700);
+  color: var(--color-cream-50);
+  font: 800 0.9rem/1.2 var(--font-sans);
+  box-shadow: 0 0 0 2.5px var(--color-cream-50), 0 6px 12px -6px rgba(67, 54, 42, 0.5);
+  animation: pick-badge 0.4s cubic-bezier(0.22, 0.9, 0.3, 1.3) both;
+}
+@keyframes pick-badge {
+  from { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  to { opacity: 1; transform: none; }
+}
+@media (max-height: 820px) {
+  .pick-row { --pick-h: clamp(10rem, calc(71svh - 298px), 34rem); }
+  .hero-rule { display: none; }
+}
+@media (max-height: 760px) {
+  .pick-row { --pick-h: clamp(10rem, calc(71svh - 238px), 34rem); }
+  .pick-lede { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pick-card, .pick-mat { transition: none; }
+  .pick-badge { animation: none; }
 }
 
 /* hero display type: one fluid ramp, tight storybook leading */
@@ -960,6 +1027,21 @@ a, button {
     animation-timeline: --draw;
     animation-range: cover calc(18% + var(--i, 0) * 2.6%) cover calc(34% + var(--i, 0) * 2.6%);
   }
+}
+
+/* The drawn shelf in the desktop fold is on screen from the first frame, so it
+   draws itself on load, after the cards land, not on a scroll that never comes. */
+.hero-rule .draw-in, .hero-rule .draw-in-soft {
+  animation-timeline: auto;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+  animation-range: normal;
+  animation-delay: calc(600ms + var(--i, 0) * 110ms);
+}
+.hero-rule .draw-in-soft { animation-duration: 0.8s; }
+/* on a hard load the entry splash covers the page until 3s: wait for it */
+.splash ~ main .hero-rule .draw-in, .splash ~ main .hero-rule .draw-in-soft {
+  animation-delay: calc(2400ms + var(--i, 0) * 110ms);
 }
 
 /* Must stay last in the file: beats .draw-scope .draw-in on specificity + order. */

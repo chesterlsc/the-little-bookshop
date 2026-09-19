@@ -17,7 +17,7 @@ import { ThemeShelfDemo } from "@/components/theme-shelf-demo";
 import { ProductCard } from "@/components/product-card";
 import { CATEGORIES, getProduct, type Category } from "@/lib/catalog";
 import { FAQ } from "@/content/site";
-import { IconArrowRight, IconChevronDown } from "@/components/icons";
+import { IconArrowRight } from "@/components/icons";
 
 const FEATURED = [
   "mini-scalloped-bookshelf",
@@ -109,12 +109,6 @@ export default function HomePage() {
         <div className="hero-fold">
           <div className="animate-fade-up flex min-h-0 flex-1 flex-col pt-3 sm:pt-5 lg:pt-6">
             <ShelfPicker />
-          </div>
-
-          {/* the drawn scroll cue: the fold's one pointer at the rest of the shop */}
-          <div className="hero-cue soft-in flex flex-col items-center gap-0.5 pb-1 pt-2 lg:pb-4 lg:pt-3" style={{ animationDelay: "1200ms" }}>
-            <span className="story-line text-[0.78rem] text-ink-600">the shop, just below</span>
-            <IconChevronDown className="cue-bob h-4 w-4 text-sage-700" />
           </div>
         </div>
       </Section>

@@ -295,6 +295,42 @@ check("old payment gateway routes are gone", gone.status === 404);
   await fresh.close();
 }
 
+/* ── the fold on a desktop: all three shelves, the picked one names the button ── */
+{
+  const desk = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await desk.addInitScript(() => {
+    localStorage.setItem("tlb-welcome-v1", JSON.stringify({ status: "dismissed", at: "smoke" }));
+    localStorage.setItem("tlb-cookies-v1", JSON.stringify({ at: "smoke" }));
+  });
+  const dp = await desk.newPage();
+  const derr = [];
+  dp.on("pageerror", (e) => derr.push(String(e)));
+  await dp.goto(BASE + "/", { waitUntil: "networkidle" });
+  await dp.waitForTimeout(2600);
+  check("desktop shows all three shelves side by side",
+    (await dp.locator(".pick-card").count()) === 3
+    && (await dp.locator(".pick-card img").evaluateAll((imgs) =>
+      imgs.every((i) => i.complete && i.naturalWidth > 0 && i.getBoundingClientRect().width > 150))));
+  await dp.getByRole("radio", { name: /Scalloped/ }).click();
+  const cta = dp.getByRole("button", { name: /Build my Scalloped shelf/ });
+  check("the picked shelf is marked and names the button",
+    (await dp.locator('.pick-card[aria-checked="true"]').textContent()).includes("Scalloped") && (await cta.count()) === 1);
+  check("the question and its button fit one desktop screen",
+    (await cta.evaluate((b) => b.getBoundingClientRect().bottom)) <= 900);
+  // the inside of a 1366x768 laptop's browser window
+  await dp.setViewportSize({ width: 1366, height: 657 });
+  await dp.waitForTimeout(400);
+  check("and one short laptop screen",
+    (await cta.evaluate((b) => b.getBoundingClientRect().bottom + 6)) <= 657);
+  await cta.click();
+  await dp.waitForURL(/\/build/, { timeout: 15000 });
+  const seededDesk = await dp.evaluate(() => JSON.parse(localStorage.getItem("tlb-builder-v1") || "{}"));
+  check("the desktop button carries the shelf into the builder",
+    seededDesk.shelfSlug === "mini-scalloped-bookshelf" && seededDesk.step === 1);
+  check("desktop fold has no page errors", derr.length === 0, derr.join(" | "));
+  await desk.close();
+}
+
 check("no page errors during run", pageErrors.length === 0, pageErrors.join(" | "));
 
 await browser.close();
