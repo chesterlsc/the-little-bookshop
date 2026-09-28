@@ -291,7 +291,7 @@ export const PRODUCTS: Product[] = [
       "scalloped-shelf/04|The Mini and Regular Scalloped bookshelves in Sage Green",
       "multiple-shelves/03|The Scalloped shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 76500, mini: 64500 }),
+    ...shelfVariants({ regular: 94500, mini: 82500 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
@@ -326,7 +326,7 @@ export const PRODUCTS: Product[] = [
       "classic-shelf/13|The Classic shelf standing beside four full-size hardcovers that dwarf it",
       "multiple-shelves/01|The Classic shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 85000, mini: 73000 }),
+    ...shelfVariants({ regular: 97500, mini: 85500 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
@@ -360,7 +360,7 @@ export const PRODUCTS: Product[] = [
       "arched-shelf/16|A Mini Arched shelf with nine miniature books displayed cover-out beneath a row of wooden stars",
       "multiple-shelves/02|The Arched shelf shown in seven of its nine colours, with the colour names labelled|chart",
     ),
-    ...shelfVariants({ regular: 76500, mini: 64500 }),
+    ...shelfVariants({ regular: 91500, mini: 79500 }),
     priceStatus: "confirmed",
     details: {
       dimensions: [
@@ -393,8 +393,8 @@ export const PRODUCTS: Product[] = [
       "mini-books/04|A hand holding a stack of six miniature novels, their spines no longer than a thumb",
       "mini-books/01|Ten miniature novels spread across a pale wood surface in afternoon light",
     ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
+    ...simpleVariants(42900, { name: "Cover Style", values: COVER_STYLES }),
+    priceStatus: "confirmed",
     badges: ["Set of six", "Made to order"],
     setOfSix: true,
     customSet: true,
@@ -423,8 +423,8 @@ export const PRODUCTS: Product[] = [
     images: shots(
       "book-set-covers/02|Six mini Sarah J. Maas covers fanned across an open book",
     ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
+    ...simpleVariants(42900, { name: "Cover Style", values: COVER_STYLES }),
+    priceStatus: "confirmed",
     badges: ["Set of six"],
     setOfSix: true,
     includedTitles: null,
@@ -452,8 +452,8 @@ export const PRODUCTS: Product[] = [
     images: shots(
       "book-set-covers/01|Mini Fourth Wing, Iron Flame and Onyx Storm covers laid on an open book",
     ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
+    ...simpleVariants(42900, { name: "Cover Style", values: COVER_STYLES }),
+    priceStatus: "confirmed",
     badges: ["Set of six"],
     setOfSix: true,
     includedTitles: null,
@@ -481,8 +481,8 @@ export const PRODUCTS: Product[] = [
     images: shots(
       "book-set-covers/04|The mini Jenny Han summer covers on an open book",
     ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
+    ...simpleVariants(42900, { name: "Cover Style", values: COVER_STYLES }),
+    priceStatus: "confirmed",
     badges: ["Set of six"],
     setOfSix: true,
     includedTitles: [
@@ -518,8 +518,8 @@ export const PRODUCTS: Product[] = [
     images: shots(
       "book-set-covers/03|Mini Freida McFadden thriller covers arranged on an open book",
     ),
-    ...simpleVariants(39900, { name: "Cover Style", values: COVER_STYLES }),
-    priceStatus: "placeholder",
+    ...simpleVariants(42900, { name: "Cover Style", values: COVER_STYLES }),
+    priceStatus: "confirmed",
     badges: ["Set of six"],
     setOfSix: true,
     includedTitles: null,

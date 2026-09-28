@@ -204,8 +204,16 @@ const setOnly = await (await post({ customer, discountCode: "bookset10", cart: {
   { type: "product", key: "b1", slug: "mini-fourth-wing-set", variantId: "front-back-spine", qty: 1 },
   { type: "product", key: "b2", slug: "mini-plant", variantId: "white", qty: 1 },
 ] } })).json();
+// the same set on its own: the discount must be a tenth of it, and the plant
+// above must not have changed it. Read from the answer rather than written in
+// here, so the shop can reprice its books without this suite going red.
+const setAlone = await (await post({ customer, discountCode: "bookset10", cart: { lines: [
+  { type: "product", key: "b1", slug: "mini-fourth-wing-set", variantId: "front-back-spine", qty: 1 },
+] } })).json();
 check("book set code: 10% off the set only, normalized, shipping untouched",
-  setOnly.pay?.discountCode === "BOOKSET10" && setOnly.pay?.discount === 3990
+  setOnly.pay?.discountCode === "BOOKSET10"
+  && setAlone.pay?.discount === Math.floor(setAlone.pay.subtotal / 10)
+  && setOnly.pay?.discount === setAlone.pay.discount
   && setOnly.pay?.total === setOnly.pay.subtotal - setOnly.pay.discount + setOnly.pay.shipping);
 
 // own throttle bucket, so a developer's earlier signups cannot fail this run

@@ -302,9 +302,8 @@ payment page.
 
 Marked `⟨like this⟩` in `src/content/site.ts` / flagged in `src/lib/catalog.ts`:
 
-1. **Prices to confirm** (`priceStatus: "placeholder"`): Custom Mini Book Set
-   and ready-made six-sets ($42.00, derived from the existing shop's ~$7/book
-   pattern) and the Mini Book Keychain ($12.00).
+1. **Prices to confirm** (`priceStatus: "placeholder"`): the Mini Book Keychain
+   (₱199). The shelves and the six-sets are the shop's own catalog prices.
 2. **Included titles** for the Sarah J. Maas / Fourth Wing / Freida McFadden
    six-sets (Twilight and Jenny Han sets are filled in).
 3. Production time, shipping origin, carriers/rates, international destinations.
