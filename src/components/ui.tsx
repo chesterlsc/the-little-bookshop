@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
-import { formatMoney, formatRange, type Cents } from "@/lib/money";
+import { formatMoney, type Cents } from "@/lib/money";
 import { IconCheck, IconMinus, IconPlus } from "./icons";
 
 type ButtonVariant = "primary" | "blush" | "quiet" | "link";
@@ -41,20 +41,9 @@ export function Badge({
   return <span className={`tag tag-${tone} ${className}`}>{children}</span>;
 }
 
-export function Price({
-  min,
-  max,
-  className = "",
-}: {
-  min: Cents;
-  max?: Cents;
-  className?: string;
-}) {
-  return (
-    <span className={`font-display font-semibold text-ink-800 ${className}`}>
-      {max !== undefined && max !== min ? formatRange(min, max) : formatMoney(min)}
-    </span>
-  );
+/** One price, the catalog's own: a product's starting price, never a range. */
+export function Price({ amount, className = "" }: { amount: Cents; className?: string }) {
+  return <span className={`font-display font-semibold text-ink-800 ${className}`}>{formatMoney(amount)}</span>;
 }
 
 /** Section wrapper with consistent horizontal padding + max width */

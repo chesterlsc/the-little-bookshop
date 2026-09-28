@@ -10,9 +10,3 @@ export function formatMoney(cents: Cents): string {
     minimumFractionDigits: 2,
   });
 }
-
-/** Formats a price range like "₱349.00 to ₱379.00", or a single price when equal. */
-export function formatRange(min: Cents, max: Cents): string {
-  if (min === max) return formatMoney(min);
-  return `${formatMoney(min)} to ${formatMoney(max)}`;
-}

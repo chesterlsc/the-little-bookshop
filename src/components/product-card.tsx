@@ -59,7 +59,7 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
           {product.blurb}
         </p>
         <div className="mt-auto flex items-center justify-between pt-2.5">
-          <Price min={product.minPrice} max={product.maxPrice} className="text-[1.02rem]" />
+          <Price amount={product.minPrice} className="text-[1.02rem]" />
           {product.customSet || product.customSingle ? (
             <Badge tone="sage">Personalized</Badge>
           ) : null}
