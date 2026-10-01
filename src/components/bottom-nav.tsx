@@ -16,6 +16,7 @@ const LEFT = [
 const RIGHT = [{ href: "/build", label: "Build", icon: IconShelfPlus }] as const;
 
 const MORE_LINKS = [
+  { href: "/products/gift-card", label: "Gift Cards" },
   { href: "/about", label: "Our Story" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },

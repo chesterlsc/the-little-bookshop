@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GIFT_CARD_AMOUNTS, GIFT_CARD_SLUG } from "@/lib/catalog";
 import { giftCardFriendEmail } from "@/lib/email/templates";
 import { EMAIL_RE, GIFT_NAME_MAX, GIFT_NOTE_MAX, giftExpiry, suggestEmail, type GiftCardRecord, type GiftDelivery } from "@/lib/gift-card-types";
@@ -65,6 +65,24 @@ export function GiftCardPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [added, setAdded] = useState(false);
   const [preview, setPreview] = useState(false);
+  // the sample pops up the first time "to a friend" is picked, and not again:
+  // after that it is behind its own button, with their own words in it
+  const [sawSample, setSawSample] = useState(false);
+
+  useEffect(() => {
+    if (!preview) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPreview(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [preview]);
+
+  const pickFriend = () => {
+    setDelivery("friend");
+    if (!sawSample) {
+      setSawSample(true);
+      setPreview(true);
+    }
+  };
 
   const friend = delivery === "friend";
   const who = toName.trim() || "your friend";
@@ -113,9 +131,14 @@ export function GiftCardPage() {
 
   const addLabel = added ? "Added to your basket" : `Add to basket · ${amount.label}`;
 
+  // nothing typed yet: show the design with someone else's names in it, and say so
+  const sampleOnly = !toName.trim() && !fromName.trim() && !note.trim();
+
   /** The email the friend will get, with a stand-in code: the real one is made once the card is paid for. */
   const previewHtml = () => {
     const now = new Date();
+    const to = sampleOnly ? "Ana" : toName.trim();
+    const from = sampleOnly ? "Maria" : fromName.trim();
     const sample: GiftCardRecord = {
       id: 0,
       order_number: "",
@@ -124,10 +147,10 @@ export function GiftCardPage() {
       balance: amount.price,
       code: "LBGC-XXXX-XXXX",
       delivery: "friend",
-      to_name: toName.trim() || null,
-      from_name: fromName.trim() || null,
+      to_name: to || null,
+      from_name: from || null,
       to_email: email || null,
-      note: note.trim() || null,
+      note: sampleOnly ? "Happy birthday! Go get that arched shelf." : note.trim() || null,
       created_at: now.toISOString(),
       issued_at: now.toISOString(),
       expires_at: giftExpiry(now).toISOString(),
@@ -135,7 +158,7 @@ export function GiftCardPage() {
       emails_sent: 0,
     };
     // the mail points at the live site; the preview reads the same files from here
-    return giftCardFriendEmail(sample, fromName.trim() || "You", "/shop").html.replaceAll(SITE.url, "");
+    return giftCardFriendEmail(sample, from || "You", "/shop").html.replaceAll(SITE.url, "");
   };
 
   return (
@@ -217,7 +240,7 @@ export function GiftCardPage() {
               <Chip picked={!friend} onPick={() => setDelivery("self")}>
                 Send it to me
               </Chip>
-              <Chip picked={friend} onPick={() => setDelivery("friend")}>
+              <Chip picked={friend} onPick={pickFriend}>
                 Send it to a friend
               </Chip>
             </div>
@@ -361,12 +384,14 @@ export function GiftCardPage() {
           className="fixed inset-0 z-[88] flex items-center justify-center bg-ink-900/55 p-3"
           role="dialog"
           aria-modal="true"
-          aria-label={`The email ${who} gets`}
+          aria-label={sampleOnly ? "A sample of the email your friend gets" : `The email ${who} gets`}
           onClick={() => setPreview(false)}
         >
           <div className="clay flex max-h-full w-full max-w-[620px] flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between gap-3 border-b border-brown-500/12 px-4 py-3">
-              <p className="font-display font-bold">The email {who} gets</p>
+              <p className="font-display font-bold">
+                {sampleOnly ? "Here's the email your friend gets" : `The email ${who} gets`}
+              </p>
               <button
                 type="button"
                 onClick={() => setPreview(false)}
@@ -377,9 +402,16 @@ export function GiftCardPage() {
               </button>
             </div>
             <p className="px-4 pt-2 font-sans text-xs text-ink-600">
-              The code here is a stand-in. The real one is made once we&apos;ve checked your payment.
+              {sampleOnly
+                ? "This is a sample, with Ana and Maria standing in. Yours will carry your own names and note."
+                : "The code here is a stand-in. The real one is made once we've checked your payment."}
             </p>
-            <iframe title={`The email ${who} gets`} srcDoc={previewHtml()} sandbox="" className="h-[70vh] w-full" />
+            <iframe title="Email preview" srcDoc={previewHtml()} sandbox="" className="h-[60vh] w-full" />
+            <div className="border-t border-brown-500/12 p-3">
+              <Button onClick={() => setPreview(false)} className="w-full" autoFocus>
+                {sampleOnly ? "Lovely, let me fill it in" : "Looks good"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

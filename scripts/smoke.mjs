@@ -330,6 +330,38 @@ check("book set code: 10% off the set only, normalized, shipping untouched",
     && (await post({ cart, customer, giftCardCode: code2 })).status === 409);
 }
 
+/* ── the gift card page: in the menu, and the friend's email shown when it is chosen ── */
+{
+  const gctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  // guarded: this also runs inside the email preview's locked-down frame, which has no storage
+  await gctx.addInitScript(() => {
+    try {
+      localStorage.setItem("tlb-welcome-v1", JSON.stringify({ status: "dismissed", at: "smoke" }));
+      localStorage.setItem("tlb-cookies-v1", JSON.stringify({ at: "smoke" }));
+    } catch { /* the preview frame */ }
+  });
+  const gp = await gctx.newPage();
+  const gerr = [];
+  gp.on("pageerror", (e) => gerr.push(String(e)));
+  await gp.goto(BASE + "/products/gift-card", { waitUntil: "networkidle" });
+  await gp.waitForTimeout(2600);
+  check("Gift Cards is in the main menu",
+    (await gp.locator('nav[aria-label="Main"] a[href="/products/gift-card"]').count()) === 1);
+  const sample = gp.locator('[role="dialog"][aria-modal="true"]');
+  await gp.getByRole("radio", { name: "Send it to a friend" }).click();
+  await gp.waitForTimeout(800);
+  check("choosing a friend shows a sample of the email they will get",
+    (await sample.count()) === 1
+    && /sent you a ₱1,000 gift card/.test(await gp.frameLocator('iframe[title="Email preview"]').locator("h1").textContent()));
+  await gp.keyboard.press("Escape");
+  await gp.getByRole("radio", { name: "Send it to me" }).click();
+  await gp.getByRole("radio", { name: "Send it to a friend" }).click();
+  await gp.waitForTimeout(400);
+  check("the sample shows itself once, not every time", (await sample.count()) === 0);
+  check("gift card page has no page errors", gerr.length === 0, gerr.join(" | "));
+  await gctx.close();
+}
+
 // own throttle bucket, so a developer's earlier signups cannot fail this run
 let subs = 0;
 const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}-${subs++}` }, body: JSON.stringify(payload) });

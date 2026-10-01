@@ -8,6 +8,7 @@ import { CartButton } from "./cart-ui";
 const NAV = [
   { href: "/shop", label: "Shop" },
   { href: "/build", label: "Build a Shelf" },
+  { href: "/products/gift-card", label: "Gift Cards" },
   { href: "/about", label: "Our Story" },
   { href: "/faq", label: "FAQ" },
 ] as const;
