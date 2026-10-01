@@ -10,6 +10,8 @@ const PAGES = [
   ["/products/custom-mini-book-set", "p-custom"],
   ["/products/acotar-book-stack-sticker", "p-soldout"],
   ["/products/mini-book-keychain", "p-keychain"],
+  ["/products/gift-card", "p-giftcard"],
+  ["/shop/gift-cards", "cat-gift"],
   ["/build", "build"],
   ["/cart", "cart"],
   ["/checkout", "checkout"],

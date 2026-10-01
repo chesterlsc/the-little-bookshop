@@ -3,14 +3,15 @@
 import { useCart } from "@/components/cart-context";
 import { CartEmpty, CartLineRow } from "@/components/cart-ui";
 import { ButtonLink, Eyebrow, Section } from "@/components/ui";
-import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, shippingFor, validateCart } from "@/lib/cart";
+import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, shippableSubtotal, shippingFor, validateCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 
 export default function CartPage() {
   const { cart, ready } = useCart();
   const count = cartCount(cart);
   const subtotal = cartSubtotal(cart);
-  const shipping = shippingFor(subtotal);
+  const shippable = shippableSubtotal(cart);
+  const shipping = shippingFor(shippable);
   const issues = ready ? validateCart(cart).filter((i) => i.key) : [];
 
   return (
@@ -51,12 +52,12 @@ export default function CartPage() {
                 <div className="flex justify-between">
                   <dt className="text-ink-600">Shipping</dt>
                   <dd className="font-bold">
-                    {shipping === 0 ? "Free" : formatMoney(shipping)}
+                    {shippable === 0 ? "None, it's digital" : shipping === 0 ? "Free" : formatMoney(shipping)}
                   </dd>
                 </div>
                 {shipping > 0 && (
                   <p className="text-xs text-ink-600">
-                    Add {formatMoney(FREE_SHIPPING_MINIMUM - subtotal)} more for free shipping.
+                    Add {formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.
                   </p>
                 )}
                 <div className="flex justify-between border-t border-brown-500/15 pt-2 text-[1.05rem]">

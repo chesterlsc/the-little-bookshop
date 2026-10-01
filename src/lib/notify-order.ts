@@ -2,6 +2,7 @@ import { SITE } from "@/content/site";
 import { getEmailProvider } from "./email";
 import { businessOrderEmail, customerOrderEmail } from "./email/templates";
 import { ordersAddress } from "./email/types";
+import { giftCardsByOrder } from "./gift-cards";
 import { claimEmailSend, getOrder, parseSnapshot, releaseEmailSend, type OrderRecord } from "./orders";
 
 /** The site's own address, so a forgotten env var cannot put localhost in a
@@ -35,13 +36,24 @@ export async function notifyNewOrder(orderNumber: string): Promise<OrderRecord |
     const snapshot = parseSnapshot(order);
     const mailer = getEmailProvider();
     const placedAt = new Date(order.created_at).toUTCString();
+    // a gift card covered it: nothing to collect, and no payment page to send them to
+    const paid = snapshot.total === 0;
+    // the shop's copy alone carries the private page that makes gift card codes
+    const token = (await giftCardsByOrder(order.number))[0]?.token;
     await mailer.send(
-      businessOrderEmail(ordersAddress(), order.number, snapshot, "awaiting payment", placedAt),
+      businessOrderEmail(
+        ordersAddress(),
+        order.number,
+        snapshot,
+        paid ? "paid in full by gift card" : "awaiting payment",
+        placedAt,
+        token ? `${baseUrl()}/gift-cards/issue/${token}` : undefined,
+      ),
     );
 
     try {
       await mailer.send(
-        customerOrderEmail(order.number, snapshot, `${baseUrl()}/order/${order.number}/pay`),
+        customerOrderEmail(order.number, snapshot, `${baseUrl()}/order/${order.number}${paid ? "" : "/pay"}`),
       );
     } catch (err) {
       console.error(`[order ${order.number}] customer copy failed, shop was notified:`, err);

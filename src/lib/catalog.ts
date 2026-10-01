@@ -15,7 +15,8 @@ export type Category =
   | "bookshelves"
   | "mini-books"
   | "keychains"
-  | "accessories";
+  | "accessories"
+  | "gift-cards";
 
 export const CATEGORIES: Record<
   Category,
@@ -52,6 +53,13 @@ export const CATEGORIES: Record<
       "A plant, a ladder, and little word blocks that label a shelf. Fifty pesos each.",
     art: "plant",
     photo: "/marketing/accessories/01.webp",
+  },
+  "gift-cards": {
+    name: "Gift Cards",
+    short: "Gift Cards",
+    blurb: "₱500, ₱1,000 or ₱2,000. Digital, so there is no shipping fee. They choose their own tiny shelf.",
+    art: "books-set",
+    photo: "/gift-cards/poster.webp",
   },
 };
 
@@ -138,6 +146,8 @@ export interface Product {
   customSet?: boolean;
   /** One personalization field (e.g. a single book title). */
   customSingle?: boolean;
+  /** Nothing to post: a gift card. No shipping, no address, one per basket line. */
+  digital?: boolean;
   /** Six included titles for ready-made sets, when confirmed. */
   includedTitles?: string[] | null;
   related: string[];
@@ -267,6 +277,21 @@ const BOOK_SIZE = "Each book measures about 1 × 1.4 in and 0.25 in thick.";
 const MADE_BY_HAND = "PLA plastic · waterproof · manually assembled";
 const SET_PACKAGING =
   "Arrives on our illustrated six-slot backing card, each tiny story tucked into its own window.";
+
+/* ─── Gift cards ───────────────────────────────────────────────────────────── */
+
+export const GIFT_CARD_SLUG = "gift-card";
+
+/** The three amounts the shop prints a card for. The art exists for these only. */
+export const GIFT_CARD_AMOUNTS: { price: Cents; label: string }[] = [
+  { price: 50000, label: "₱500" },
+  { price: 100000, label: "₱1,000" },
+  { price: 200000, label: "₱2,000" },
+];
+
+/** The card's face for an amount: the shop's own artwork, cut out of its margin. */
+export const giftCardArt = (price: Cents, ext: "webp" | "jpg" = "webp") => `/gift-cards/card-${price / 100}.${ext}`;
+export const GIFT_CARD_BACK = "/gift-cards/card-back.webp";
 
 /* ─── Catalog ──────────────────────────────────────────────────────────────── */
 
@@ -647,6 +672,34 @@ export const PRODUCTS: Product[] = [
       shipping: SHELF_SHIPPING,
     },
     related: ["mini-plant", "mini-shelf-letters", "mini-arched-bookshelf"],
+  }),
+
+  /* ─── Gift card ─── */
+  make({
+    slug: "gift-card",
+    name: "Gift card",
+    category: "gift-cards",
+    blurb: "Digital. No shipping fee.",
+    description: [
+      "Pick an amount. Pay. We send the card. They choose what they love.",
+    ],
+    art: "books-set",
+    images: GIFT_CARD_AMOUNTS.map((a) => ({
+      src: giftCardArt(a.price),
+      alt: `The Little Bookshop gift card for ${a.label}`,
+      kind: "illustration" as const,
+    })),
+    options: [{ name: "Amount", values: GIFT_CARD_AMOUNTS.map((a) => a.label) }],
+    variants: GIFT_CARD_AMOUNTS.map((a) => ({
+      id: String(a.price / 100),
+      options: { Amount: a.label },
+      price: a.price,
+      available: true,
+    })),
+    priceStatus: "confirmed",
+    badges: ["Digital"],
+    digital: true,
+    details: {},
   }),
 ];
 

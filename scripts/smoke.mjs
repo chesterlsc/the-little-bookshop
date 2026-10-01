@@ -216,6 +216,120 @@ check("book set code: 10% off the set only, normalized, shipping untouched",
   && setOnly.pay?.discount === setAlone.pay.discount
   && setOnly.pay?.total === setOnly.pay.subtotal - setOnly.pay.discount + setOnly.pay.shipping);
 
+/* ── gift cards: bought, made only once paid, then spent ─────────────────── */
+{
+  const mails = () => fs.readdirSync("var/outbox").filter((f) => f.endsWith(".eml")).map((f) => fs.readFileSync(`var/outbox/${f}`, "utf8"));
+  let giftN = 0;
+  const jpost = (path, payload) => fetch(BASE + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-gift-${Date.now()}-${giftN++}` },
+    body: JSON.stringify(payload),
+  });
+  const stamp = Date.now();
+  const friendEmail = `smoke-friend-${stamp}@example.com`;
+  const buyer = { fullName: "Maria Santos", phone: "09171234567", email: `smoke-buyer-${stamp}@example.com`, instagram: "@mariareads" };
+  const giftLine = (variantId, gift, qty = 1) => ({ type: "product", key: `g${variantId}`, slug: "gift-card", variantId, qty, gift });
+  const toAna = { delivery: "friend", toName: "Ana", fromName: "Maria", toEmail: friendEmail, note: "Happy birthday!" };
+  const CODE = /LBGC-[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}/;
+  const orderPage = async (n) => (await fetch(`${BASE}/order/${n}`)).text();
+
+  // buying one
+  const bought = await (await post({ cart: { lines: [giftLine("1000", toAna)] }, customer: buyer })).json();
+  const giftOrder = bought.orderNumber;
+  check("a gift card is bought with no address and no shipping fee",
+    /^LB/.test(giftOrder ?? "") && bought.pay?.shipping === 0 && bought.pay?.total === 100000 && bought.pay?.digital === true,
+    JSON.stringify(bought).slice(0, 200));
+  check("a gift card for a friend needs the friend's email",
+    (await post({ cart: { lines: [giftLine("1000", { delivery: "friend", toName: "Ana" })] }, customer: buyer })).status === 422);
+  check("gift cards are one per line",
+    (await post({ cart: { lines: [giftLine("500", { delivery: "self" }, 2)] }, customer: buyer })).status === 422);
+  const mixed = await post({ cart: { lines: [giftLine("2000", { delivery: "self" }), cart.lines[0]] }, customer: buyer });
+  check("a parcel beside a gift card still needs an address", mixed.status === 422);
+  const mixedOk = await (await post({ cart: { lines: [giftLine("2000", { delivery: "self" }), cart.lines[0]] }, customer })).json();
+  check("a gift card neither costs shipping nor buys the parcel free shipping",
+    mixedOk.pay?.shipping === 12000 && mixedOk.pay?.total === 200000 + 5000 + 12000, JSON.stringify(mixedOk.pay ?? mixedOk).slice(0, 160));
+
+  // the private link goes to the shop, and only to the shop
+  const shopMail = mails().find((m) => m.includes(`New order ${giftOrder}`)) ?? "";
+  const token = (shopMail.match(/gift-cards\/issue\/([\w-]+)/) ?? [])[1];
+  const buyerOrderMail = mails().find((m) => m.includes(`To: ${buyer.email}`) && m.includes(giftOrder)) ?? "";
+  check("only the shop's email carries the payment-received link",
+    Boolean(token) && buyerOrderMail.length > 0 && !buyerOrderMail.includes("gift-cards/issue"));
+
+  // nothing exists to spend until the shop says it is paid; opening the page is not saying so
+  const issuePage = await fetch(`${BASE}/gift-cards/issue/${token}`);
+  const before = await orderPage(giftOrder);
+  check("before payment there is no code anywhere, and opening the shop's page makes none",
+    issuePage.status === 200 && (await issuePage.text()).includes("Payment received") && before.includes("being wrapped") && !CODE.test(before));
+  // the page streams, so a miss is the not-found page under a 200: read what it shows
+  check("a made-up token opens nothing",
+    !(await (await fetch(`${BASE}/gift-cards/issue/not-a-real-token`)).text()).includes("Payment received")
+    && (await jpost("/api/gift-cards/issue", { token: "not-a-real-token" })).status === 404);
+
+  // payment received
+  const issued = await jpost("/api/gift-cards/issue", { token });
+  const after = await orderPage(giftOrder);
+  const code = (after.match(CODE) ?? [])[0];
+  check("payment received makes the code and shows it on the buyer's order page",
+    issued.status === 200 && Boolean(code) && after.includes("on its way to Ana"), `${issued.status} ${code}`);
+  const friendMails = () => mails().filter((m) => m.includes(`To: ${friendEmail}`));
+  check("the friend is emailed the card, with its code as text and the note",
+    friendMails().length === 1 && friendMails()[0].includes("Subject: Maria sent you a gift card")
+    && friendMails()[0].includes(code) && friendMails()[0].includes("Happy birthday!"), `${friendMails().length} mails`);
+  check("the buyer gets a copy with the code",
+    mails().some((m) => m.includes(`To: ${buyer.email}`) && m.includes("Subject: Your gift card is ready") && m.includes(code)));
+  await jpost("/api/gift-cards/issue", { token });
+  check("pressing the button twice makes one code and one email",
+    ((await orderPage(giftOrder)).match(CODE) ?? [])[0] === code && friendMails().length === 1);
+
+  // what it is worth
+  const worth = await (await jpost("/api/gift-cards/check", { code: code.toLowerCase().replace(/-/g, " ") })).json();
+  check("a code typed loosely is still recognised, with its balance", worth.status === "ok" && worth.balance === 100000);
+  const unknown = await (await jpost("/api/gift-cards/check", { code: "LBGC-2222-2222" })).json();
+  check("a code that is not ours says so", unknown.status === "unknown" && /isn't one of ours/.test(unknown.message));
+
+  // spending it: never more than the order, never more than the card
+  const small = await (await post({ cart, customer, giftCardCode: code })).json();
+  check("a card bigger than the order pays it in full and keeps the rest",
+    small.pay?.giftCard?.applied === 5000 + 12000 && small.pay?.total === 0
+    && (await (await jpost("/api/gift-cards/check", { code })).json()).balance === 100000 - 17000,
+    JSON.stringify(small.pay ?? small).slice(0, 200));
+  check("an order a gift card paid in full is confirmed, with nothing to transfer",
+    (await orderPage(small.orderNumber)).includes("Confirmed"));
+  const big = await (await post({
+    cart: { lines: [{ type: "product", key: "s", slug: "mini-classic-bookshelf", variantId: "regular|choco-brown", qty: 1 }] },
+    customer, giftCardCode: code, discountCode: "HACK99",
+  })).json();
+  check("a card smaller than the order is used up, and the rest is left to pay",
+    big.pay?.giftCard?.applied === 83000 && big.pay?.total === big.pay?.subtotal + big.pay?.shipping - 83000,
+    JSON.stringify(big.pay ?? big).slice(0, 200));
+  const empty = await (await jpost("/api/gift-cards/check", { code })).json();
+  check("a spent card says it is used up, and buys nothing more",
+    empty.status === "empty" && (await post({ cart, customer, giftCardCode: code })).status === 409);
+  check("a made-up code is refused at checkout", (await post({ cart, customer, giftCardCode: "LBGC-2222-2222" })).status === 409);
+
+  // a second card, to test the rules that need one with money on it
+  const second = await (await post({ cart: { lines: [giftLine("500", { delivery: "self" })] }, customer: buyer })).json();
+  const token2 = ((mails().find((m) => m.includes(`New order ${second.orderNumber}`)) ?? "").match(/gift-cards\/issue\/([\w-]+)/) ?? [])[1];
+  await jpost("/api/gift-cards/issue", { token: token2 });
+  const code2 = ((await orderPage(second.orderNumber)).match(CODE) ?? [])[0];
+  const onGift = await post({ cart: { lines: [giftLine("500", { delivery: "self" })] }, customer: buyer, giftCardCode: code2 });
+  check("a gift card cannot pay for another gift card",
+    onGift.status === 409 && /can't pay for another gift card/.test((await onGift.json()).message));
+  const resends = [];
+  for (let i = 0; i < 4; i++) resends.push((await jpost("/api/gift-cards/resend", { order: second.orderNumber })).status);
+  check("the email can be sent again, but not without end", resends.join() === "200,200,200,429", resends.join());
+  // a year on: the smoke suite always runs against the local SQLite store
+  const Database = (await import("better-sqlite3")).default;
+  const sqlite = new Database("var/data/orders.sqlite");
+  sqlite.prepare("UPDATE gift_cards SET expires_at = ? WHERE code = ?").run(new Date(Date.now() - 86400000).toISOString(), code2);
+  sqlite.close();
+  const expired = await (await jpost("/api/gift-cards/check", { code: code2 })).json();
+  check("a card past its twelve months says when it ran out, and buys nothing",
+    expired.status === "expired" && /ran out on/.test(expired.message)
+    && (await post({ cart, customer, giftCardCode: code2 })).status === 409);
+}
+
 // own throttle bucket, so a developer's earlier signups cannot fail this run
 let subs = 0;
 const sub = (payload) => fetch(`${BASE}/api/subscribe`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": `smoke-${Date.now()}-${subs++}` }, body: JSON.stringify(payload) });

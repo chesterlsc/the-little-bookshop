@@ -18,7 +18,7 @@ export function ProductThumb({
   }
   return (
     <span className={`relative block overflow-hidden rounded-xl bg-paper ${className}`}>
-      <Image src={photo.src} alt={product.name} fill sizes={sizes} className="object-cover" />
+      <Image src={photo.src} alt={product.name} fill sizes={sizes} className={product.digital ? "object-contain" : "object-cover"} />
     </span>
   );
 }

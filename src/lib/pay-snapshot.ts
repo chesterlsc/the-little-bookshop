@@ -23,7 +23,9 @@ export interface PaySnapshot {
   discount: Cents;
   discountCode?: string;
   shipping: Cents;
+  giftCard?: { last4: string; applied: Cents };
   total: Cents;
+  digital?: boolean;
 }
 
 export function toPaySnapshot(number: string, snapshot: OrderSnapshot): PaySnapshot {
@@ -43,7 +45,9 @@ export function toPaySnapshot(number: string, snapshot: OrderSnapshot): PaySnaps
     discount: snapshot.discount,
     discountCode: snapshot.discountCode,
     shipping: snapshot.shipping,
+    giftCard: snapshot.giftCard,
     total: snapshot.total,
+    digital: snapshot.digital,
   };
 }
 

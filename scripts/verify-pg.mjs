@@ -179,6 +179,48 @@ check("a failed send puts the batch back", (await waiting()) === n);
 const racing = await Promise.all([list.claimDigest(n), list.claimDigest(n)]);
 check("two signups finishing a batch together send it once", racing.map((r) => r.length).sort().join() === `0,${n}`, racing.map((r) => r.length).join());
 
+/* ── gift cards: made once, spent only while the money is there ── */
+const gifts = await import("../src/lib/gift-cards-pg.ts");
+gifts.__setQueryable(q);
+await gifts.migrate(q);
+await gifts.migrate(q);
+await gifts.createPending("LB2001-AAAAAA", "tok-one", [
+  { amount: 100000, delivery: "friend", toName: "Ana", fromName: "Maria", toEmail: "ana@example.com", note: "hi" },
+  { amount: 50000, delivery: "self" },
+]);
+const waitingCards = await gifts.byToken("tok-one");
+check("an unpaid gift card has no code and nothing on it",
+  waitingCards.length === 2 && waitingCards.every((c) => c.code === null && c.balance === 0 && typeof c.amount === "number"));
+check("an unpaid card cannot be emailed", (await gifts.claimEmail(waitingCards[0].id, 4)) === false);
+const [made1, made2] = await Promise.all([gifts.issue("tok-one"), gifts.issue("tok-one")]);
+const madeAgain = await gifts.issue("tok-one");
+check("payment received gives each card a code, its balance and twelve months",
+  madeAgain.every((c) => /^LBGC-[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$/.test(c.code) && c.balance === c.amount
+    && new Date(c.expires_at) - new Date(c.issued_at) > 360 * 86400000));
+check("pressing the button twice, even at once, makes each code once",
+  madeAgain.map((c) => c.code).join() === made1.map((c) => c.code).join()
+  && madeAgain.map((c) => c.code).join() === made2.map((c) => c.code).join()
+  && madeAgain[0].code !== madeAgain[1].code);
+check("an unknown token makes nothing", (await gifts.issue("tok-nope")).length === 0);
+const spend = madeAgain[0].code;
+const racers = await Promise.all([gifts.redeem(spend, 70000), gifts.redeem(spend, 70000)]);
+check("two orders racing for one card cannot both spend it",
+  racers.filter(Boolean).length === 1 && (await gifts.byCode(spend)).balance === 30000, racers.join());
+check("a card never goes below zero", (await gifts.redeem(spend, 30001)) === false && (await gifts.byCode(spend)).balance === 30000);
+check("nothing and less than nothing cannot be spent", !(await gifts.redeem(spend, 0)) && !(await gifts.redeem(spend, -500)));
+await gifts.refund(spend, 70000);
+check("a failed order puts the money back", (await gifts.byCode(spend)).balance === 100000);
+await q.query("UPDATE gift_cards SET expires_at = $1 WHERE code = $2", [new Date(Date.now() - 1000).toISOString(), madeAgain[1].code]);
+check("an expired card buys nothing", (await gifts.redeem(madeAgain[1].code, 100)) === false);
+const sends = [];
+for (let i = 0; i < 5; i++) sends.push(await gifts.claimEmail(madeAgain[0].id, 4));
+check("a card's emails are capped", sends.join() === "true,true,true,true,false", sends.join());
+await gifts.releaseEmail(madeAgain[0].id);
+check("a failed send hands its turn back", (await gifts.claimEmail(madeAgain[0].id, 4)) === true);
+await gifts.recordUse(spend, "LB2002-BBBBBB", 70000);
+check("each use is written to the shop's ledger",
+  Number((await q.query("SELECT amount FROM gift_card_uses WHERE code = $1", [spend])).rows[0].amount) === 70000);
+
 await db.close();
 const failed = results.filter(([, ok]) => !ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);

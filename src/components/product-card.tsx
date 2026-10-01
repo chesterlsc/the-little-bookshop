@@ -7,7 +7,8 @@ import { Badge, Price } from "./ui";
 export function ProductCard({ product, eager = false }: { product: Product; eager?: boolean }) {
   const shots = product.images.filter((i) => i.kind === "photo");
   const photo = shots[0] ?? product.images[0];
-  const hover = shots[1];
+  // a gift card has no second angle, only other amounts
+  const hover = product.digital ? undefined : shots[1];
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -23,7 +24,7 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               priority={eager}
-              className={`object-cover transition duration-500 group-hover:scale-[1.04] ${hover ? "group-hover:opacity-0" : ""}`}
+              className={`${product.digital ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.04] ${hover ? "group-hover:opacity-0" : ""}`}
             />
             {hover && (
               <Image
@@ -59,8 +60,13 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
           {product.blurb}
         </p>
         <div className="mt-auto flex items-center justify-between pt-2.5">
-          <Price amount={product.minPrice} className="text-[1.02rem]" />
-          {product.customSet || product.customSingle ? (
+          <span className="flex items-baseline gap-1">
+            {product.digital && <span className="font-sans text-xs font-bold text-ink-600">From</span>}
+            <Price amount={product.minPrice} className="text-[1.02rem]" />
+          </span>
+          {product.digital ? (
+            <Badge tone="blush">Digital</Badge>
+          ) : product.customSet || product.customSingle ? (
             <Badge tone="sage">Personalized</Badge>
           ) : null}
         </div>

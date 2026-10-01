@@ -7,6 +7,7 @@ import { ProductArt, FolkDivider } from "@/components/illustrations";
 import { ProductConfigurator } from "@/components/product-configurator";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductCard } from "@/components/product-card";
+import { GiftCardPage } from "@/components/gift-card-page";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
@@ -37,6 +38,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) notFound();
+  // a gift card is not a thing on a shelf: it has its own page
+  if (product.digital) return <GiftCardPage />;
 
   const category = CATEGORIES[product.category];
   const related = product.related

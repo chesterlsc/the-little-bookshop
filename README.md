@@ -160,6 +160,48 @@ is the single place to add one.
 for either method because none was supplied; add a `holder` field there if the
 shop wants one.
 
+## Gift cards
+
+Digital, in ₱500 / ₱1,000 / ₱2,000 (`GIFT_CARD_AMOUNTS` in `src/lib/catalog.ts`;
+the art for each is in `public/gift-cards/`). No shipping fee, and a basket of
+only gift cards asks for no address.
+
+**A code exists only once the shop says the card is paid for.**
+
+1. The buyer orders a card, for themselves or a friend (name, email, a note).
+   The order is saved with a `gift_cards` row that has **no code and no balance**.
+2. The shop's copy of the order email carries a private link,
+   `/gift-cards/issue/<token>`. Opening it changes nothing. Pressing
+   **Payment received. Create the gift card.** makes the code (`LBGC-XXXX-XXXX`),
+   sets the balance, starts the 12 months, marks the order confirmed, and emails
+   the card: to the friend if there is one, and a copy to the buyer.
+3. The buyer sees the code on their order page too, and can send the email again
+   (each card can be mailed four times in all).
+4. At checkout the **Gift card** box (separate from the discount box) takes the
+   code. Discount first, then the card; it covers shipping; what is left stays on
+   the card. An order it pays in full is confirmed on the spot, with no payment
+   page.
+
+The rules, all enforced on the server (`src/app/api/checkout/route.ts`,
+`src/lib/gift-cards-pg.ts`):
+
+- The amount spent is worked out from the card's real balance and the order's
+  real total. The browser only ever names a code.
+- Spending is one conditional `UPDATE`, so two orders racing for one card
+  cannot both spend it, and a balance cannot go below zero. If the order then
+  fails to save, the amount is put back.
+- A gift card cannot pay for a gift card. An expired or empty card buys nothing.
+- The order record keeps only the card's last four characters; every use is
+  also written to `gift_card_uses` for the shop's books.
+- Trying codes is throttled per address, at both the "Use card" check and the
+  checkout itself.
+
+Not built yet: refunding a card when an order it paid for is cancelled (do it by
+hand in the database), and a `npm run shop` listing of cards.
+
+These emails go through the same provider as order mail. They are order mail:
+one to the friend, one to the buyer, per card, plus resends up to the cap.
+
 ## Email configuration
 
 Every checkout sends two messages, and together they are the order record: the

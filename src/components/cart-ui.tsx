@@ -6,7 +6,7 @@ import { ProductThumb } from "./product-thumb";
 import { IconX, IconTrash, IconBasket } from "./icons";
 import { Badge, Button, ButtonLink, QuantityStepper } from "./ui";
 import { getProduct, getVariant, SHELF_THEMES, colorHex } from "@/lib/catalog";
-import { FREE_SHIPPING_MINIMUM, cartSubtotal, cartCount, lineUnitPrice, type CartLine } from "@/lib/cart";
+import { FREE_SHIPPING_MINIMUM, cartSubtotal, cartCount, giftOf, giftSummary, isGiftCard, lineUnitPrice, shippableSubtotal, type CartLine } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 
 function OptionSummary({ options }: { options: Record<string, string> }) {
@@ -49,7 +49,16 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
   let title = "";
   let body: React.ReactNode = null;
 
-  if (line.type === "product") {
+  const gift = giftOf(line);
+  if (isGiftCard(line)) {
+    title = "Gift card";
+    body = (
+      <>
+        <p className="text-xs text-ink-600">Digital · {giftSummary(gift)}</p>
+        {gift?.delivery === "friend" && gift.note && <p className="mt-0.5 text-xs italic text-ink-400">“{gift.note}”</p>}
+      </>
+    );
+  } else if (line.type === "product") {
     const product = getProduct(line.slug);
     const variant = product && getVariant(product, line.variantId);
     title = product?.name ?? line.slug;
@@ -145,12 +154,17 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
         </div>
         {body}
         <div className="mt-2 flex items-center justify-between gap-2">
-          <QuantityStepper
-            small
-            value={line.qty}
-            onChange={(n) => updateQty(line.key, n)}
-            label={`Quantity for ${title}`}
-          />
+          {isGiftCard(line) ? (
+            // one card, one code: another card is another trip to the gift card page
+            <span className="font-sans text-xs text-ink-400">One card</span>
+          ) : (
+            <QuantityStepper
+              small
+              value={line.qty}
+              onChange={(n) => updateQty(line.key, n)}
+              label={`Quantity for ${title}`}
+            />
+          )}
           <button
             type="button"
             onClick={() => removeLine(line.key)}
@@ -194,6 +208,7 @@ export function CartDrawer() {
   const panelRef = useRef<HTMLDivElement>(null);
   const count = cartCount(cart);
   const subtotal = cartSubtotal(cart);
+  const shippable = shippableSubtotal(cart);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -261,9 +276,11 @@ export function CartDrawer() {
               <span className="font-display text-lg font-bold">{formatMoney(subtotal)}</span>
             </div>
             <p className="mb-3 text-xs text-ink-400">
-              {subtotal >= FREE_SHIPPING_MINIMUM
-                ? "Shipping is free on this order."
-                : `Add ${formatMoney(FREE_SHIPPING_MINIMUM - subtotal)} more for free shipping.`}
+              {shippable === 0
+                ? "A gift card is digital, so there's no shipping fee."
+                : shippable >= FREE_SHIPPING_MINIMUM
+                  ? "Shipping is free on this order."
+                  : `Add ${formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.`}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <ButtonLink href="/cart" variant="quiet" onClick={closeDrawer}>

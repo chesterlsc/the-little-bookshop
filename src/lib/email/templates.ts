@@ -1,4 +1,5 @@
 import type { OrderSnapshot } from "../checkout";
+import { giftDate, type GiftCardRecord } from "../gift-card-types";
 import { formatMoney } from "../money";
 import { INSTAGRAM_HANDLE, PAYMENT_METHODS, SITE } from "@/content/site";
 import type { Mail } from "./types";
@@ -8,8 +9,14 @@ import type { Mail } from "./types";
  * snapshot; no card data ever exists on our side to leak.
  */
 
-const wrap = (title: string, body: string) => `<!doctype html>
+/** `preheader` is the line a mail app shows beside the subject; it is hidden in the body. */
+const wrap = (
+  title: string,
+  body: string,
+  opts: { preheader?: string; eyebrow?: string; footer?: string } = {},
+) => `<!doctype html>
 <html><body style="margin:0;padding:24px;background:#fbf6eb;font-family:Verdana,Geneva,sans-serif;color:#43362a;">
+  ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${opts.preheader}</div>` : ""}
   <div style="max-width:560px;margin:0 auto;">
     <a href="${SITE.url}" style="text-decoration:none;border:0;">
       <img src="${SITE.url}/brand/logo_email.png" alt="${SITE.name}" width="220"
@@ -17,10 +24,11 @@ const wrap = (title: string, body: string) => `<!doctype html>
     </a>
     <p style="text-align:center;font-size:11px;letter-spacing:2px;margin:0 0 18px;color:#93826d;">MINIATURES FOR BOOK LOVERS</p>
     <div style="background:#f9f3e3;border:1.5px solid #e2d5bf;border-radius:20px;padding:22px;">
+      ${opts.eyebrow ? `<p style="font-size:11px;letter-spacing:2px;margin:0 0 6px;color:#85585c;font-weight:bold;">${opts.eyebrow}</p>` : ""}
       <h1 style="font-size:18px;margin:0 0 12px;">${title}</h1>
       ${body}
     </div>
-    <p style="text-align:center;font-size:11px;color:#93826d;margin:16px 0 0;">Sent with love (and very small books).</p>
+    <p style="text-align:center;font-size:11px;color:#93826d;margin:16px 0 0;">${opts.footer ?? "Sent with love (and very small books)."}</p>
   </div>
 </body></html>`;
 
@@ -55,8 +63,9 @@ function totalsHtml(snapshot: OrderSnapshot): string {
   return `<table style="width:100%;margin-top:6px;border-top:1.5px solid #e2d5bf;padding-top:8px;">
     ${row("Subtotal", formatMoney(snapshot.subtotal))}
     ${snapshot.discount > 0 ? row(`Discount${snapshot.discountCode ? ` (${esc(snapshot.discountCode)})` : ""}`, `−${formatMoney(snapshot.discount)}`) : ""}
-    ${row("Shipping", formatMoney(snapshot.shipping))}
-    ${row("<strong>Total</strong>", `<strong>${formatMoney(snapshot.total)}</strong> ${snapshot.currency}`)}
+    ${row("Shipping", snapshot.digital ? "None, it's digital" : formatMoney(snapshot.shipping))}
+    ${snapshot.giftCard ? row(`Gift card ••${esc(snapshot.giftCard.last4)}`, `−${formatMoney(snapshot.giftCard.applied)}`) : ""}
+    ${row(`<strong>${snapshot.giftCard ? "To pay" : "Total"}</strong>`, `<strong>${formatMoney(snapshot.total)}</strong> ${snapshot.currency}`)}
   </table>`;
 }
 
@@ -71,7 +80,7 @@ function customerHtml(snapshot: OrderSnapshot): string {
     ${row("Mobile", esc(c.phone))}
     ${row("Email", esc(c.email))}
     ${c.instagram ? row("Instagram", `@${esc(c.instagram)}`) : ""}
-    ${row("Ship to", address)}
+    ${snapshot.digital ? row("Ship to", "Nothing to ship: gift card only") : row("Ship to", address)}
     ${c.addressNotes ? row("Address notes", esc(c.addressNotes)) : ""}
     ${c.orderNotes ? row("Order notes", esc(c.orderNotes)) : ""}
   </table>`;
@@ -83,12 +92,28 @@ export function businessOrderEmail(
   snapshot: OrderSnapshot,
   paymentReference: string,
   placedAt: string,
+  /** the private page that makes this order's gift card codes; the shop's copy only */
+  giftIssueUrl?: string,
 ): Mail {
+  const paid = snapshot.total === 0;
+  const gift = giftIssueUrl
+    ? `<div style="border:1.5px dashed #85585c;border-radius:14px;padding:14px;margin:0 0 12px;background:#fae6dc;">
+        <p style="margin:0;font-size:14px;font-weight:800;">🎁 There's a gift card in this order</p>
+        <p style="margin:6px 0 12px;font-size:13px;">${
+          paid
+            ? "It is already paid for. Open this private page and press the button:"
+            : "Once the payment has really arrived, open this private page and press the button:"
+        } that makes the code and emails it.</p>
+        <a href="${giftIssueUrl}" style="display:inline-block;background:#4a5539;color:#fbf6eb;font-weight:bold;font-size:14px;text-decoration:none;padding:11px 18px;border-radius:999px;">Payment received · create the gift card</a>
+        <p style="margin:10px 0 0;font-size:11px;color:#6a5a48;">Keep this link to yourself. Nothing happens until you press the button on that page.</p>
+      </div>`
+    : "";
   const body = `
+    ${gift}
     <table style="width:100%;margin-bottom:10px;">
       ${row("Order", `<strong>${orderNumber}</strong>`)}
       ${row("Placed", esc(placedAt))}
-      ${row("Payment", `<strong>${esc(paymentReference)}</strong> — manual transfer, verify the screenshot on Instagram`)}
+      ${row("Payment", paid ? `<strong>${esc(paymentReference)}</strong> — nothing to collect` : `<strong>${esc(paymentReference)}</strong> — manual transfer, verify the screenshot on Instagram`)}
     </table>
     <h2 style="font-size:14px;margin:14px 0 8px;">Customer</h2>
     ${customerHtml(snapshot)}
@@ -99,7 +124,11 @@ export function businessOrderEmail(
     to,
     subject: `🧺 New order ${orderNumber} · ${formatMoney(snapshot.total)}`,
     html: wrap(`New order ${orderNumber}`, body),
-    text: `New order ${orderNumber}. Total ${formatMoney(snapshot.total)}. Status: ${paymentReference}. Watch for the transfer + screenshot.`,
+    text: [
+      `New order ${orderNumber}. Total ${formatMoney(snapshot.total)}. Status: ${paymentReference}.`,
+      paid ? "Nothing to collect." : "Watch for the transfer + screenshot.",
+      ...(giftIssueUrl ? [`Gift card in this order. When it is paid, create the code here: ${giftIssueUrl}`] : []),
+    ].join("\n"),
   };
 }
 
@@ -109,8 +138,33 @@ export function customerOrderEmail(
   orderUrl: string,
 ): Mail {
   const first = snapshot.customer.fullName.trim().split(/\s+/)[0] || "friend";
+  const hasGift = snapshot.items.some((i) => i.name === "Gift card");
+  const giftLine = hasGift
+    ? `<p style="font-size:13px;margin:0 0 12px;">Your gift card code is made as soon as we've checked your payment. It shows up on your order page, and we email it too.</p>`
+    : "";
+  // paid in full with a gift card: there is no transfer to ask for
+  if (snapshot.total === 0) {
+    return {
+      to: snapshot.customer.email,
+      subject: `Your Little Bookshop order ${orderNumber} is confirmed 📚`,
+      html: wrap(
+        "Your little order is confirmed",
+        `<p style="font-size:13px;margin:0 0 12px;">Hi ${esc(first)}, your gift card covered this order in full. There's nothing left to pay, and we're starting on it now.</p>
+        <table style="width:100%;margin-bottom:10px;">
+          ${row("Order number", `<strong>${orderNumber}</strong>`)}
+          ${row("Status", "Confirmed")}
+          ${row("Your order", `<a href="${orderUrl}" style="color:#75845c;">${orderUrl}</a>`)}
+        </table>
+        <h2 style="font-size:14px;margin:14px 0 8px;">Your tiny things</h2>
+        ${itemsHtml(snapshot)}
+        ${totalsHtml(snapshot)}`,
+      ),
+      text: [`Thanks for your order ${orderNumber}!`, "Your gift card covered it in full. Nothing left to pay.", `Your order: ${orderUrl}`].join("\n"),
+    };
+  }
   const body = `
     <p style="font-size:13px;margin:0 0 12px;">Hi ${esc(first)}, we've saved your order. One step left: send the exact total by GCash or MariBank, then send us the screenshot on Instagram so we can confirm it.</p>
+    ${giftLine}
     <table style="width:100%;margin-bottom:10px;">
       ${row("Order number", `<strong>${orderNumber}</strong>`)}
       ${row("Status", "Awaiting payment")}
@@ -256,5 +310,142 @@ export function paymentProofEmail(
     attachments: [
       { filename: `payment-${orderNumber}.jpg`, contentType: "image/jpeg", base64 },
     ],
+  };
+}
+
+/* ─── Gift cards ─────────────────────────────────────────────────────────── */
+
+const peso = (cents: number) => formatMoney(cents).replace(/\.00$/, "");
+/** Card art for mail apps: JPEG, on the live site, because not all of them read webp. */
+const cardArt = (file: string) => `${SITE.url}/gift-cards/${file}.jpg`;
+
+/** The code as live text, so it still shows when a mail app blocks pictures. */
+const codeBox = (card: GiftCardRecord, label: string) =>
+  `<div style="border:2px dashed #85585c;border-radius:16px;background:#fae6dc;padding:14px;margin:14px 0;text-align:center;">
+    <p style="margin:0;font-size:10px;letter-spacing:2px;font-weight:bold;color:#85585c;">${label}</p>
+    <p style="margin:6px 0;font-family:'Courier New',Courier,monospace;font-size:22px;font-weight:bold;letter-spacing:1px;color:#35291e;">${esc(card.code ?? "")}</p>
+    <p style="margin:0;font-size:12px;color:#6a5a48;">${peso(card.amount)} · Good until ${esc(giftDate(card.expires_at ?? ""))}</p>
+  </div>`;
+
+const button = (href: string, label: string) =>
+  `<p style="text-align:center;margin:16px 0;"><a href="${href}" style="display:inline-block;background:#4a5539;color:#fbf6eb;font-weight:bold;font-size:14px;text-decoration:none;padding:12px 22px;border-radius:999px;">${label}</a></p>`;
+
+const GIFT_SMALL_PRINT =
+  "The small print: good for 12 months from the day it was bought. It can't be refunded, swapped for cash, or used on another gift card.";
+const GIFT_FOOTER = `@${INSTAGRAM_HANDLE} · ${SITE.url.replace(/^https?:\/\/(www\.)?/, "")}`;
+
+/** "Maria": what the card says it is from, else the buyer's own first name. */
+const senderName = (card: GiftCardRecord, buyerName: string) =>
+  card.from_name?.trim() || buyerName.trim().split(/\s+/)[0] || "A friend";
+
+/**
+ * M1: the gift itself, to the friend. Sent the moment the shop confirms the
+ * buyer's payment. The only email this person ever gets from us for it.
+ */
+export function giftCardFriendEmail(card: GiftCardRecord, buyerName: string, shopUrl: string): Mail {
+  const from = senderName(card, buyerName);
+  const amount = peso(card.amount);
+  const steps = [
+    `Pick your tiny things on ${SITE.url.replace(/^https?:\/\/(www\.)?/, "")}.`,
+    "At checkout, type the code in the Gift card box.",
+    "Anything you don't spend stays on the card for next time.",
+  ];
+  return {
+    to: card.to_email ?? "",
+    subject: `${from} sent you a gift card`,
+    html: wrap(
+      `${esc(from)} sent you a ${amount} gift card`,
+      `<img src="${cardArt(`card-${card.amount / 100}`)}" alt="The Little Bookshop gift card for ${amount}" width="516"
+            style="display:block;width:100%;max-width:516px;height:auto;border:0;border-radius:12px;margin:0 0 10px;">
+      <p style="margin:0 0 4px;font-size:13px;text-align:center;">${card.to_name ? `To <strong>${esc(card.to_name)}</strong> · ` : ""}From <strong>${esc(from)}</strong></p>
+      ${
+        card.note
+          ? `<p style="margin:12px 0 2px;font-family:Georgia,serif;font-style:italic;font-size:15px;line-height:1.5;text-align:center;">“${esc(card.note)}”</p>
+             <p style="margin:0;font-size:12px;color:#6a5a48;text-align:center;">${esc(from)}</p>`
+          : ""
+      }
+      ${codeBox(card, "YOUR GIFT CARD CODE")}
+      ${button(shopUrl, "Start shopping")}
+      <h2 style="font-size:14px;margin:18px 0 8px;">How to use it</h2>
+      <table style="width:100%;">${steps.map((s, i) => row(`<strong>${i + 1}</strong>`, s)).join("")}</table>
+      <p style="font-size:11px;color:#6a5a48;margin:14px 0 0;">${GIFT_SMALL_PRINT}</p>`,
+      {
+        eyebrow: "A GIFT FOR YOU",
+        preheader: `${amount} to spend on tiny shelves and books. Your code is inside.`,
+        footer: `${GIFT_FOOTER}<br>You're getting this because ${esc(buyerName)} bought you a gift card. We won't email you again unless you shop with us.`,
+      },
+    ),
+    text: [
+      `${from} sent you a ${amount} gift card for The Little Bookshop.`,
+      card.note ? `"${card.note}"` : "",
+      `Your gift card code: ${card.code}`,
+      `${amount} · Good until ${giftDate(card.expires_at ?? "")}`,
+      "",
+      ...steps.map((s, i) => `${i + 1}. ${s}`),
+      "",
+      GIFT_SMALL_PRINT,
+      shopUrl,
+    ]
+      .filter((l, i, all) => l !== "" || all[i - 1] !== "")
+      .join("\n"),
+  };
+}
+
+/**
+ * M2: the buyer's copy, one email for every card in the order. Their own cards
+ * come with the code to pass on; a friend's card says where it went.
+ */
+export function giftCardBuyerEmail(
+  to: string,
+  orderNumber: string,
+  cards: GiftCardRecord[],
+  orderUrl: string,
+): Mail {
+  const friends = cards.filter((c) => c.delivery === "friend");
+  const allFriends = friends.length === cards.length;
+  const friendName = (c: GiftCardRecord) => c.to_name?.trim() || "your friend";
+  const title =
+    cards.length > 1
+      ? "Your gift cards are ready"
+      : allFriends
+        ? `We've sent your gift card to ${esc(friendName(cards[0]))}`
+        : "Your gift card is ready";
+  const blocks = cards
+    .map((c) =>
+      c.delivery === "friend"
+        ? `${codeBox(c, "GIFT CARD CODE")}
+           <p style="font-size:13px;margin:0 0 12px;">We emailed this one to <strong>${esc(c.to_email ?? "")}</strong>. Here's the code too, just in case. If it hasn't arrived, ask ${esc(friendName(c))} to check their spam folder, or send it again from your order page.</p>`
+        : `${codeBox(c, "GIFT CARD CODE")}`,
+    )
+    .join("");
+  return {
+    to,
+    subject: cards.length > 1 ? "Your gift cards are ready" : "Your gift card is ready",
+    html: wrap(
+      title,
+      `<img src="${cardArt("card-back")}" alt="The back of The Little Bookshop gift card" width="516"
+            style="display:block;width:100%;max-width:516px;height:auto;border:0;border-radius:12px;margin:0 0 4px;">
+      ${blocks}
+      ${
+        allFriends
+          ? ""
+          : `<p style="font-size:13px;margin:0 0 4px;">Forward this email, or save the card above and send it on with the code. We've also sent it to you on Instagram.</p>`
+      }
+      ${button(orderUrl, "See your order")}
+      <p style="font-size:11px;color:#6a5a48;margin:10px 0 0;">${GIFT_SMALL_PRINT}</p>`,
+      {
+        eyebrow: `ORDER ${esc(orderNumber)}`,
+        preheader: `Order ${orderNumber}. Code inside, ready to send.`,
+        footer: GIFT_FOOTER,
+      },
+    ),
+    text: [
+      `Order ${orderNumber}: ${cards.length > 1 ? "your gift cards are ready" : "your gift card is ready"}.`,
+      ...cards.map(
+        (c) =>
+          `${c.code} · ${peso(c.amount)} · Good until ${giftDate(c.expires_at ?? "")}${c.delivery === "friend" ? ` · emailed to ${c.to_email}` : ""}`,
+      ),
+      `Your order: ${orderUrl}`,
+    ].join("\n"),
   };
 }

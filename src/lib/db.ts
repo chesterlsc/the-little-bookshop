@@ -62,6 +62,36 @@ export function getDb(): Database.Database {
       unsubscribed_at TEXT
     );
   `);
+  // Gift cards: see gift-cards-pg for what each column is for.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS gift_cards (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_number TEXT NOT NULL,
+      token        TEXT NOT NULL,
+      amount       INTEGER NOT NULL,
+      balance      INTEGER NOT NULL DEFAULT 0,
+      code         TEXT UNIQUE,
+      delivery     TEXT NOT NULL DEFAULT 'self',
+      to_name      TEXT,
+      from_name    TEXT,
+      to_email     TEXT,
+      note         TEXT,
+      created_at   TEXT NOT NULL,
+      issued_at    TEXT,
+      expires_at   TEXT,
+      emailed_at   TEXT,
+      emails_sent  INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_gift_cards_order ON gift_cards(order_number);
+    CREATE INDEX IF NOT EXISTS idx_gift_cards_token ON gift_cards(token);
+    CREATE TABLE IF NOT EXISTS gift_card_uses (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      code         TEXT NOT NULL,
+      order_number TEXT NOT NULL,
+      amount       INTEGER NOT NULL,
+      created_at   TEXT NOT NULL
+    );
+  `);
   // Match the Postgres schema so local development sees the same columns.
   for (const col of [
     "orders ADD COLUMN courier TEXT",

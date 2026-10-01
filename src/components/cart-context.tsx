@@ -70,14 +70,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addLine = useCallback((line: NewCartLine) => {
     setCart((prev) => {
       // merge identical simple product lines (same variant, no personalization)
-      if (line.type === "product" && !line.titles && !line.singleTitle) {
+      // (a gift card never merges: each one is its own code, for its own person)
+      if (line.type === "product" && !line.titles && !line.singleTitle && !line.gift) {
         const existing = prev.lines.find(
           (l) =>
             l.type === "product" &&
             l.slug === line.slug &&
             l.variantId === line.variantId &&
             !l.titles &&
-            !l.singleTitle,
+            !l.singleTitle &&
+            !l.gift,
         );
         if (existing) {
           return {

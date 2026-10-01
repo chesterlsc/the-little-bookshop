@@ -1165,3 +1165,96 @@ a, button {
 @media (prefers-reduced-motion: reduce) {
   .shelf-reel { transition: none; }
 }
+
+/* ─── Gift cards ───────────────────────────────────────────────────────────── */
+
+/* The card art carries live text on its blank lines, sized in container units
+   so the writing stays on the printed line at any width. */
+.gift-art { container-type: inline-size; }
+
+/* The gift card page ends above its own buy tray, which sits above the bottom
+   bar and the basket button that rises out of it. */
+.gift-page { padding-bottom: calc(112px + 84px + env(safe-area-inset-bottom)); }
+.gift-tray {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(118px + env(safe-area-inset-bottom));
+  z-index: 60;
+}
+@media (min-width: 1024px) {
+  .gift-page { padding-bottom: 3rem; }
+}
+/* the cookie slip must not sit on the tray's one button */
+@media (max-width: 1023px) {
+  body:has(.gift-tray) aside[aria-label="Cookies"] { bottom: calc(190px + env(safe-area-inset-bottom)); }
+}
+
+/* The card on the counter: it leans towards the pointer (two CSS variables set
+   on the stage, so nothing re-renders), and turns over to show its back. The
+   lean is quick and the turn is slow, so they are two elements. */
+.gift-stage {
+  --tilt-x: 0;
+  --tilt-y: 0;
+  --max-tilt: 6deg;
+  perspective: 1100px;
+  /* The first screen is the card, the amount and who it is for, ending above
+     the tray. Everything but the card comes to about 616px (header, the two
+     rows of chips, the tray and the bar under it), so the card takes what the
+     viewport has left and gives up height before the choices do. */
+  max-width: max(12.5rem, calc((100svh - 616px) * 1.556));
+  margin-inline: auto;
+}
+@media (min-width: 1024px) {
+  .gift-stage { --max-tilt: 8deg; max-width: none; }
+}
+.gift-card3d {
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--tilt-x) * var(--max-tilt))) rotateY(calc(var(--tilt-y) * var(--max-tilt)));
+  transition: transform 0.18s ease-out;
+}
+.gift-flip {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.gift-flip.is-flipped { transform: rotateY(180deg); }
+.gift-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+/* the card's own edge: a hairline and a sliver of thickness under it */
+.gift-face .gift-art { box-shadow: 0 0 0 1px rgba(67, 54, 42, 0.14), 0 2px 0 rgba(67, 54, 42, 0.24); }
+.gift-face-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+/* changing the amount turns a fresh face in, edge first */
+@keyframes gift-swap {
+  from { transform: rotateY(88deg); }
+  to { transform: none; }
+}
+.gift-swap { animation: gift-swap 0.32s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+/* soft paper shadow, sliding the other way from the lean */
+.gift-shadow {
+  display: block;
+  width: 84%;
+  height: 12px;
+  margin: 8px auto 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(67, 54, 42, 0.26), transparent);
+  transform: translateX(calc(var(--tilt-y) * -10px)) scaleX(calc(1 - var(--tilt-x) * 0.06));
+  transition: transform 0.18s ease-out;
+}
+/* the code arriving on the order page: it is on the page from the first frame,
+   and this only lifts it into place */
+@keyframes gift-reveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.gift-reveal { animation: gift-reveal 0.6s cubic-bezier(0.22, 0.9, 0.3, 1.1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .gift-card3d, .gift-shadow { transform: none; }
+  .gift-swap, .gift-reveal { animation: none; }
+}

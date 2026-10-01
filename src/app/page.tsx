@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { ButtonLink, Eyebrow, ScallopBand, Section, Badge } from "@/components/ui";
+import { GiftCardFront } from "@/components/gift-card-art";
 import {
   AmbientMeadow,
   BlueprintShelf,
@@ -298,6 +299,32 @@ export default function HomePage() {
         </ul>
       </Section>
 
+      {/* ─── Gift cards ─── */}
+      <ScallopBand from="blush" to="cream" rise className="mt-10" />
+      <Section tint="blush" className="pb-10 pt-8 lg:pb-14 lg:pt-12">
+        <div className="enter mx-auto grid max-w-4xl items-center gap-6 text-center lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:text-left">
+          <div>
+            <Badge tone="rose">New</Badge>
+            <h2 className="mt-3 text-2xl font-bold sm:text-3xl">Now available: Gift cards</h2>
+            <p className="mt-2 font-sans text-[1.02rem] leading-relaxed text-ink-600">
+              ₱500, ₱1,000 or ₱2,000. They choose their own tiny shelf.
+            </p>
+            <ButtonLink href="/products/gift-card" className="btn-lg mt-5">
+              Choose an amount <IconArrowRight className="h-5 w-5" />
+            </ButtonLink>
+            <p className="mt-3 font-sans text-sm text-ink-600">Digital, so there&apos;s no shipping fee.</p>
+          </div>
+          <Link
+            href="/products/gift-card"
+            aria-label="Gift cards: choose an amount"
+            className="order-first mx-auto block w-full max-w-[26rem] -rotate-3 drop-shadow-[0_18px_22px_rgba(67,54,42,0.28)] transition-transform duration-500 hover:rotate-0 lg:order-none"
+          >
+            <GiftCardFront price={50000} sizes="(min-width:1024px) 420px, 88vw" />
+          </Link>
+        </div>
+      </Section>
+      <ScallopBand from="blush" to="cream" />
+
       {/* ─── Categories ─── */}
       <Section className="pb-14 pt-12 lg:pb-20 lg:pt-16">
         <div className="enter mb-6 flex items-end justify-between gap-4">
@@ -310,7 +337,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="enter-stagger no-scrollbar -mx-4 -mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 pt-5 sm:mx-0 sm:mt-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-2 sm:pt-0 lg:grid-cols-5">
-          {(Object.entries(CATEGORIES) as [Category, (typeof CATEGORIES)[Category]][]).map(([slug, cat], i) => (
+          {(Object.entries(CATEGORIES) as [Category, (typeof CATEGORIES)[Category]][]).filter(([slug]) => slug !== "gift-cards").map(([slug, cat], i) => (
             <Link
               key={slug}
               href={`/shop/${slug}`}

@@ -149,6 +149,14 @@ export const FAQ: { q: string; a: string }[] = [
     a: "That's exactly what Build Your Little Shelf is for. Choose a shelf, pick or customize a set of six, add tiny extras, and the whole bundle arrives together in our illustrated box.",
   },
   {
+    q: "How do gift cards work?",
+    a: "Pick ₱500, ₱1,000 or ₱2,000 and pay by GCash or MariBank. Once we've checked your payment we make the card's code: it shows on your order page, and we email it to you or straight to your friend. To use it, type the code in the Gift card box at checkout. Anything you don't spend stays on the card for next time. A gift card is digital, so there's no shipping fee on it.",
+  },
+  {
+    q: "How long does a gift card last, and can I get it refunded?",
+    a: "A gift card is good for 12 months from the day it's bought, and you can use it over more than one order. It can't be refunded or swapped for cash, and it can't be used to buy another gift card.",
+  },
+  {
     q: "Is this a gift-friendly order?",
     a: "Very. Bundles arrive in our illustrated Little Bookshop box, book sets on their six-slot card, and keychains on an illustrated hanging card. Add a note during checkout and we'll tuck it in.",
   },
@@ -182,6 +190,7 @@ export const POLICIES: Record<
     updated: "⟨date⟩",
     body: [
       "We collect only what an order needs: your name, email address, phone number, shipping address, and the order details you give us (including custom book titles and notes).",
+      "If you send a gift card to a friend, we keep the name, email address and note you give us for them, and use them only to deliver that card: one email with the card, and a second only if you ask us to send it again.",
       `If you join our list for a welcome discount, we keep the email address you give us and the one answer to where you found us. Your code is shown on screen straight away; now and then we may email you news of new tiny things. Email ${SITE.contactEmail} to be removed.`,
       "The site stores your basket and a few preferences (such as whether you have seen the welcome offer) in your own browser. We set no advertising or tracking cookies.",
       "We never collect card numbers, PINs, OTPs or banking passwords. Payment happens entirely in your own banking or e-wallet app, and you send us a screenshot of the completed transfer.",
@@ -196,6 +205,7 @@ export const POLICIES: Record<
       "By placing an order you agree to these terms. Payment is by manual GCash or MariBank transfer. An order is confirmed only once we have checked your payment screenshot; until then, an order number is only a reservation.",
       "Custom sets require exactly six book titles. We recreate covers in miniature as decorative, non-opening objects for personal display, and may decline requests we can't reproduce respectfully or lawfully.",
       "Prices are shown in Philippine pesos and can change. The price at checkout is the price you pay. If we can't fulfil an order, we'll refund it in full.",
+      "Gift cards are digital and are sent once we have confirmed payment for them. A gift card is valid for 12 months from the day it is bought, can be used over more than one order until its balance runs out, cannot be refunded or exchanged for cash, and cannot be used to buy another gift card. Treat the code like cash: anyone who has it can spend it.",
       "Our miniatures are decorative items, not toys. They contain small parts and are not suitable for young children.",
       "⟨Legal entity name, governing law, and dispute process to be confirmed by the shop.⟩",
     ],

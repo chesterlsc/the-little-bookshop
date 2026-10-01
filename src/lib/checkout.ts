@@ -1,7 +1,21 @@
 import { getProduct, getVariant, SHELF_THEMES } from "./catalog";
-import { cartSubtotal, lineUnitPrice, setsOf, shippingFor, validateCart, type Cart, type CartLine } from "./cart";
+import {
+  cartSubtotal,
+  giftOf,
+  giftSummary,
+  isDigitalOnly,
+  isGiftCard,
+  lineUnitPrice,
+  setsOf,
+  shippableSubtotal,
+  shippingFor,
+  validateCart,
+  type Cart,
+  type CartLine,
+} from "./cart";
 import type { Cents } from "./money";
 import { discountFor, isValidCode, normalizeCode } from "./discount";
+import type { PendingGiftCard } from "./gift-card-types";
 
 /**
  * Customer details collected at checkout; only what the order needs to be
@@ -40,7 +54,8 @@ export type FieldErrors = Partial<Record<keyof CustomerInfo, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export function validateCustomer(c: Partial<CustomerInfo>): FieldErrors {
+/** `digitalOnly`: a basket of gift cards goes nowhere, so it asks for no address. */
+export function validateCustomer(c: Partial<CustomerInfo>, digitalOnly = false): FieldErrors {
   const errors: FieldErrors = {};
   const need = (key: keyof CustomerInfo, label: string, max = 120) => {
     const v = (c[key] ?? "").trim();
@@ -54,13 +69,15 @@ export function validateCustomer(c: Partial<CustomerInfo>): FieldErrors {
   need("email", "your email address");
   if (!errors.email && !EMAIL_RE.test(c.email!.trim()))
     errors.email = "That email address doesn't look right.";
-  need("address1", "a house or street address", 200);
-  need("barangay", "a barangay", 120);
-  need("city", "a city or municipality", 120);
-  need("province", "a province", 120);
-  need("postalCode", "a postal code", 20);
-  if (!errors.postalCode && !/^\d{4}$/.test(c.postalCode!.trim()))
-    errors.postalCode = "A Philippine postal code is four digits.";
+  if (!digitalOnly) {
+    need("address1", "a house or street address", 200);
+    need("barangay", "a barangay", 120);
+    need("city", "a city or municipality", 120);
+    need("province", "a province", 120);
+    need("postalCode", "a postal code", 20);
+    if (!errors.postalCode && !/^\d{4}$/.test(c.postalCode!.trim()))
+      errors.postalCode = "A Philippine postal code is four digits.";
+  }
   if ((c.instagram ?? "").length > 60) errors.instagram = "Please keep this under 60 characters.";
   for (const key of ["addressNotes", "orderNotes"] as const) {
     if ((c[key] ?? "").length > 500) errors[key] = "Please keep this under 500 characters.";
@@ -99,11 +116,27 @@ export interface OrderSnapshot {
   discount: Cents;
   discountCode?: string;
   shipping: Cents;
+  /**
+   * A gift card spent on this order. Only its last four are kept here: the
+   * order page has no login, and a whole code is money.
+   */
+  giftCard?: { last4: string; applied: Cents };
+  /** what is left to send by transfer, after any discount and gift card */
   total: Cents;
   currency: string;
+  /** gift cards only: nothing is posted, so there is no address */
+  digital?: boolean;
 }
 
 function lineDetails(line: CartLine): { name: string; details: string[]; titles?: SnapshotItem["titles"]; notes?: string } {
+  if (isGiftCard(line)) {
+    const gift = giftOf(line);
+    return {
+      name: "Gift card",
+      details: ["Digital, no shipping", giftSummary(gift)],
+      notes: gift?.delivery === "friend" ? gift.note?.trim() || undefined : undefined,
+    };
+  }
   if (line.type === "product") {
     const product = getProduct(line.slug)!;
     const variant = getVariant(product, line.variantId)!;
@@ -172,7 +205,7 @@ export function buildSnapshot(
     };
   });
   const subtotal = cartSubtotal(cart);
-  const shipping = shippingFor(subtotal);
+  const shipping = shippingFor(shippableSubtotal(cart));
   const discount = discountFor(discountCode, cart);
   return {
     issues: [],
@@ -185,6 +218,35 @@ export function buildSnapshot(
       shipping,
       total: subtotal - discount + shipping,
       currency: "PHP",
+      ...(isDigitalOnly(cart) ? { digital: true } : {}),
     },
   };
+}
+
+/** The gift cards in a basket, as the rows saved with the order (no code yet). */
+export function pendingGiftCards(cart: Cart): PendingGiftCard[] {
+  // one line each: a name ends up in an email's subject and on the card's own line
+  const clean = (v: string | undefined) => v?.replace(/\s+/g, " ").trim() || undefined;
+  return cart.lines.filter(isGiftCard).map((line) => {
+    const g = giftOf(line)!;
+    const friend = g.delivery === "friend";
+    return {
+      amount: lineUnitPrice(line),
+      delivery: g.delivery,
+      toName: clean(g.toName),
+      fromName: clean(g.fromName),
+      toEmail: friend ? clean(g.toEmail)?.toLowerCase() : undefined,
+      note: friend ? clean(g.note) : undefined,
+    };
+  });
+}
+
+/**
+ * Spend a gift card on a priced order: discount first, then the card, and the
+ * card covers shipping too. Never more than the order, never more than the card.
+ */
+export function withGiftCard(snapshot: OrderSnapshot, code: string, balance: Cents): OrderSnapshot {
+  const applied = Math.max(0, Math.min(balance, snapshot.total));
+  if (!applied) return snapshot;
+  return { ...snapshot, giftCard: { last4: code.slice(-4), applied }, total: snapshot.total - applied };
 }

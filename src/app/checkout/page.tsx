@@ -7,7 +7,21 @@ import { useCart } from "@/components/cart-context";
 import { CLEAR_CART_KEY } from "@/components/clear-cart-on-mount";
 import { rememberOrder } from "@/lib/pay-snapshot";
 import { Button, ButtonLink, Eyebrow, Field, inputClass, Section } from "@/components/ui";
-import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, describeLine, shippingFor, validateCart } from "@/lib/cart";
+import {
+  FREE_SHIPPING_MINIMUM,
+  cartCount,
+  cartSubtotal,
+  describeLine,
+  giftOf,
+  giftSummary,
+  hasGiftCard,
+  isDigitalOnly,
+  isGiftCard,
+  shippableSubtotal,
+  shippingFor,
+  validateCart,
+} from "@/lib/cart";
+import { GIFT_ON_GIFT } from "@/lib/gift-card-types";
 import { EMPTY_CUSTOMER, validateCustomer, type CustomerInfo, type FieldErrors } from "@/lib/checkout";
 import { formatMoney } from "@/lib/money";
 import { codeLabel, discountFor, isValidCode, normalizeCode } from "@/lib/discount";
@@ -40,6 +54,11 @@ const FIELDS: {
   { key: "province", label: "Province", autoComplete: "address-level1", half: true },
   { key: "postalCode", label: "Postal code", autoComplete: "postal-code", half: true, placeholder: "1000" },
 ];
+
+/** All a basket of gift cards needs to know: who is buying, and where their copy goes. */
+const DIGITAL_FIELDS: (keyof CustomerInfo)[] = ["fullName", "phone", "email", "instagram"];
+
+const peso = (cents: number) => formatMoney(cents).replace(/\.00$/, "");
 
 /** New key per mount, so a double-click reuses one order but a fresh visit does not. */
 function newIdempotencyKey() {
@@ -79,9 +98,55 @@ export default function CheckoutPage() {
     }
   };
 
+  // The gift card box: what they typed, and the card the shop says it is. Only
+  // a preview: the server looks the card up again and spends what is really on it.
+  const [giftInput, setGiftInput] = useState("");
+  const [gift, setGift] = useState<{ code: string; balance: number; last4: string } | null>(null);
+  const [giftMessage, setGiftMessage] = useState<string | null>(null);
+  const [giftChecking, setGiftChecking] = useState(false);
+
+  const applyCard = async () => {
+    if (!giftInput.trim() || giftChecking) return;
+    if (hasGiftCard(cart)) {
+      setGiftMessage(GIFT_ON_GIFT);
+      return;
+    }
+    setGiftChecking(true);
+    setGiftMessage(null);
+    try {
+      const res = await fetch("/api/gift-cards/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: giftInput }),
+      });
+      const json = await res.json();
+      if (json.status === "ok") {
+        setGift({ code: json.code, balance: json.balance, last4: json.last4 });
+        setGiftInput(json.code);
+      } else {
+        setGift(null);
+        setGiftMessage(json.message ?? "We couldn't check that card just now. Please try again.");
+      }
+    } catch {
+      setGiftMessage("We couldn't check that card just now. Please try again.");
+    }
+    setGiftChecking(false);
+  };
+  const removeCard = () => {
+    setGift(null);
+    setGiftInput("");
+    setGiftMessage(null);
+  };
+
+  const digitalOnly = isDigitalOnly(cart);
   const subtotal = cartSubtotal(cart);
+  const shippable = shippableSubtotal(cart);
   const discount = discountFor(appliedCode, cart);
-  const shipping = shippingFor(subtotal);
+  const shipping = shippingFor(shippable);
+  // discount first, then the card; a card never pays for another card
+  const beforeCard = subtotal - discount + shipping;
+  const cardApplied = gift && !hasGiftCard(cart) ? Math.min(gift.balance, beforeCard) : 0;
+  const toPay = beforeCard - cardApplied;
   const localIssues = ready ? validateCart(cart) : [];
 
   const set = (key: keyof CustomerInfo, value: string) =>
@@ -91,7 +156,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (inFlight.current) return; // a second click must never make a second order
     setServerMessage(null);
-    const fieldErrors = validateCustomer(customer);
+    const fieldErrors = validateCustomer(customer, digitalOnly);
     setErrors(fieldErrors);
     if (Object.keys(fieldErrors).length) {
       document.getElementById(`field-${Object.keys(fieldErrors)[0]}`)?.focus();
@@ -110,6 +175,7 @@ export default function CheckoutPage() {
           customer,
           idempotencyKey: idempotencyKey.current,
           ...(appliedCode ? { discountCode: appliedCode } : {}),
+          ...(cardApplied > 0 && gift ? { giftCardCode: gift.code } : {}),
         }),
       });
       const json = await res.json();
@@ -124,10 +190,14 @@ export default function CheckoutPage() {
         } catch {
           /* storage unavailable; the basket simply stays put */
         }
-        router.replace(`/order/${encodeURIComponent(json.orderNumber)}/pay`);
+        // a gift card that covered everything leaves nothing to pay, so no payment page
+        router.replace(`/order/${encodeURIComponent(json.orderNumber)}${json.pay?.total === 0 ? "" : "/pay"}`);
         return;
       }
-      if (json.fieldErrors) setErrors(json.fieldErrors);
+      if (json.error === "giftCard") {
+        setGift(null);
+        setGiftMessage(json.message);
+      } else if (json.fieldErrors) setErrors(json.fieldErrors);
       else if (json.issues) setCartIssues(json.issues);
       else setServerMessage(json.message ?? "Something went wrong and your order was not saved. Please try again.");
     } catch {
@@ -161,7 +231,7 @@ export default function CheckoutPage() {
       <Section className="pt-8">
         <div className="mb-6 text-center">
           <Eyebrow className="mb-2">Checkout</Eyebrow>
-          <h1 className="text-3xl font-bold sm:text-4xl">Nearly on your shelf</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">{digitalOnly ? "Nearly ready to send" : "Nearly on your shelf"}</h1>
           <p className="mx-auto mt-2 max-w-[48ch] font-sans text-[0.95rem] text-ink-600">
             Guest checkout, no account needed. You&apos;ll pay by GCash or MariBank transfer on
             the next screen, then send us your screenshot on Instagram.
@@ -170,14 +240,16 @@ export default function CheckoutPage() {
 
         <form onSubmit={submit} noValidate className="grid items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div className="clay p-5 sm:p-6">
-            <h2 className="mb-4 font-display text-xl font-bold">Where should the tiny things go?</h2>
+            <h2 className="mb-4 font-display text-xl font-bold">
+              {digitalOnly ? "About you" : "Where should the tiny things go?"}
+            </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {FIELDS.map((f) => (
+              {FIELDS.filter((f) => !digitalOnly || DIGITAL_FIELDS.includes(f.key)).map((f) => (
                 <Field
                   key={f.key}
                   label={f.label}
                   htmlFor={`field-${f.key}`}
-                  hint={f.hint}
+                  hint={digitalOnly && f.key === "email" ? "Your copy of the card comes here." : f.hint}
                   error={errors[f.key]}
                   className={f.half ? "" : "sm:col-span-2"}
                 >
@@ -193,6 +265,7 @@ export default function CheckoutPage() {
                   />
                 </Field>
               ))}
+              {!digitalOnly && (<>
               <Field
                 label="Address notes or landmarks (optional)"
                 htmlFor="field-addressNotes"
@@ -225,7 +298,13 @@ export default function CheckoutPage() {
                   className={`${inputClass} resize-y`}
                 />
               </Field>
+              </>)}
             </div>
+            {digitalOnly && (
+              <p className="mt-4 font-sans text-sm text-ink-600">
+                No address needed: a gift card is digital, so nothing is posted.
+              </p>
+            )}
           </div>
 
           <aside className="clay sticky top-24 p-5" aria-label="Order summary">
@@ -237,15 +316,19 @@ export default function CheckoutPage() {
             </h2>
             <ul className="mt-3 space-y-2 border-b border-brown-500/10 pb-3">
               {cart.lines.map((line) => (
-                <li key={line.key} className="flex justify-between gap-3 font-sans text-[0.9rem]">
+                <li key={line.key} className="font-sans text-[0.9rem]">
                   <span className="text-ink-600">
-                    {describeLine(line)} <span className="text-ink-400">× {line.qty}</span>
+                    {describeLine(line)} {!isGiftCard(line) && <span className="text-ink-400">× {line.qty}</span>}
                   </span>
+                  {isGiftCard(line) && <span className="block text-xs text-ink-400">{giftSummary(giftOf(line))}</span>}
                 </li>
               ))}
             </ul>
-            <div className="mt-3">
-              <label htmlFor="field-discount" className="mb-1.5 block font-sans text-sm font-bold text-ink-800">
+            <div className="stitch mt-3 bg-cream-50 p-3">
+              <label htmlFor="field-discount" className="mb-1.5 flex items-center gap-2 font-sans text-sm font-bold text-ink-800">
+                <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full border-[1.5px] border-brown-500 font-display text-[0.8rem] leading-none text-brown-700">
+                  %
+                </span>
                 Discount code
               </label>
               <div className="flex gap-2">
@@ -283,6 +366,71 @@ export default function CheckoutPage() {
                       : "That code is for mini book sets. Add a set to use it.")}
               </p>
             </div>
+
+            {/* its own box, its own colour: a gift card is money, a discount is not */}
+            {digitalOnly ? (
+              <p className="mt-3 font-sans text-xs text-ink-600">
+                A gift card can&apos;t pay for another gift card, so there&apos;s no gift card box here.
+              </p>
+            ) : (
+              <div className="mt-3 rounded-[20px_27px_19px_25px/25px_19px_27px_20px] border-[1.5px] border-dashed border-rose-700 bg-blush-100 p-3">
+                <label htmlFor="field-giftcard" className="mb-1.5 flex items-center gap-2 font-sans text-sm font-bold text-ink-800">
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 text-rose-700" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="3" y="6" width="18" height="13" rx="2.5" />
+                    <path d="M3 10.5h18M7.5 15h4" />
+                  </svg>
+                  Gift card
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="field-giftcard"
+                    value={giftInput}
+                    onChange={(e) => {
+                      setGiftInput(e.target.value);
+                      setGiftMessage(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        applyCard();
+                      }
+                    }}
+                    readOnly={Boolean(gift)}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    placeholder="Card code"
+                    aria-describedby="giftcard-note"
+                    className={`${inputClass} font-mono uppercase ${giftMessage ? "!border-rose-500" : ""}`}
+                  />
+                  <Button
+                    type="button"
+                    variant="quiet"
+                    onClick={gift ? removeCard : applyCard}
+                    disabled={giftChecking}
+                    className="shrink-0 px-4"
+                  >
+                    {gift ? "Remove" : giftChecking ? "Checking…" : "Use card"}
+                  </Button>
+                </div>
+                <p
+                  id="giftcard-note"
+                  className={`mt-1 text-xs ${giftMessage ? "font-bold text-rose-700" : gift ? "font-bold text-sage-800" : "text-ink-600"}`}
+                  role={giftMessage ? "alert" : "status"}
+                >
+                  {giftMessage ??
+                    (giftChecking
+                      ? "Checking your card…"
+                      : !gift
+                        ? "Have a gift card? Type the code from the card."
+                        : `${peso(cardApplied)} taken off. ${
+                            gift.balance > cardApplied
+                              ? `${peso(gift.balance - cardApplied)} still on your card for next time.`
+                              : "Nothing left on the card after this order."
+                          } ${toPay === 0 ? "Nothing left to pay." : "Pay the rest by GCash or MariBank."}`)}
+                </p>
+              </div>
+            )}
             <dl className="mt-3 space-y-2 font-sans text-[0.95rem]">
               <div className="flex justify-between">
                 <dt className="text-ink-600">Subtotal</dt>
@@ -297,17 +445,23 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <dt className="text-ink-600">Shipping</dt>
                 <dd className="font-bold">
-                  {shipping === 0 ? "Free" : formatMoney(shipping)}
+                  {shippable === 0 ? "None, it's digital" : shipping === 0 ? "Free" : formatMoney(shipping)}
                 </dd>
               </div>
               {shipping > 0 && (
                 <p className="text-xs text-ink-600">
-                  Add {formatMoney(FREE_SHIPPING_MINIMUM - subtotal)} more for free shipping.
+                  Add {formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.
                 </p>
               )}
+              {cardApplied > 0 && gift && (
+                <div className="flex justify-between text-rose-700">
+                  <dt>Gift card ••{gift.last4}</dt>
+                  <dd className="font-bold">−{formatMoney(cardApplied)}</dd>
+                </div>
+              )}
               <div className="flex justify-between border-t border-brown-500/15 pt-2 text-[1.05rem]">
-                <dt className="font-display font-bold">Total</dt>
-                <dd className="font-display font-bold">{formatMoney(subtotal - discount + shipping)}</dd>
+                <dt className="font-display font-bold">{cardApplied > 0 ? "To pay" : "Total"}</dt>
+                <dd className="font-display font-bold">{formatMoney(toPay)}</dd>
               </div>
             </dl>
 
@@ -335,14 +489,17 @@ export default function CheckoutPage() {
               disabled={submitting || localIssues.length > 0}
               className="btn-lg mt-4 w-full"
             >
-              {submitting ? "Saving your order…" : "Place order"}
+              {submitting ? "Saving your order…" : toPay === 0 ? "Place order · nothing to pay" : "Place order"}
             </Button>
             <ul className="mt-3 space-y-1 font-sans text-xs text-ink-600">
-              {[
-                "No card details, ever",
-                "Pay by GCash or MariBank on the next screen",
-                "Confirmed once we've checked your screenshot",
-              ].map((t) => (
+              {(toPay === 0
+                ? ["No card details, ever", "Your gift card covers this order in full", "Confirmed as soon as you place it"]
+                : [
+                    "No card details, ever",
+                    "Pay by GCash or MariBank on the next screen",
+                    "Confirmed once we've checked your screenshot",
+                  ]
+              ).map((t) => (
                 <li key={t} className="flex items-center gap-1.5">
                   <IconCheck className="h-3.5 w-3.5 shrink-0 text-sage-600" /> {t}
                 </li>

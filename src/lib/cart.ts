@@ -1,5 +1,6 @@
 import { MAX_TITLES, SET_SIZE, getProduct, getVariant, SHELF_THEMES, type ShelfThemeId } from "./catalog";
-import type { Cents } from "./money";
+import { formatMoney, type Cents } from "./money";
+import { EMAIL_RE, GIFT_NAME_MAX, GIFT_NOTE_MAX, type GiftDetails } from "./gift-card-types";
 
 /** One custom mini-book request. Title required; author helps us find the right cover. */
 export interface CustomTitle {
@@ -18,6 +19,8 @@ export interface ProductLine {
   /** one title, for the personalized keychain */
   singleTitle?: string;
   notes?: string;
+  /** who a gift card is for, and how it reaches them */
+  gift?: GiftDetails;
 }
 
 export interface BundlePart {
@@ -48,6 +51,46 @@ export interface Cart {
 }
 
 export const EMPTY_CART: Cart = { lines: [] };
+
+/* ─── Gift cards ───────────────────────────────────────────────────────────── */
+
+/**
+ * A gift card line: digital, so nothing about it is ever posted. A plain
+ * boolean, not a type guard: a guard would tell the compiler every other line
+ * is a bundle.
+ */
+export function isGiftCard(line: CartLine): boolean {
+  return line.type === "product" && Boolean(getProduct(line.slug)?.digital);
+}
+
+/** Who a gift card line is for; undefined on every other line. */
+export const giftOf = (line: CartLine): GiftDetails | undefined =>
+  isGiftCard(line) ? (line as ProductLine).gift : undefined;
+
+export const hasGiftCard = (cart: Cart) => cart.lines.some(isGiftCard);
+
+/** Nothing to post in this basket at all, so no address is needed. */
+export const isDigitalOnly = (cart: Cart) => cart.lines.length > 0 && cart.lines.every(isGiftCard);
+
+/** "To Ana · emailed to ana@example.com", or where the buyer's own card goes. */
+export function giftSummary(gift: GiftDetails | undefined): string {
+  if (gift?.delivery !== "friend") return "Emailed to you";
+  return `${gift.toName ? `To ${gift.toName} · ` : ""}emailed to ${gift.toEmail}`;
+}
+
+/** The typed half of a gift card line, checked wherever a basket is checked. */
+function giftIssue(line: ProductLine): string | undefined {
+  // one card, one code, one person: a second card is a second line
+  if (line.qty !== 1) return "Gift cards are added one at a time.";
+  const g = line.gift;
+  if (!g || (g.delivery !== "self" && g.delivery !== "friend")) return "Please choose who this gift card is for.";
+  const long = (v: string | undefined, max: number) => (v ?? "").length > max;
+  if (long(g.toName, GIFT_NAME_MAX) || long(g.fromName, GIFT_NAME_MAX)) return "Please keep the names on the gift card short.";
+  if (long(g.note, GIFT_NOTE_MAX)) return `Please keep the gift card note under ${GIFT_NOTE_MAX} characters.`;
+  if (g.delivery === "friend" && !EMAIL_RE.test((g.toEmail ?? "").trim()))
+    return "This gift card needs your friend's email so we know where to send it.";
+  return undefined;
+}
 
 /* ─── Validation ───────────────────────────────────────────────────────────── */
 
@@ -117,6 +160,10 @@ export function validateCart(cart: Cart): LineIssue[] {
           key: line.key,
           message: `${product.name} needs the book title you would like made.`,
         });
+      }
+      if (product.digital) {
+        const message = giftIssue(line);
+        if (message) issues.push({ key: line.key, message });
       }
     } else {
       // The cart arrives as untrusted JSON on the checkout route, so the types
@@ -193,6 +240,15 @@ export function cartSubtotal(cart: Cart): Cents {
   return cart.lines.reduce((sum, line) => sum + lineUnitPrice(line) * line.qty, 0);
 }
 
+/**
+ * What the courier actually carries. Shipping, and the free-shipping line, are
+ * worked out on this: a gift card is an email, and buying one should neither
+ * cost a shipping fee nor buy free shipping for the parcel beside it.
+ */
+export function shippableSubtotal(cart: Cart): Cents {
+  return cart.lines.reduce((sum, line) => (isGiftCard(line) ? sum : sum + lineUnitPrice(line) * line.qty), 0);
+}
+
 export function cartCount(cart: Cart): number {
   return cart.lines.reduce((sum, line) => sum + line.qty, 0);
 }
@@ -213,6 +269,7 @@ export const FREE_SHIPPING_MINIMUM: Cents = 199900;
 /**
  * Flat shipping, configurable via env. Real carrier rates are a business
  * decision (see README); the free-shipping threshold is set above.
+ * Pass `shippableSubtotal`, not the whole basket: gift cards do not ship.
  */
 export function shippingFor(subtotal: Cents): Cents {
   const flat = Number(process.env.NEXT_PUBLIC_FLAT_SHIPPING_CENTS ?? 12000);
@@ -232,6 +289,7 @@ function nameWithOptions(slug: string, variantId: string): string {
 }
 
 export function describeLine(line: CartLine): string {
+  if (isGiftCard(line)) return `Gift card · ${formatMoney(lineUnitPrice(line)).replace(/\.00$/, "")}`;
   if (line.type === "product") {
     return SUMMARY_WITH_OPTIONS.includes(line.slug)
       ? nameWithOptions(line.slug, line.variantId)

@@ -4,8 +4,15 @@ import { MAX_PROOFS } from "@/lib/orders-types";
 import { PaymentProof } from "@/components/payment-proof";
 import { Badge, ButtonLink, Eyebrow, Section } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
-import { FolkDivider } from "@/components/illustrations";
-import { SITE } from "@/content/site";
+import { FolkDivider, ShelfCat } from "@/components/illustrations";
+import { ClearCartOnMount } from "@/components/clear-cart-on-mount";
+import { GiftCardReady, ResendGiftEmail, type GiftCardView } from "@/components/gift-card-ready";
+import { giftCardsByOrder } from "@/lib/gift-cards";
+import { INSTAGRAM_HANDLE, SITE } from "@/content/site";
+
+/** "11:05 am", on the shop's clock. */
+const timeOf = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" }).toLowerCase();
 
 export const metadata = { title: "Your order", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -55,17 +62,48 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
   };
   const c = snapshot.customer;
 
+  // Gift cards bought in this order. A card has no code until the shop has
+  // confirmed the payment, so "made" is the whole difference between the two
+  // things this page can say about it.
+  const giftCards = await giftCardsByOrder(order.number);
+  const made: GiftCardView[] = giftCards
+    .filter((g) => g.code && g.expires_at)
+    .map((g) => ({
+      code: g.code!,
+      amount: g.amount,
+      expiresAt: g.expires_at!,
+      delivery: g.delivery,
+      toName: g.to_name,
+      fromName: g.from_name,
+      toEmail: g.to_email,
+      emailedAt: g.emailed_at,
+    }));
+  const wrapping = giftCards.length > 0 && made.length === 0 && order.status !== "cancelled";
+  // an order that is only a gift card leads with the card, not with a parcel's progress
+  const giftOnly = Boolean(snapshot.digital) && made.length > 0;
+  const allFriends = made.length > 0 && made.every((g) => g.delivery === "friend");
+  const friendName = (g: GiftCardView) => g.toName?.trim() || "your friend";
+  const giftHeadline =
+    made.length > 1
+      ? "Your gift cards are ready"
+      : allFriends
+        ? `Your gift card is on its way to ${friendName(made[0])}`
+        : "Your gift card is ready";
+
   return (
     <div className="pb-nav">
+      <ClearCartOnMount orderNumber={order.number} />
       <Section className="pt-10">
         <div className="mx-auto max-w-2xl">
           <div className="text-center">
-            <Eyebrow className="mb-2">Order</Eyebrow>
-            <h1 className="text-3xl font-bold">{order.number}</h1>
+            <Eyebrow className="mb-2">{giftOnly ? `Order ${order.number}` : "Order"}</Eyebrow>
+            <h1 className="text-3xl font-bold">{giftOnly ? giftHeadline : order.number}</h1>
             <div className="mt-2">
-              <Badge tone={status.tone}>{status.badge}</Badge>
+              {giftOnly ? <Badge tone="sage">{allFriends ? "Sent" : "Ready"}</Badge> : <Badge tone={status.tone}>{status.badge}</Badge>}
             </div>
-            <p className="mx-auto mt-2 max-w-[52ch] font-sans text-[0.95rem] text-ink-600">{status.line}</p>
+            {!giftOnly && (
+              <p className="mx-auto mt-2 max-w-[52ch] font-sans text-[0.95rem] text-ink-600">{status.line}</p>
+            )}
             <p className="mt-1 font-sans text-xs text-ink-400">
               Placed {new Date(order.created_at).toUTCString()}
             </p>
@@ -90,6 +128,49 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
               </div>
             )}
           </div>
+
+          {wrapping && (
+            <div className="clay mt-6 p-5 text-center sm:p-6">
+              <ShelfCat className="mx-auto h-20 w-24" />
+              <h2 className="mt-2 font-display text-xl font-bold">Your gift card is being wrapped</h2>
+              <p className="mx-auto mt-1.5 max-w-[46ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
+                {order.status === "awaiting_payment"
+                  ? "Pay by GCash or MariBank and send us your screenshot. Once we've checked it, your code shows up right here."
+                  : "We're checking your payment. Once that's done, your code shows up right here."}
+              </p>
+              <p className="story-line mt-2 text-sm text-ink-600">
+                We&apos;ll also email it, and send the card on Instagram from @{INSTAGRAM_HANDLE}.
+              </p>
+            </div>
+          )}
+
+          {made.map((g) => (
+            <div key={g.code} className="clay mt-6 p-5 text-center sm:p-6">
+              {!giftOnly && (
+                <h2 className="mb-4 font-display text-xl font-bold">
+                  {g.delivery === "friend" ? `Your gift card is on its way to ${friendName(g)}` : "Your gift card is ready"}
+                </h2>
+              )}
+              <GiftCardReady card={g} />
+              {g.delivery === "friend" ? (
+                <>
+                  <p className="mx-auto mt-3 max-w-[46ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
+                    {g.emailedAt
+                      ? `We emailed it to ${g.toEmail} at ${timeOf(g.emailedAt)}. Here's the code too, just in case.`
+                      : `We couldn't email it to ${g.toEmail}. Copy the code and send it on Instagram instead, or try the email again.`}
+                  </p>
+                  <ResendGiftEmail by={{ order: order.number }} className="mt-3" />
+                  <p className="mt-2 font-sans text-sm text-ink-600">
+                    Not there? Ask {friendName(g)} to check their spam folder.
+                  </p>
+                </>
+              ) : (
+                <p className="mx-auto mt-3 max-w-[46ch] font-sans text-[0.95rem] leading-relaxed text-ink-600">
+                  Screenshot the card and send it on. We&apos;ve also emailed it to you and sent it on Instagram.
+                </p>
+              )}
+            </div>
+          ))}
 
           <div className="clay mt-6 p-5 sm:p-6">
             <h2 className="font-display text-lg font-bold">Tiny things ordered</h2>
@@ -129,12 +210,24 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
                 <dt className="text-ink-600">Subtotal</dt>
                 <dd className="font-bold">{formatMoney(order.subtotal)}</dd>
               </div>
+              {snapshot.discount > 0 && (
+                <div className="flex justify-between text-sage-700">
+                  <dt>Discount{snapshot.discountCode ? ` (${snapshot.discountCode})` : ""}</dt>
+                  <dd className="font-bold">−{formatMoney(snapshot.discount)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-ink-600">Shipping</dt>
-                <dd className="font-bold">{formatMoney(order.shipping)}</dd>
+                <dd className="font-bold">{snapshot.digital ? "None, it's digital" : formatMoney(order.shipping)}</dd>
               </div>
+              {snapshot.giftCard && (
+                <div className="flex justify-between text-rose-700">
+                  <dt>Gift card ••{snapshot.giftCard.last4}</dt>
+                  <dd className="font-bold">−{formatMoney(snapshot.giftCard.applied)}</dd>
+                </div>
+              )}
               <div className="flex justify-between text-[1.05rem]">
-                <dt className="font-display font-bold">Total</dt>
+                <dt className="font-display font-bold">{snapshot.giftCard ? "To pay" : "Total"}</dt>
                 <dd className="font-display font-bold">
                   {formatMoney(order.total)} {order.currency}
                 </dd>
@@ -142,6 +235,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
             </dl>
           </div>
 
+          {!snapshot.digital && (
           <div className="clay mt-4 p-5 sm:p-6">
             <h2 className="font-display text-lg font-bold">Shipping to</h2>
             <p className="mt-2 font-sans text-[0.95rem] leading-relaxed text-ink-600">
@@ -162,6 +256,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
               </p>
             )}
           </div>
+          )}
 
           {order.status === "awaiting_payment" && (
             <div className="mt-5 text-center">

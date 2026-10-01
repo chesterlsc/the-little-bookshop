@@ -177,9 +177,15 @@ export function PayScreen({
               <div className="flex justify-between gap-4">
                 <dt className="text-ink-600">Shipping</dt>
                 <dd className="font-bold">
-                  {snap.shipping === 0 ? "Free" : formatMoney(snap.shipping)}
+                  {snap.digital ? "None, it's digital" : snap.shipping === 0 ? "Free" : formatMoney(snap.shipping)}
                 </dd>
               </div>
+              {snap.giftCard && (
+                <div className="flex justify-between gap-4 text-rose-700">
+                  <dt>Gift card ••{snap.giftCard.last4}</dt>
+                  <dd className="font-bold">−{formatMoney(snap.giftCard.applied)}</dd>
+                </div>
+              )}
               <div className="flex items-baseline justify-between gap-4 border-t border-brown-500/15 pt-2">
                 <dt className="font-display text-[1.05rem] font-bold">Final amount to pay</dt>
                 <dd className="font-display text-[1.35rem] font-bold text-ink-900">
