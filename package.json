@@ -11,6 +11,7 @@
     "audit": "node scripts/audit.mjs",
     "typecheck": "tsc --noEmit",
     "verify:pg": "npx tsx scripts/verify-pg.mjs",
+    "verify:promo": "npx tsx scripts/verify-promo.mjs",
     "mail:check": "node scripts/mail-check.mjs",
     "shop": "npx tsx scripts/shop.mjs"
   },

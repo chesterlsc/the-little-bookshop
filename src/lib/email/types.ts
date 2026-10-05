@@ -8,6 +8,8 @@ export interface Mail {
   text: string;
   /** base64 already: that is what the browser sends and what Resend takes */
   attachments?: { filename: string; contentType: string; base64: string }[];
+  /** extra headers, e.g. List-Unsubscribe on a promo, so mail apps offer the button */
+  headers?: Record<string, string>;
 }
 
 export interface EmailProvider {

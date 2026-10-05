@@ -1,6 +1,7 @@
 import type { OrderSnapshot } from "../checkout";
 import { giftDate, type GiftCardRecord } from "../gift-card-types";
 import { formatMoney } from "../money";
+import { PROMO } from "../promo";
 import { INSTAGRAM_HANDLE, PAYMENT_METHODS, SITE } from "@/content/site";
 import type { Mail } from "./types";
 
@@ -446,6 +447,68 @@ export function giftCardBuyerEmail(
           `${c.code} · ${peso(c.amount)} · Good until ${giftDate(c.expires_at ?? "")}${c.delivery === "friend" ? ` · emailed to ${c.to_email}` : ""}`,
       ),
       `Your order: ${orderUrl}`,
+    ].join("\n"),
+  };
+}
+
+/* ─── The promo, to the mailing list ─────────────────────────────────────── */
+
+/**
+ * The 10.10 email: the shop's own poster, then the offer again as live text
+ * (mail apps block pictures), the code in a box, and one button. Every link is
+ * the live site's, never the machine it was sent from: this goes to a list.
+ * The button carries the code, so the checkout has it waiting.
+ */
+export function promoEmail(to: string): Mail {
+  const site = SITE.url;
+  const shop = `${site}/shop?code=${PROMO.code}`;
+  const off = peso(PROMO.amountOff);
+  const min = peso(PROMO.minimum);
+  const unsubscribe = `mailto:${SITE.contactEmail}?subject=${encodeURIComponent("Unsubscribe")}`;
+  const steps = [
+    `Fill your basket with ${min} or more of tiny things.`,
+    `At checkout, type <strong>${PROMO.code}</strong> in the Discount code box. Tap the button above and it's already waiting there.`,
+    `${off} comes off, and the shipping is free.`,
+  ];
+  return {
+    to,
+    subject: `${PROMO.name}: ${off} off + free shipping 🤎`,
+    headers: { "List-Unsubscribe": `<${unsubscribe}>` },
+    html: wrap(
+      `${off} off, and the shipping is on us`,
+      `<a href="${shop}" style="display:block;border:0;text-decoration:none;">
+        <img src="${site}${PROMO.image.email}" alt="${esc(PROMO.image.alt)}" width="516"
+             style="display:block;width:100%;max-width:516px;height:auto;border:0;border-radius:14px;margin:0 0 16px;">
+      </a>
+      <div style="text-align:center;">
+        <p style="margin:0;font-size:44px;line-height:1;font-weight:bold;color:#35291e;font-family:Georgia,serif;">${off} OFF</p>
+        <p style="margin:8px 0 0;font-size:13px;letter-spacing:2px;font-weight:bold;">ON ORDERS ${min}+</p>
+        <p style="margin:6px 0 0;font-size:14px;font-style:italic;color:#85585c;font-family:Georgia,serif;">+ free shipping</p>
+      </div>
+      <div style="border:2px dashed #85585c;border-radius:16px;background:#fae6dc;padding:14px;margin:18px 0;text-align:center;">
+        <p style="margin:0;font-size:10px;letter-spacing:2px;font-weight:bold;color:#85585c;">YOUR CODE</p>
+        <p style="margin:6px 0;font-size:26px;font-weight:bold;letter-spacing:3px;color:#35291e;">${PROMO.code}</p>
+        <p style="margin:0;font-size:12px;letter-spacing:1px;color:#6a5a48;">${PROMO.dates.toUpperCase()}</p>
+      </div>
+      ${button(shop, "Shop the treat")}
+      <p style="text-align:center;margin:-6px 0 16px;font-size:13px;"><a href="${site}/build?code=${PROMO.code}" style="color:#5d6a47;font-weight:bold;">or build your little shelf</a></p>
+      <h2 style="font-size:14px;margin:18px 0 8px;">How it works</h2>
+      <table style="width:100%;">${steps.map((t, i) => row(`<strong>${i + 1}</strong>`, t)).join("")}</table>
+      <p style="font-size:11px;color:#6a5a48;margin:14px 0 0;">Ends ${PROMO.lastDay}, 11:59 pm. One code per order. Gift cards don't count towards ${min}.</p>`,
+      {
+        eyebrow: `${PROMO.name.toUpperCase()} ♥`,
+        preheader: `${off} off orders ${min} and up, plus free shipping. Until ${PROMO.lastDay}.`,
+        footer: `${GIFT_FOOTER}<br>You're getting this because you joined our list at thelittlebookshop.store.<br>Rather not hear about the next treat? Reply "unsubscribe", or <a href="${unsubscribe}" style="color:#93826d;">unsubscribe here</a>.`,
+      },
+    ),
+    text: [
+      `${PROMO.name}: ${off} off orders ${min}+ and free shipping.`,
+      `Use code ${PROMO.code} at checkout, ${PROMO.dates}.`,
+      "",
+      `Shop: ${shop}`,
+      "",
+      `Ends ${PROMO.lastDay}, 11:59 pm. One code per order. Gift cards don't count towards ${min}.`,
+      `Rather not hear about the next treat? Reply "unsubscribe".`,
     ].join("\n"),
   };
 }

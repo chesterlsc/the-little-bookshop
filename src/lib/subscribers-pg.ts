@@ -57,6 +57,13 @@ export function migrate(q?: Queryable): Promise<void> {
         notified_at     TEXT
       )`);
     await c.query("ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS notified_at TEXT");
+    await c.query(`
+      CREATE TABLE IF NOT EXISTS promo_sends (
+        promo   TEXT NOT NULL,
+        email   TEXT NOT NULL,
+        sent_at TEXT NOT NULL,
+        PRIMARY KEY (promo, email)
+      )`);
     await c.query(
       "UPDATE subscribers SET notified_at = created_at WHERE notified_at IS NULL AND created_at < $1",
       [DIGEST_START],
@@ -158,5 +165,46 @@ export async function countSubscribers(): Promise<number> {
   const { rows } = await c.query(
     "SELECT COUNT(*)::int AS n FROM subscribers WHERE unsubscribed_at IS NULL",
   );
+  return Number(rows[0]?.n ?? 0);
+}
+
+/* ─── Promo emails ─────────────────────────────────────────────────────────── */
+
+/** Readers still on the list who have not had this promo's email, oldest first. */
+export async function pendingPromo(promo: string, limit: number): Promise<SubscriberRecord[]> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query(
+    `SELECT s.* FROM subscribers s
+      WHERE s.unsubscribed_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM promo_sends p WHERE p.promo = $1 AND p.email = s.email)
+      ORDER BY s.id LIMIT $2`,
+    [promo, Math.min(Math.max(1, limit), 5000)],
+  );
+  return rows.map(toRecord);
+}
+
+/** Claim one address for one promo. False when it already had it: nobody gets two. */
+export async function claimPromoSend(promo: string, email: string): Promise<boolean> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query(
+    "INSERT INTO promo_sends (promo, email, sent_at) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING email",
+    [promo, email, new Date().toISOString()],
+  );
+  return rows.length > 0;
+}
+
+/** Hand the claim back when the send failed, so the next batch tries again. */
+export async function releasePromoSend(promo: string, email: string): Promise<void> {
+  const c = await db();
+  await migrate(c);
+  await c.query("DELETE FROM promo_sends WHERE promo = $1 AND email = $2", [promo, email]);
+}
+
+export async function countPromoSent(promo: string): Promise<number> {
+  const c = await db();
+  await migrate(c);
+  const { rows } = await c.query("SELECT COUNT(*)::int AS n FROM promo_sends WHERE promo = $1", [promo]);
   return Number(rows[0]?.n ?? 0);
 }

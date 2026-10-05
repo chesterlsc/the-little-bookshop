@@ -5,6 +5,7 @@ import { CartEmpty, CartLineRow } from "@/components/cart-ui";
 import { ButtonLink, Eyebrow, Section } from "@/components/ui";
 import { FREE_SHIPPING_MINIMUM, cartCount, cartSubtotal, shippableSubtotal, shippingFor, validateCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
+import { ShippingNudge } from "@/components/promo";
 
 export default function CartPage() {
   const { cart, ready } = useCart();
@@ -55,11 +56,7 @@ export default function CartPage() {
                     {shippable === 0 ? "None, it's digital" : shipping === 0 ? "Free" : formatMoney(shipping)}
                   </dd>
                 </div>
-                {shipping > 0 && (
-                  <p className="text-xs text-ink-600">
-                    Add {formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.
-                  </p>
-                )}
+                <ShippingNudge shippable={shippable} minimum={FREE_SHIPPING_MINIMUM} />
                 <div className="flex justify-between border-t border-brown-500/15 pt-2 text-[1.05rem]">
                   <dt className="font-display font-bold">Total</dt>
                   <dd className="font-display font-bold">{formatMoney(subtotal + shipping)}</dd>

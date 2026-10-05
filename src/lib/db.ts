@@ -84,6 +84,12 @@ export function getDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_gift_cards_order ON gift_cards(order_number);
     CREATE INDEX IF NOT EXISTS idx_gift_cards_token ON gift_cards(token);
+    CREATE TABLE IF NOT EXISTS promo_sends (
+      promo   TEXT NOT NULL,
+      email   TEXT NOT NULL,
+      sent_at TEXT NOT NULL,
+      PRIMARY KEY (promo, email)
+    );
     CREATE TABLE IF NOT EXISTS gift_card_uses (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       code         TEXT NOT NULL,

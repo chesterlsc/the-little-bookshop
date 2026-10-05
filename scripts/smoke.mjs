@@ -115,7 +115,9 @@ check("order page shows awaiting payment", (await page.textContent("body")).incl
 /* ── API-level edge cases ───────────────────────────────────────────────── */
 const cart = { lines: [{ type: "product", key: "k1", slug: "mini-plant", variantId: "white", qty: 1 }] };
 const customer = { fullName: "A", phone: "09171234567", email: "a@example.com", instagram: "@someone", address1: "x", barangay: "b", city: "y", province: "p", postalCode: "1000", addressNotes: "", orderNotes: "" };
-const post = (payload) => fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+// one address per run: the gift card guess limit must not carry over from the last run
+const RUN_IP = `smoke-checkout-${Date.now()}`;
+const post = (payload) => fetch(`${BASE}/api/checkout`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": RUN_IP }, body: JSON.stringify(payload) });
 
 const r1 = await (await post({ cart, customer })).json();
 check("api creates an order", /^LB\d+-[A-Z2-9]{6}$/.test(r1.orderNumber ?? ""));
@@ -215,6 +217,30 @@ check("book set code: 10% off the set only, normalized, shipping untouched",
   && setAlone.pay?.discount === Math.floor(setAlone.pay.subtotal / 10)
   && setOnly.pay?.discount === setAlone.pay.discount
   && setOnly.pay?.total === setOnly.pay.subtotal - setOnly.pay.discount + setOnly.pay.shipping);
+
+/* ── the running promo (promo.ts), while it runs ─────────────────────────── */
+{
+  // plain node: read the code and its dates straight from the source
+  const src = fs.readFileSync("src/lib/promo.ts", "utf8");
+  const code = src.match(/code: "(\w+)"/)[1];
+  const starts = new Date(src.match(/starts: "([^"]+)"/)[1]), ends = new Date(src.match(/ends: "([^"]+)"/)[1]);
+  const live = Date.now() >= starts && Date.now() < ends;
+  const shelves = (n) => ({ lines: [{ type: "product", key: "pc", slug: "mini-classic-bookshelf", variantId: "regular|choco-brown", qty: n }] });
+  const big = await (await post({ cart: shelves(3), customer, discountCode: code.toLowerCase() })).json();
+  const small = await (await post({ cart: shelves(2), customer, discountCode: code })).json();
+  if (live) {
+    check(`${code}: ₱100 off and free shipping at ₱1,999 and over`,
+      big.pay?.discount === 10000 && big.pay?.shipping === 0 && big.pay?.total === big.pay.subtotal - 10000,
+      JSON.stringify(big.pay ?? big).slice(0, 160));
+    check(`${code}: nothing off under ₱1,999`, small.pay?.discount === 0 && small.pay?.shipping > 0);
+    const giftPadded = await (await post({ cart: { lines: [...shelves(1).lines, { type: "product", key: "gp", slug: "gift-card", variantId: "2000", qty: 1, gift: { delivery: "self" } }] }, customer, discountCode: code })).json();
+    check(`${code}: gift cards don't count towards ₱1,999`, giftPadded.pay?.discount === 0);
+    const home = await (await fetch(BASE + "/")).text();
+    check(`${code}: the ribbon and the home band say so`, home.includes(code) && home.includes("Shop the treat"));
+  } else {
+    check(`${code}: outside its dates it takes nothing off`, big.pay?.discount === 0);
+  }
+}
 
 /* ── gift cards: bought, made only once paid, then spent ─────────────────── */
 {

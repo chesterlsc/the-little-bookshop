@@ -60,3 +60,33 @@ export function countSubscribers(): number {
     .get() as { n: number };
   return Number(row?.n ?? 0);
 }
+
+/* ─── Promo emails: see subscribers-pg ─────────────────────────────────────── */
+
+export function pendingPromo(promo: string, limit: number): SubscriberRecord[] {
+  return getDb()
+    .prepare(
+      `SELECT s.* FROM subscribers s
+        WHERE s.unsubscribed_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM promo_sends p WHERE p.promo = ? AND p.email = s.email)
+        ORDER BY s.id LIMIT ?`,
+    )
+    .all(promo, Math.min(Math.max(1, limit), 5000)) as SubscriberRecord[];
+}
+
+export function claimPromoSend(promo: string, email: string): boolean {
+  return (
+    getDb()
+      .prepare("INSERT INTO promo_sends (promo, email, sent_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")
+      .run(promo, email, new Date().toISOString()).changes > 0
+  );
+}
+
+export function releasePromoSend(promo: string, email: string): void {
+  getDb().prepare("DELETE FROM promo_sends WHERE promo = ? AND email = ?").run(promo, email);
+}
+
+export function countPromoSent(promo: string): number {
+  const row = getDb().prepare("SELECT COUNT(*) AS n FROM promo_sends WHERE promo = ?").get(promo) as { n: number };
+  return Number(row?.n ?? 0);
+}

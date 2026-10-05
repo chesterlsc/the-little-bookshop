@@ -51,3 +51,21 @@ export async function releaseDigest(ids: number[]): Promise<void> {
 export async function countSubscribers(): Promise<number> {
   return usePg ? (await pg()).countSubscribers() : sqlite.countSubscribers();
 }
+
+/** Readers who have not had this promo's email yet, oldest first. */
+export async function pendingPromo(promo: string, limit: number): Promise<SubscriberRecord[]> {
+  return usePg ? (await pg()).pendingPromo(promo, limit) : sqlite.pendingPromo(promo, limit);
+}
+
+/** One address, one promo, once: false when it has already been sent. */
+export async function claimPromoSend(promo: string, email: string): Promise<boolean> {
+  return usePg ? (await pg()).claimPromoSend(promo, email) : sqlite.claimPromoSend(promo, email);
+}
+
+export async function releasePromoSend(promo: string, email: string): Promise<void> {
+  return usePg ? (await pg()).releasePromoSend(promo, email) : sqlite.releasePromoSend(promo, email);
+}
+
+export async function countPromoSent(promo: string): Promise<number> {
+  return usePg ? (await pg()).countPromoSent(promo) : sqlite.countPromoSent(promo);
+}

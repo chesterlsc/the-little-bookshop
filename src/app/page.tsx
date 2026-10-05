@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { ButtonLink, Eyebrow, ScallopBand, Section, Badge } from "@/components/ui";
 import { GiftCardFront } from "@/components/gift-card-art";
+import { PromoBand } from "@/components/promo";
+import { promoLive } from "@/lib/promo";
 import {
   AmbientMeadow,
   BlueprintShelf,
@@ -262,6 +264,9 @@ export default function HomePage() {
         </div>
       </Section>
       <ScallopBand from="paper" to="cream" />
+
+      {/* ─── The running promo: the first thing under the fold, and gone when it ends ─── */}
+      <PromoBand initialLive={promoLive()} />
 
       {/* ─── The maker's note: the hero story, pinned just under the fold (mobile) ─── */}
       <Section className="pt-8 lg:hidden">

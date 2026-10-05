@@ -8,6 +8,7 @@ import { Badge, Button, ButtonLink, QuantityStepper } from "./ui";
 import { getProduct, getVariant, SHELF_THEMES, colorHex } from "@/lib/catalog";
 import { FREE_SHIPPING_MINIMUM, cartSubtotal, cartCount, giftOf, giftSummary, isGiftCard, lineUnitPrice, shippableSubtotal, type CartLine } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
+import { ShippingNudge } from "./promo";
 
 function OptionSummary({ options }: { options: Record<string, string> }) {
   const entries = Object.entries(options);
@@ -275,13 +276,7 @@ export function CartDrawer() {
               <span className="font-sans text-sm font-bold text-ink-600">Subtotal</span>
               <span className="font-display text-lg font-bold">{formatMoney(subtotal)}</span>
             </div>
-            <p className="mb-3 text-xs text-ink-400">
-              {shippable === 0
-                ? "A gift card is digital, so there's no shipping fee."
-                : shippable >= FREE_SHIPPING_MINIMUM
-                  ? "Shipping is free on this order."
-                  : `Add ${formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.`}
-            </p>
+            <ShippingNudge shippable={shippable} minimum={FREE_SHIPPING_MINIMUM} className="mb-3" />
             <div className="grid grid-cols-2 gap-2">
               <ButtonLink href="/cart" variant="quiet" onClick={closeDrawer}>
                 View cart

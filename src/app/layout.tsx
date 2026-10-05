@@ -13,6 +13,7 @@ import { SplashScreen } from "@/components/splash-screen";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BottomNav } from "@/components/bottom-nav";
+import { CodeFromLink } from "@/components/promo";
 import { SITE } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <CartDrawer />
           <WelcomePopup />
           <CookieBar />
+          <CodeFromLink />
         </CartProvider>
       </body>
     </html>

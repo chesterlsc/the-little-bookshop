@@ -46,6 +46,7 @@ export const devEmail: EmailProvider = {
       `From: ${fromAddress()}`,
       `To: ${recipients}`,
       `Subject: ${mail.subject}`,
+      ...Object.entries(mail.headers ?? {}).map(([k, v]) => `${k}: ${v}`),
       "MIME-Version: 1.0",
     ];
     // Real MIME when something is attached, so the .eml opens with the image

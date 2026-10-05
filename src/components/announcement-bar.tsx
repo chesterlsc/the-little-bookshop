@@ -1,5 +1,7 @@
 import { FREE_SHIPPING_MINIMUM } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
+import { promoLive } from "@/lib/promo";
+import { PromoRibbon } from "./promo";
 
 /**
  * Thin ribbon above the header. Sits outside the sticky nav, so it scrolls away.
@@ -42,10 +44,13 @@ export function AnnouncementBar() {
   return (
     <p className="announcement flex items-center justify-center gap-2 px-4 pb-[0.42rem] text-center font-sans text-[0.76rem] font-bold tracking-[0.04em] text-cream-50 sm:text-[0.83rem]">
       <Sprig delay={240} />
-      <span>
-        Free shipping on orders over{" "}
-        <span className="ribbon-figure">{formatMoney(FREE_SHIPPING_MINIMUM).replace(/\.00$/, "")}</span>
-      </span>
+      {/* while a promo runs, the ribbon is its first line; then it goes back to shipping */}
+      <PromoRibbon initialLive={promoLive()}>
+        <span>
+          Free shipping on orders over{" "}
+          <span className="ribbon-figure">{formatMoney(FREE_SHIPPING_MINIMUM).replace(/\.00$/, "")}</span>
+        </span>
+      </PromoRibbon>
       <Sprig flip delay={420} />
     </p>
   );

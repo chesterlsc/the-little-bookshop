@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
@@ -24,7 +24,9 @@ import {
 import { GIFT_ON_GIFT } from "@/lib/gift-card-types";
 import { EMPTY_CUSTOMER, validateCustomer, type CustomerInfo, type FieldErrors } from "@/lib/checkout";
 import { formatMoney } from "@/lib/money";
-import { codeLabel, discountFor, isValidCode, normalizeCode } from "@/lib/discount";
+import { codeHint, codeLabel, discountFor, isValidCode, normalizeCode } from "@/lib/discount";
+import { PROMO } from "@/lib/promo";
+import { PromoApply, ShippingNudge, rememberedCode } from "@/components/promo";
 import { IconCheck } from "@/components/icons";
 
 const FIELDS: {
@@ -94,9 +96,20 @@ export default function CheckoutPage() {
       setCodeMessage(null);
     } else {
       setAppliedCode("");
-      setCodeMessage("That code isn't one of ours.");
+      setCodeMessage(codeHint(code, cart));
     }
   };
+  const takeCode = (code: string) => {
+    setCodeInput(code);
+    setAppliedCode(code);
+    setCodeMessage(null);
+  };
+
+  // a code a link brought them here with is waiting, as long as it still runs
+  useEffect(() => {
+    const code = rememberedCode();
+    if (code) takeCode(code);
+  }, []);
 
   // The gift card box: what they typed, and the card the shop says it is. Only
   // a preview: the server looks the card up again and spends what is really on it.
@@ -363,8 +376,9 @@ export default function CheckoutPage() {
                     ? "Got a code? Pop it in here."
                     : discount > 0
                       ? codeLabel(appliedCode)
-                      : "That code is for mini book sets. Add a set to use it.")}
+                      : codeHint(appliedCode, cart))}
               </p>
+              <PromoApply applied={appliedCode} onApply={takeCode} qualifies={discountFor(PROMO.code, cart) > 0} />
             </div>
 
             {/* its own box, its own colour: a gift card is money, a discount is not */}
@@ -448,11 +462,7 @@ export default function CheckoutPage() {
                   {shippable === 0 ? "None, it's digital" : shipping === 0 ? "Free" : formatMoney(shipping)}
                 </dd>
               </div>
-              {shipping > 0 && (
-                <p className="text-xs text-ink-600">
-                  Add {formatMoney(FREE_SHIPPING_MINIMUM - shippable)} more for free shipping.
-                </p>
-              )}
+              <ShippingNudge shippable={shippable} minimum={FREE_SHIPPING_MINIMUM} />
               {cardApplied > 0 && gift && (
                 <div className="flex justify-between text-rose-700">
                   <dt>Gift card ••{gift.last4}</dt>
