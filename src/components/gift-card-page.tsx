@@ -220,7 +220,7 @@ export function GiftCardPage() {
           {/* ── the choices ── */}
           <div>
             <h1 className="font-display text-[1.9rem] font-bold leading-none text-ink-900 sm:text-4xl">Gift card</h1>
-            <p className="story-line mt-1.5 text-[1.02rem] text-ink-600">Let them pick their own tiny shelf.</p>
+            <p className="gift-lede story-line mt-1.5 text-[1.02rem] text-ink-600">Let them pick their own tiny shelf.</p>
 
             <p id="gift-amount" className="mb-1.5 mt-3 font-sans text-sm font-bold text-ink-800">
               Pick an amount

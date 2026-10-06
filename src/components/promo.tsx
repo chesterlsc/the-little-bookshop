@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { isValidCode, normalizeCode } from "@/lib/discount";
 import { formatMoney } from "@/lib/money";
 import { PROMO, promoDaysLeft, promoLive } from "@/lib/promo";
@@ -54,22 +53,6 @@ export function rememberedCode(): string {
   } catch {
     return "";
   }
-}
-
-/** The ribbon's words: the promo while it runs, `children` (free shipping) otherwise. */
-export function PromoRibbon({ initialLive, children }: { initialLive: boolean; children: ReactNode }) {
-  const live = usePromoLive(initialLive);
-  if (!live) return <>{children}</>;
-  return (
-    <Link href={SHOP_LINK} className="promo-ribbon inline-flex items-center gap-1.5 hover:underline">
-      <span className="hidden sm:inline">A little 10.10 treat ·</span>
-      <span>
-        {peso(PROMO.amountOff)} off {peso(PROMO.minimum)}+ with
-      </span>
-      <span className="promo-pill">{PROMO.code}</span>
-      <span className="hidden md:inline">· plus free shipping</span>
-    </Link>
-  );
 }
 
 /**

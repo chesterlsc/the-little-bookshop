@@ -1,7 +1,5 @@
-import { FREE_SHIPPING_MINIMUM } from "@/lib/cart";
-import { formatMoney } from "@/lib/money";
 import { promoLive } from "@/lib/promo";
-import { PromoRibbon } from "./promo";
+import { RibbonTicker } from "./ribbon-ticker";
 
 /**
  * Thin ribbon above the header. Sits outside the sticky nav, so it scrolls away.
@@ -15,7 +13,7 @@ function Sprig({ flip = false, delay = 0 }: { flip?: boolean; delay?: number }) 
   return (
     <svg
       viewBox="0 0 26 12"
-      className={`h-2.5 w-[1.3rem] shrink-0 opacity-80 max-[380px]:hidden ${flip ? "-scale-x-100" : ""}`}
+      className={`h-3 w-[1.6rem] shrink-0 opacity-80 max-[400px]:hidden ${flip ? "-scale-x-100" : ""}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -42,16 +40,15 @@ function Sprig({ flip = false, delay = 0 }: { flip?: boolean; delay?: number }) 
 
 export function AnnouncementBar() {
   return (
-    <p className="announcement flex items-center justify-center gap-2 px-4 pb-[0.42rem] text-center font-sans text-[0.76rem] font-bold tracking-[0.04em] text-cream-50 sm:text-[0.83rem]">
+    <div
+      role="region"
+      aria-label="Shop news"
+      className="announcement isolate flex items-center justify-center gap-2.5 overflow-hidden pl-4 pr-10 text-center font-display text-[0.9rem] font-bold leading-none tracking-[0.02em] text-cream-50 sm:text-[1rem]"
+    >
       <Sprig delay={240} />
-      {/* while a promo runs, the ribbon is its first line; then it goes back to shipping */}
-      <PromoRibbon initialLive={promoLive()}>
-        <span>
-          Free shipping on orders over{" "}
-          <span className="ribbon-figure">{formatMoney(FREE_SHIPPING_MINIMUM).replace(/\.00$/, "")}</span>
-        </span>
-      </PromoRibbon>
+      {/* free shipping, and while a promo runs its code and its days, taking turns */}
+      <RibbonTicker initialLive={promoLive()} />
       <Sprig flip delay={420} />
-    </p>
+    </div>
   );
 }
