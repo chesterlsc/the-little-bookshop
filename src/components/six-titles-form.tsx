@@ -23,11 +23,14 @@ export function SixTitlesForm({
   onChange,
   showErrors = false,
   idPrefix = "set",
+  max = MAX_TITLES,
 }: {
   titles: CustomTitle[];
   onChange: (next: CustomTitle[]) => void;
   showErrors?: boolean;
   idPrefix?: string;
+  /** most books this form may grow to; the Little Shelf Set's slots are six */
+  max?: number;
 }) {
   const done = filledCount(titles);
 
@@ -115,7 +118,7 @@ export function SixTitlesForm({
         })}
       </ol>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {titles.length + SET_SIZE <= MAX_TITLES && (
+        {titles.length + SET_SIZE <= max && (
           <button
             type="button"
             onClick={() => onChange([...titles, ...emptyTitles()])}

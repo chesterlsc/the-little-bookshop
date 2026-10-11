@@ -24,7 +24,7 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               priority={eager}
-              className={`${product.digital ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.04] ${hover ? "group-hover:opacity-0" : ""}`}
+              className={`${product.digital || product.kit ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.04] ${hover ? "group-hover:opacity-0" : ""}`}
             />
             {hover && (
               <Image
@@ -64,7 +64,9 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
             {product.digital && <span className="font-sans text-xs font-bold text-ink-600">From</span>}
             <Price amount={product.minPrice} className="text-[1.02rem]" />
           </span>
-          {product.digital ? (
+          {product.kit ? (
+            <Badge tone="rose">Best value</Badge>
+          ) : product.digital ? (
             <Badge tone="blush">Digital</Badge>
           ) : product.customSet || product.customSingle ? (
             <Badge tone="sage">Personalized</Badge>

@@ -8,6 +8,8 @@ import { ProductConfigurator } from "@/components/product-configurator";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductCard } from "@/components/product-card";
 import { GiftCardPage } from "@/components/gift-card-page";
+import { ShelfSetPage } from "@/components/shelf-set-page";
+import { ShelfSetCrossSell } from "@/components/shelf-set-band";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
@@ -40,6 +42,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   if (!product) notFound();
   // a gift card is not a thing on a shelf: it has its own page
   if (product.digital) return <GiftCardPage />;
+  // the set is four choices on one page, not a product with options
+  if (product.kit) return <ShelfSetPage />;
 
   const category = CATEGORIES[product.category];
   const related = product.related
@@ -105,6 +109,9 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             <div className="mt-5">
               <ProductConfigurator product={product} />
             </div>
+
+            {/* a shelf's page offers the whole set built around it */}
+            {product.category === "bookshelves" && <ShelfSetCrossSell shelfSlug={product.slug} />}
 
             {/* included titles for ready-made sets */}
             {product.setOfSix && !product.customSet && (

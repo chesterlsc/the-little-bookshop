@@ -16,7 +16,8 @@ export type Category =
   | "mini-books"
   | "keychains"
   | "accessories"
-  | "gift-cards";
+  | "gift-cards"
+  | "shelf-sets";
 
 export const CATEGORIES: Record<
   Category,
@@ -60,6 +61,13 @@ export const CATEGORIES: Record<
     blurb: "₱500, ₱1,000 or ₱2,000. Digital, so there is no shipping fee. They choose their own tiny shelf.",
     art: "books-set",
     photo: "/gift-cards/poster.webp",
+  },
+  "shelf-sets": {
+    name: "Shelf Sets",
+    short: "Sets",
+    blurb: "Everything for a little shelf in one go: a shelf, two book sets, a plant and letters. ₱1,799.",
+    art: "books-set",
+    photo: "/promos/shelf-set.webp",
   },
 };
 
@@ -146,6 +154,8 @@ export interface Product {
   customSet?: boolean;
   /** One personalization field (e.g. a single book title). */
   customSingle?: boolean;
+  /** A fixed-price set of other products, chosen on its own page (the Little Shelf Set). */
+  kit?: boolean;
   /** Nothing to post: a gift card. No shipping, no address, one per basket line. */
   digital?: boolean;
   /** Six included titles for ready-made sets, when confirmed. */
@@ -293,9 +303,56 @@ export const GIFT_CARD_AMOUNTS: { price: Cents; label: string }[] = [
 export const giftCardArt = (price: Cents, ext: "webp" | "jpg" = "webp") => `/gift-cards/card-${price / 100}.${ext}`;
 export const GIFT_CARD_BACK = "/gift-cards/card-back.webp";
 
+/* ─── The Little Shelf Set ─────────────────────────────────────────────────── */
+
+/**
+ * Everything for a little shelf at one price: a Regular shelf in any style and
+ * colour, two mini book sets of six (twelve books), the miniature plant, and a
+ * shelf letter in any word and colour. The parts are real catalog products, so
+ * the order says exactly what to make; only the price is the set's own.
+ */
+export const SHELF_SET = {
+  slug: "little-shelf-set",
+  name: "The Little Shelf Set",
+  price: 179900 as Cents,
+  /** what the set is made of: these products, and these only */
+  plantSlug: "mini-plant",
+  letterSlug: "mini-shelf-letters",
+  setsInIt: 2,
+  poster: { src: "/promos/shelf-set.webp", email: "/promos/shelf-set.jpg", width: 1024, height: 1536 },
+  /** the four little pictures from the shop's own poster, in the order they add up */
+  includes: [
+    { icon: "/promos/set-shelf.webp", label: "1 Regular shelf", detail: "any style, any colour" },
+    { icon: "/promos/set-books.webp", label: "2 mini book sets", detail: "12 books of your choice" },
+    { icon: "/promos/set-plant.webp", label: "1 miniature plant", detail: "in its little pot" },
+    { icon: "/promos/set-letters.webp", label: "1 shelf letter", detail: "any word, any colour" },
+  ],
+} as const;
+
 /* ─── Catalog ──────────────────────────────────────────────────────────────── */
 
 export const PRODUCTS: Product[] = [
+  /* ─── The set: first in the shop, because it is the easiest way to start ─── */
+  make({
+    slug: SHELF_SET.slug,
+    name: SHELF_SET.name,
+    category: "shelf-sets",
+    blurb: "Everything you need to build your little shelf: a shelf, 12 books, a plant and a letter.",
+    description: [
+      "A Regular shelf in the style and colour you love, two mini book sets of your choice (twelve tiny books, named or your own titles), a miniature plant and a shelf letter. Made together, packed together, ₱1,799.",
+    ],
+    art: "books-set",
+    images: [
+      { src: SHELF_SET.poster.src, alt: "The Little Shelf Set: a Regular shelf, two mini book sets, a miniature plant and a shelf letter, for ₱1,799", kind: "illustration" },
+    ],
+    options: [],
+    variants: [{ id: "set", options: {}, price: SHELF_SET.price, available: true }],
+    priceStatus: "confirmed",
+    badges: ["Best value"],
+    kit: true,
+    details: {},
+  }),
+
   /* ─── Mini bookshelves ─── */
   make({
     slug: "mini-scalloped-bookshelf",
@@ -718,6 +775,26 @@ export function getVariant(product: Product, variantId: string): Variant | undef
     // came in nine colors carry an old color id, and they still mean this one
     (product.variants.length === 1 ? product.variants[0] : undefined)
   );
+}
+
+/**
+ * What the set's parts come to bought one by one, for a shelf and two sets:
+ * the honest "you save" figure. With no arguments, the range across the three
+ * shelves and the dearest ready-made pair, for the ads.
+ */
+export function shelfSetWorth(shelfSlug?: string, setSlugs?: string[]): Cents {
+  const regular = (slug: string) =>
+    getProduct(slug)?.variants.find((v) => v.options.Size === "Regular")?.price ?? 0;
+  const setPrice = (slug: string) => getProduct(slug)?.minPrice ?? 0;
+  const extras =
+    (getProduct(SHELF_SET.plantSlug)?.minPrice ?? 0) + (getProduct(SHELF_SET.letterSlug)?.minPrice ?? 0);
+  const shelf = shelfSlug
+    ? regular(shelfSlug)
+    : Math.max(...productsInCategory("bookshelves").map((p) => regular(p.slug)));
+  const sets = setSlugs
+    ? setSlugs.reduce((t, s) => t + setPrice(s), 0)
+    : SHELF_SET.setsInIt * Math.max(...productsInCategory("mini-books").map((p) => p.minPrice));
+  return shelf + sets + extras;
 }
 
 export function productsInCategory(category: Category): Product[] {

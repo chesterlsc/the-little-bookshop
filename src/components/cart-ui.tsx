@@ -6,7 +6,7 @@ import { ProductThumb } from "./product-thumb";
 import { IconX, IconTrash, IconBasket } from "./icons";
 import { Badge, Button, ButtonLink, QuantityStepper } from "./ui";
 import { getProduct, getVariant, SHELF_THEMES, colorHex } from "@/lib/catalog";
-import { FREE_SHIPPING_MINIMUM, cartSubtotal, cartCount, giftOf, giftSummary, isGiftCard, lineUnitPrice, shippableSubtotal, type CartLine } from "@/lib/cart";
+import { FREE_SHIPPING_MINIMUM, cartSubtotal, cartCount, giftOf, giftSummary, isGiftCard, isShelfSet, lineUnitPrice, shippableSubtotal, type CartLine } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 import { ShippingNudge } from "./promo";
 
@@ -95,7 +95,10 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
     const set = getProduct(line.set.slug);
     const setVar = set && getVariant(set, line.set.variantId);
     const theme = SHELF_THEMES.find((t) => t.id === line.themeId);
-    title = "Little Shelf Bundle";
+    const kit = isShelfSet(line);
+    const extra = (line.extraSets ?? []).map((s) => getProduct(s.slug)?.name).filter(Boolean);
+    const allTitles = [line.set, ...(line.extraSets ?? [])].flatMap((s) => s.titles ?? []);
+    title = kit ? "The Little Shelf Set" : "Little Shelf Bundle";
     body = (
       <>
         <p className="text-xs text-ink-600">
@@ -104,15 +107,16 @@ export function CartLineRow({ line, compact = false }: { line: CartLine; compact
         </p>
         <p className="text-xs text-ink-600">
           {set?.name}
-          {setVar && setVar.options["Cover Style"] ? `, ${setVar.options["Cover Style"]}` : ""}
+          {setVar && setVar.options["Cover Style"] && !kit ? `, ${setVar.options["Cover Style"]}` : ""}
+          {extra.length > 0 && ` + ${extra.join(", ")}`}
         </p>
-        {line.set.titles && (
+        {allTitles.length > 0 && (
           <details className="mt-1">
             <summary className="cursor-pointer text-xs font-bold text-sage-700">
-              {line.set.titles.length} custom titles
+              {allTitles.length} custom titles
             </summary>
             <ol className="mt-1 list-decimal pl-4 text-xs text-ink-600">
-              {line.set.titles.map((t, i) => (
+              {allTitles.map((t, i) => (
                 <li key={i}>
                   {t.title}
                   {t.author ? `, ${t.author}` : ""}

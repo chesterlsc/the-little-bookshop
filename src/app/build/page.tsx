@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Eyebrow, Section } from "@/components/ui";
+import Link from "next/link";
 import { ShelfBuilder } from "@/components/shelf-builder";
+import { SHELF_SET } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Build your little shelf",
@@ -20,6 +22,14 @@ export default function BuildPage() {
             saves itself, so wander off and come back any time.
           </p>
         </div>
+        {/* the shortcut, for anyone who would rather choose four things than build */}
+        <Link href={`/products/${SHELF_SET.slug}`} className="kit-cross kit-cross-link mx-auto mb-6 flex max-w-2xl items-center gap-3">
+          <span className="font-sans text-[0.72rem] font-black uppercase tracking-[0.18em] text-rose-600">New</span>
+          <span className="flex-1 font-sans text-[0.92rem] text-ink-800">
+            <strong className="font-display">The Little Shelf Set</strong>: a Regular shelf, 12 books, a plant and a letter, all for ₱1,799.
+          </span>
+          <span aria-hidden className="font-display text-lg text-ink-800">→</span>
+        </Link>
         <ShelfBuilder />
       </Section>
     </div>

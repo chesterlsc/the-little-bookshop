@@ -1183,8 +1183,8 @@ a, button {
 
 /* The gift card page ends above its own buy tray, which sits above the bottom
    bar and the basket button that rises out of it. */
-.gift-page { padding-bottom: calc(112px + 84px + env(safe-area-inset-bottom)); }
-.gift-tray {
+.gift-page, .kit-page { padding-bottom: calc(112px + 84px + env(safe-area-inset-bottom)); }
+.gift-tray, .kit-tray {
   position: fixed;
   left: 0.75rem;
   right: 0.75rem;
@@ -1192,11 +1192,11 @@ a, button {
   z-index: 60;
 }
 @media (min-width: 1024px) {
-  .gift-page { padding-bottom: 3rem; }
+  .gift-page, .kit-page { padding-bottom: 3rem; }
 }
 /* the cookie slip must not sit on the tray's one button */
 @media (max-width: 1023px) {
-  body:has(.gift-tray) aside[aria-label="Cookies"] { bottom: calc(190px + env(safe-area-inset-bottom)); }
+  body:has(.gift-tray, .kit-tray) aside[aria-label="Cookies"] { bottom: calc(190px + env(safe-area-inset-bottom)); }
 }
 
 /* The card on the counter: it leans towards the pointer (two CSS variables set
@@ -1482,6 +1482,7 @@ a, button {
 .ribbon-tone.is-on { opacity: 1; }
 .ribbon-tone-rose { background: linear-gradient(180deg, #9a6366, var(--color-rose-700) 55%, #74494d); }
 .ribbon-tone-cocoa { background: linear-gradient(180deg, var(--color-brown-600), var(--color-brown-700) 55%, #4d3b2a); }
+.ribbon-tone-berry { background: linear-gradient(180deg, #7c4a5f, #6a3c50 55%, #573142); }
 
 /* the badge: a cream coin with the message's mark, popping in with it */
 .ribbon-badge {
@@ -1498,6 +1499,8 @@ a, button {
 }
 .ribbon-msg[data-tone="rose"] .ribbon-badge { color: var(--color-rose-700); }
 .ribbon-msg[data-tone="cocoa"] .ribbon-badge { color: var(--color-brown-700); }
+.ribbon-msg[data-tone="berry"] .ribbon-badge,
+.ribbon-stub-berry { color: #6a3c50; }
 
 /* the code: a cream ticket stub with notched sides, tilted, catching the light */
 .ribbon-stub {
@@ -1650,4 +1653,192 @@ a, button {
   /* the messages still take turns, as a plain swap; nothing slides, drives or shines */
   .ribbon-msg { transform: none !important; }
   .ribbon-progress, .ribbon-sheen { display: none; }
+}
+
+/* ─── The Little Shelf Set (shelf-set-band.tsx, shelf-set-page.tsx) ───────────── */
+
+/* the title on a blush brush stroke, like the poster's */
+.kit-brush {
+  position: relative;
+  z-index: 0;
+  white-space: nowrap;
+}
+.kit-brush::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0.18em -0.28em 0.02em;
+  background: color-mix(in srgb, var(--color-blush-300) 75%, transparent);
+  border-radius: 46% 54% 42% 58% / 60% 44% 56% 40%;
+  rotate: -1.2deg;
+}
+/* on a phone the title may wrap, so the stroke follows each line instead */
+@media (max-width: 639px) {
+  .kit-brush { white-space: normal; background: linear-gradient(transparent 38%, color-mix(in srgb, var(--color-blush-300) 75%, transparent) 38%, color-mix(in srgb, var(--color-blush-300) 75%, transparent) 92%, transparent 92%); -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 0.15em; }
+  .kit-brush::before { content: none; }
+}
+
+/* the price, as a rose stamp */
+.kit-price {
+  display: inline-block;
+  padding: 0.18em 0.75em 0.22em;
+  border-radius: 48% 52% 46% 54% / 58% 46% 54% 42%;
+  background: linear-gradient(180deg, var(--color-rose-500), var(--color-rose-600));
+  color: var(--color-cream-50);
+  font: 800 1.6rem/1 var(--font-display);
+  letter-spacing: 0.01em;
+  rotate: -3deg;
+  box-shadow: 0 0 0 3px var(--color-cream-50), 0 0 0 4.5px var(--color-rose-500), 0 10px 18px -8px rgba(133, 88, 92, 0.6);
+}
+
+/* the four things, in cream coins */
+.kit-icon {
+  display: inline-flex;
+  height: 4.5rem;
+  width: 4.5rem;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f6ead9;
+  box-shadow: 0 0 0 3px var(--color-cream-50), 0 8px 16px -10px rgba(67, 54, 42, 0.45);
+}
+.kit-icon img { height: 100%; width: 100%; object-fit: cover; }
+
+/* shelf + books + plant + letter = ₱1,799 */
+.kit-sum {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1.4rem;
+  list-style: none;
+}
+.kit-sum > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+.kit-sum-label { font: 700 0.92rem/1.15 var(--font-display); color: var(--color-ink-900); }
+.kit-sum-detail { font: 400 0.76rem/1.2 var(--font-sans); color: var(--color-ink-600); }
+.kit-sum-total { grid-column: 1 / -1; padding-top: 0.4rem; }
+.kit-sum-total::before {
+  content: "=";
+  display: block;
+  margin-bottom: 0.3rem;
+  font: 800 1.4rem/1 var(--font-display);
+  color: var(--color-rose-600);
+}
+/* the plus signs, between the things */
+.kit-sum > li:not(.kit-sum-total):not(:nth-last-child(2))::after {
+  content: "+";
+  position: absolute;
+  right: -1.05rem;
+  top: 1.55rem;
+  font: 800 1.3rem/1 var(--font-display);
+  color: var(--color-rose-600);
+}
+/* on a phone the sum is two by two: no plus at the end of the first row (as specific as the rule above) */
+.kit-sum > li:not(.kit-sum-total):nth-child(2)::after { content: none; }
+@media (min-width: 640px) {
+  .kit-sum { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; align-items: start; gap: 0 1.6rem; }
+  .kit-sum-total { grid-column: auto; display: flex; align-items: center; gap: 0.7rem; padding-top: 1.1rem; }
+  .kit-sum-total::before { margin: 0; }
+  .kit-sum > li:not(.kit-sum-total):nth-child(2)::after { content: "+"; }
+}
+/* small, in a row, for the "make it a set" card */
+.kit-sum-compact { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 0 0.9rem; align-items: center; }
+.kit-sum-compact .kit-icon { height: 3rem; width: 3rem; }
+.kit-sum-compact .kit-sum-label { font-size: 0.7rem; }
+.kit-sum-compact > li:not(.kit-sum-total):nth-child(2)::after { content: "+"; }
+.kit-sum-compact > li:not(.kit-sum-total):not(:nth-last-child(2))::after { right: -0.7rem; top: 0.85rem; font-size: 1rem; }
+.kit-sum-compact .kit-sum-total { grid-column: auto; display: flex; align-items: center; gap: 0.4rem; padding: 0; }
+.kit-sum-compact .kit-sum-total::before { margin: 0; font-size: 1.1rem; }
+.kit-sum-compact .kit-price { font-size: 1rem; }
+
+/* the home band */
+.set-band { background: color-mix(in srgb, var(--color-blush-100) 60%, var(--color-cream-50)); }
+.set-band-poster img { box-shadow: 0 28px 40px -24px rgba(67, 54, 42, 0.6), 0 0 0 1px rgba(67, 54, 42, 0.06); }
+.set-band-sticker {
+  position: absolute;
+  z-index: 1;
+  top: -1rem;
+  left: -1.1rem;
+  display: flex;
+  height: 4.4rem;
+  width: 4.4rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-sage-700);
+  color: var(--color-cream-50);
+  font: 800 1rem/1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 0 4px var(--color-sage-700), 0 0 0 5.5px var(--color-cream-50), 0 10px 18px -8px rgba(67, 54, 42, 0.5);
+  outline: 1.5px dashed var(--color-cream-50);
+  outline-offset: -7px;
+  rotate: -14deg;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .set-band-poster { animation: set-float 6s ease-in-out infinite; }
+  .set-band-sticker { animation: promo-wobble 4.5s ease-in-out infinite; }
+  /* the price lands like a stamp as the band comes into view */
+  @supports (animation-timeline: view()) {
+    .set-band .kit-price {
+      animation: kit-stamp linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 38%;
+    }
+  }
+}
+@keyframes set-float {
+  0%, 100% { translate: 0 0; rotate: 1.5deg; }
+  50% { translate: 0 -8px; rotate: -0.5deg; }
+}
+@keyframes kit-stamp {
+  from { scale: 1.6; opacity: 0; rotate: 8deg; }
+  70% { scale: 0.94; opacity: 1; }
+  to { scale: 1; opacity: 1; rotate: -3deg; }
+}
+
+/* the shelf page's offer, and the builder's shortcut */
+.kit-cross {
+  border: 1.5px dashed var(--color-rose-500);
+  border-radius: 20px 27px 19px 25px / 25px 19px 27px 20px;
+  background: color-mix(in srgb, var(--color-blush-100) 70%, var(--color-cream-50));
+  padding: 1rem 1.1rem;
+}
+.kit-cross-link { transition: transform 0.2s ease, background 0.2s ease; }
+.kit-cross-link:hover { background: var(--color-blush-100); transform: translateY(-1px); }
+
+/* the set page's steps and choices */
+.kit-step-n {
+  display: inline-flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-ink-800);
+  color: var(--color-cream-50);
+  font: 800 0.9rem/1 var(--font-display);
+}
+.kit-choice {
+  display: block;
+  padding: 0.4rem;
+  border: 1.5px solid var(--color-taupe-300);
+  border-radius: 1rem;
+  background: var(--color-cream-50);
+  text-align: center;
+  color: var(--color-ink-600);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kit-choice:hover { border-color: var(--color-brown-500); }
+.kit-choice.is-on {
+  border: 2.5px solid var(--color-ink-800);
+  color: var(--color-ink-900);
+  box-shadow: 0 4px 0 var(--color-ink-800);
+  transform: translateY(-2px);
 }

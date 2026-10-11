@@ -242,6 +242,35 @@ check("book set code: 10% off the set only, normalized, shipping untouched",
   }
 }
 
+/* ── the Little Shelf Set: one price, exactly its parts ─────────────────── */
+{
+  const kit = (over = {}) => ({ lines: [{
+    type: "bundle", key: "kit", qty: 1, kit: "little-shelf-set",
+    shelf: { slug: "mini-arched-bookshelf", variantId: "regular|bone-white" },
+    set: { slug: "mini-jenny-han-set", variantId: "front-back-spine" },
+    extraSets: [{ slug: "custom-mini-book-set", variantId: "front-back-spine", titles: titles(6) }],
+    accessories: [{ slug: "mini-plant", variantId: "white" }, { slug: "mini-shelf-letters", variantId: "tbr|choco-brown" }],
+    ...over,
+  }] });
+  const ok = await (await post({ cart: kit(), customer })).json();
+  check("the Little Shelf Set costs ₱1,799, whatever its parts would",
+    ok.pay?.subtotal === 179900 && ok.pay?.items?.[0]?.name === "The Little Shelf Set"
+    && ok.pay.items[0].details.some((d) => d.startsWith("Book set 2: Custom Mini Book Set"))
+    && ok.pay.items[0].titles?.length === 6,
+    JSON.stringify(ok.pay ?? ok).slice(0, 200));
+  check("the set's shelf must be Regular",
+    (await post({ cart: kit({ shelf: { slug: "mini-arched-bookshelf", variantId: "mini|bone-white" } }), customer })).status === 422);
+  check("the set has exactly two book sets",
+    (await post({ cart: kit({ extraSets: [] }), customer })).status === 422
+    && (await post({ cart: kit({ extraSets: [kit().lines[0].set, kit().lines[0].set] }), customer })).status === 422);
+  check("a custom set in the set is six books, not twelve",
+    (await post({ cart: kit({ extraSets: [{ slug: "custom-mini-book-set", variantId: "front-back-spine", titles: titles(12) }] }), customer })).status === 422);
+  check("the set's extras are the plant and one letter, nothing more",
+    (await post({ cart: kit({ accessories: [{ slug: "mini-plant", variantId: "white" }, { slug: "mini-ladder", variantId: "sage-green" }] }), customer })).status === 422);
+  const home = await (await fetch(BASE + "/")).text();
+  check("the home page leads with the set", home.includes("The Little Shelf Set") && home.includes("Build my set"));
+}
+
 /* ── gift cards: bought, made only once paid, then spent ─────────────────── */
 {
   const mails = () => fs.readdirSync("var/outbox").filter((f) => f.endsWith(".eml")).map((f) => fs.readFileSync(`var/outbox/${f}`, "utf8"));

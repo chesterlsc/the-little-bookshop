@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { ButtonLink, Eyebrow, ScallopBand, Section, Badge } from "@/components/ui";
 import { GiftCardFront } from "@/components/gift-card-art";
 import { PromoBand } from "@/components/promo";
+import { ShelfSetBand } from "@/components/shelf-set-band";
 import { promoLive } from "@/lib/promo";
 import {
   AmbientMeadow,
@@ -263,9 +264,13 @@ export default function HomePage() {
           </div>
         </div>
       </Section>
-      <ScallopBand from="paper" to="cream" />
+      <ScallopBand from="paper" to="blush" />
 
-      {/* ─── The running promo: the first thing under the fold, and gone when it ends ─── */}
+      {/* ─── The Little Shelf Set: the first thing under the fold ─── */}
+      <ShelfSetBand />
+      <ScallopBand from="blush" to="cream" />
+
+      {/* ─── The running promo, gone when it ends ─── */}
       <PromoBand initialLive={promoLive()} />
 
       {/* ─── The maker's note: the hero story, pinned just under the fold (mobile) ─── */}
@@ -342,7 +347,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="enter-stagger no-scrollbar -mx-4 -mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 pt-5 sm:mx-0 sm:mt-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-2 sm:pt-0 lg:grid-cols-5">
-          {(Object.entries(CATEGORIES) as [Category, (typeof CATEGORIES)[Category]][]).filter(([slug]) => slug !== "gift-cards").map(([slug, cat], i) => (
+          {(Object.entries(CATEGORIES) as [Category, (typeof CATEGORIES)[Category]][]).filter(([slug]) => slug !== "gift-cards" && slug !== "shelf-sets").map(([slug, cat], i) => (
             <Link
               key={slug}
               href={`/shop/${slug}`}

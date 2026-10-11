@@ -1,15 +1,17 @@
-import { getProduct, getVariant, SHELF_THEMES } from "./catalog";
+import { getProduct, getVariant, SHELF_SET, SHELF_THEMES } from "./catalog";
 import {
   cartSubtotal,
   giftOf,
   giftSummary,
   isDigitalOnly,
   isGiftCard,
+  isShelfSet,
   lineUnitPrice,
   setsOf,
   shippableSubtotal,
   shippingFor,
   validateCart,
+  type BundleLine,
   type Cart,
   type CartLine,
 } from "./cart";
@@ -152,6 +154,7 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
       notes: line.notes,
     };
   }
+  if (isShelfSet(line)) return shelfSetDetails(line);
   const shelf = getProduct(line.shelf.slug)!;
   const shelfVar = getVariant(shelf, line.shelf.variantId)!;
   const set = getProduct(line.set.slug)!;
@@ -175,6 +178,29 @@ function lineDetails(line: CartLine): { name: string; details: string[]; titles?
     name: "Little Shelf Bundle",
     details,
     titles: line.set.titles,
+    notes: line.notes,
+  };
+}
+
+/** The Little Shelf Set on an order: the shelf, both book sets, the plant and the letter, and all twelve titles. */
+function shelfSetDetails(line: BundleLine): { name: string; details: string[]; titles?: SnapshotItem["titles"]; notes?: string } {
+  const opts = (slug: string, variantId: string) => {
+    const p = getProduct(slug)!;
+    const v = getVariant(p, variantId)!;
+    const o = Object.values(v.options).join(", ");
+    return `${p.name}${o ? ` (${o})` : ""}`;
+  };
+  const sets = [line.set, ...(line.extraSets ?? [])];
+  const titles = sets.flatMap((s) => s.titles ?? []);
+  return {
+    name: SHELF_SET.name,
+    details: [
+      `Shelf: ${opts(line.shelf.slug, line.shelf.variantId)}`,
+      ...sets.map((s, i) => `Book set ${i + 1}: ${opts(s.slug, s.variantId)}`),
+      ...line.accessories.map((a) => `Extra: ${opts(a.slug, a.variantId)}`),
+      "Ships together in the illustrated box",
+    ],
+    titles: titles.length ? titles : undefined,
     notes: line.notes,
   };
 }

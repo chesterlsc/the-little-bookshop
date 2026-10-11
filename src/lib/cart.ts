@@ -1,4 +1,4 @@
-import { MAX_TITLES, SET_SIZE, getProduct, getVariant, SHELF_THEMES, type ShelfThemeId } from "./catalog";
+import { MAX_TITLES, SET_SIZE, SHELF_SET, getProduct, getVariant, SHELF_THEMES, type ShelfThemeId } from "./catalog";
 import { formatMoney, type Cents } from "./money";
 import { EMAIL_RE, GIFT_NAME_MAX, GIFT_NOTE_MAX, type GiftDetails } from "./gift-card-types";
 
@@ -37,7 +37,13 @@ export interface BundleLine {
   accessories: BundlePart[];
   themeId?: ShelfThemeId;
   notes?: string;
+  /** the Little Shelf Set: a fixed price, and a second book set */
+  kit?: typeof SHELF_SET.slug;
+  extraSets?: (BundlePart & { titles?: CustomTitle[] })[];
 }
+
+/** The Little Shelf Set, rather than a shelf built up piece by piece. */
+export const isShelfSet = (line: CartLine) => line.type === "bundle" && line.kit === SHELF_SET.slug;
 
 export type CartLine = ProductLine | BundleLine;
 
@@ -93,6 +99,29 @@ function giftIssue(line: ProductLine): string | undefined {
 }
 
 /* ─── Validation ───────────────────────────────────────────────────────────── */
+
+/**
+ * The set is sold at its own price, so its contents are checked exactly: one
+ * Regular shelf, two sets of six (a custom set is six titles, not more), the
+ * plant and one shelf letter. Anything else would be a cheaper way to buy more.
+ */
+function shelfSetIssue(line: BundleLine): string | undefined {
+  const broken = "This Little Shelf Set has changed. Please remove it and choose it again.";
+  if (line.kit !== SHELF_SET.slug) return broken;
+  const shelfVar = getVariant(getProduct(line.shelf.slug)!, line.shelf.variantId);
+  if (shelfVar?.options.Size !== "Regular") return "The Little Shelf Set comes with a Regular shelf.";
+  const sets = [line.set, ...(Array.isArray(line.extraSets) ? line.extraSets : [])];
+  if (sets.length !== SHELF_SET.setsInIt) return broken;
+  for (const s of sets) {
+    const p = getProduct(s?.slug ?? "");
+    if (!p || !getVariant(p, s.variantId) || p.category !== "mini-books") return broken;
+    if (p.customSet && (!validTitles(s.titles) || s.titles!.length !== SET_SIZE))
+      return "Each custom set in the Little Shelf Set needs its six titles.";
+  }
+  const slugs = line.accessories.map((a) => a.slug).sort().join();
+  if (slugs !== [SHELF_SET.letterSlug, SHELF_SET.plantSlug].sort().join()) return broken;
+  return undefined;
+}
 
 /** Books are made six at a time, so a custom line is six, twelve, eighteen… */
 export function validTitles(titles: CustomTitle[] | undefined): boolean {
@@ -208,6 +237,10 @@ export function validateCart(cart: Cart): LineIssue[] {
       if (line.themeId && !SHELF_THEMES.some((t) => t.id === line.themeId)) {
         issues.push({ key: line.key, message: "This bundle's shelf theme is not recognized." });
       }
+      if (b.kit !== undefined) {
+        const message = shelfSetIssue(line);
+        if (message) issues.push({ key: line.key, message });
+      }
     }
   }
   return issues;
@@ -222,6 +255,8 @@ export function lineUnitPrice(line: CartLine): Cents {
     // every six books is another set, at the set's price
     return (variant?.price ?? 0) * (product?.customSet ? setsOf(line.titles) : 1);
   }
+  // the set's own price, whatever its parts would come to
+  if (isShelfSet(line)) return SHELF_SET.price;
   const shelf = getProduct(line.shelf.slug);
   const shelfVar = shelf && getVariant(shelf, line.shelf.variantId);
   const set = getProduct(line.set.slug);
@@ -299,7 +334,7 @@ export function describeLine(line: CartLine): string {
   const extras = line.accessories
     .filter((a) => SUMMARY_WITH_OPTIONS.includes(a.slug))
     .map((a) => `, ${nameWithOptions(a.slug, a.variantId)}`);
-  return `Little Shelf Bundle: ${shelf?.name ?? "shelf"}${extras.join("")}`;
+  return `${isShelfSet(line) ? SHELF_SET.name : "Little Shelf Bundle"}: ${shelf?.name ?? "shelf"}${extras.join("")}`;
 }
 
 let counter = 0;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { FREE_SHIPPING_MINIMUM } from "@/lib/cart";
+import { SHELF_SET } from "@/lib/catalog";
 import { formatMoney } from "@/lib/money";
 import { PROMO, promoDaysLeft } from "@/lib/promo";
 import { IconArrowRight } from "./icons";
@@ -26,7 +27,7 @@ import { usePromoLive } from "./promo";
 const peso = (cents: number) => formatMoney(cents).replace(/\.00$/, "");
 const SLIDE_MS = 4400;
 
-type Tone = "rose" | "sage" | "cocoa";
+type Tone = "rose" | "sage" | "cocoa" | "berry";
 
 /* the badges: one drawn mark per message, in the message's own colour */
 const ICON = "h-[1.05em] w-[1.05em]";
@@ -59,6 +60,16 @@ function Hourglass() {
     <svg viewBox="0 0 24 24" className={`ribbon-hourglass ${ICON}`} {...stroke}>
       <path d="M6.5 3.5h11M6.5 20.5h11M7.5 3.5c0 4.5 4.5 5.5 4.5 8.5s-4.5 4-4.5 8.5M16.5 3.5c0 4.5-4.5 5.5-4.5 8.5s4.5 4 4.5 8.5" />
       <path d="M10 18.2h4" />
+    </svg>
+  );
+}
+
+/** A little shelf with books on it: the Little Shelf Set. */
+function ShelfIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className={ICON} {...stroke}>
+      <path d="M5 3.5h14v17H5zM5 12h14" />
+      <path d="M8 12V7M10.5 12V6.5M13 12l1.6-4.6M8 20.5v-5.5M10.5 20.5V15" />
     </svg>
   );
 }
@@ -110,6 +121,20 @@ export function RibbonTicker({ initialLive }: { initialLive: boolean }) {
       </>
     ),
   };
+  // the set, always: the shop's easiest way to start a shelf
+  const shelfSet: Slide = {
+    key: "set",
+    href: `/products/${SHELF_SET.slug}`,
+    tone: "berry",
+    label: "The Little Shelf Set",
+    icon: <ShelfIcon />,
+    words: (
+      <>
+        <span className="hidden sm:inline">New: </span>The Little Shelf Set<span className="hidden sm:inline"> · shelf, 12 books, plant and letter</span>
+      </>
+    ),
+    extra: <span className="ribbon-stub ribbon-stub-berry">{peso(SHELF_SET.price)}</span>,
+  };
   const slides: Slide[] = live
     ? [
         {
@@ -126,6 +151,7 @@ export function RibbonTicker({ initialLive }: { initialLive: boolean }) {
           ),
           extra: <span className="ribbon-stub">{PROMO.code}</span>,
         },
+        shelfSet,
         shipping,
         {
           key: "days",
@@ -152,6 +178,7 @@ export function RibbonTicker({ initialLive }: { initialLive: boolean }) {
         },
       ]
     : [
+        shelfSet,
         shipping,
         {
           key: "gifts",
@@ -208,6 +235,7 @@ export function RibbonTicker({ initialLive }: { initialLive: boolean }) {
       {/* the colour of the message showing, washing in under everything */}
       <span aria-hidden className={`ribbon-tone ribbon-tone-rose ${tone === "rose" ? "is-on" : ""}`} />
       <span aria-hidden className={`ribbon-tone ribbon-tone-cocoa ${tone === "cocoa" ? "is-on" : ""}`} />
+      <span aria-hidden className={`ribbon-tone ribbon-tone-berry ${tone === "berry" ? "is-on" : ""}`} />
 
       {turns.map((s, i) => (
         <Link
